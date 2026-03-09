@@ -1947,6 +1947,63 @@ def get_product_image(code):
     return None
 
 
+# ─── Cautare per vendor (rapid, sub 10s) ─────────────────────────────────────
+
+def search_single_vendor(code, vendor):
+    """Cauta pretul pe un singur vendor. Rapid, sub 10s."""
+    import urllib.parse
+    code = code.strip().upper()
+    vendor = vendor.lower()
+
+    products = load_products()
+    kuziini_price = None
+    category = ''
+    if code in products:
+        kuziini_price = products[code]['price']
+        category = products[code]['category']
+
+    vendor_funcs = {
+        'samsung': scrape_samsung,
+        'emag': scrape_emag,
+        'flanco': scrape_flanco,
+        'altex': scrape_altex,
+    }
+
+    search_urls = {
+        'samsung': f'https://www.samsung.com/ro/search/?searchvalue={urllib.parse.quote(code)}',
+        'emag': f'https://www.emag.ro/search/{urllib.parse.quote(code)}',
+        'flanco': f'https://www.flanco.ro/catalogsearch/result/?q={urllib.parse.quote(code)}',
+        'altex': f'https://altex.ro/cauta/{urllib.parse.quote(code)}/',
+    }
+
+    if vendor not in vendor_funcs:
+        return {'error': f'Vendor necunoscut: {vendor}'}
+
+    func = vendor_funcs[vendor]
+    try:
+        result = func(code)
+        price = result[0] if result else None
+        url = result[1] if result else None
+        image_url = None
+        if vendor == 'samsung' and result and len(result) > 2:
+            image_url = result[2]
+    except Exception as e:
+        log(f"  {vendor} eroare: {e}")
+        price = None
+        url = None
+        image_url = None
+
+    return {
+        'code': code,
+        'vendor': vendor,
+        'category': category,
+        'kuziini_price': round(kuziini_price, 2) if kuziini_price else None,
+        'price': round(price, 2) if price else None,
+        'url': url or search_urls[vendor],
+        'image_url': image_url,
+    }
+
+
 # ─── Functie principala de cautare (folosita de Flask handler) ────────────────
 
 def search_product(code):

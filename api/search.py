@@ -11,7 +11,7 @@ import os
 
 # Add parent dir to path so we can import scraper
 sys.path.insert(0, os.path.dirname(__file__))
-from scraper import search_product, load_products, APP_VERSION, warmup_session
+from scraper import search_product, search_single_vendor, load_products, APP_VERSION, warmup_session
 
 # Warmup on cold start
 warmup_session()
@@ -53,19 +53,26 @@ class handler(BaseHTTPRequestHandler):
 
         if path == '/api/search':
             code = params.get('code', [''])[0].strip().upper()
+            vendor = params.get('vendor', [''])[0].strip().lower()
             if not code:
                 self._json({'error': 'Codul produsului este gol.'}, 400)
                 return
 
+            # Single vendor mode: /api/search?code=X&vendor=samsung
+            if vendor:
+                result = search_single_vendor(code, vendor)
+                self._json(result)
+                return
+
             # Verifica cache-ul mai intai
-            fresh = params.get('fresh', [''])[0]  # ?fresh=1 forteaza scrape live
+            fresh = params.get('fresh', [''])[0]
             if fresh != '1':
                 cached = get_cached_result(code)
                 if cached:
                     self._json(cached)
                     return
 
-            # Scrape live
+            # Full search (poate dura > 10s pe Vercel)
             result = search_product(code)
             self._json(result)
 

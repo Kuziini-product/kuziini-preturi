@@ -985,14 +985,42 @@
       showLoading(code);
 
       try {
-        const resp = await fetch(`/api/search?code=${encodeURIComponent(code)}`);
+        // Apelam fiecare vendor in paralel (fiecare sub 10s pe Vercel)
+        const vendors = ['samsung', 'emag', 'flanco', 'altex'];
+        const encCode = encodeURIComponent(code);
 
-        if (!resp.ok) {
-          const err = await resp.json();
-          throw new Error(err.error || 'Eroare de server');
-        }
+        const fetches = vendors.map(v =>
+          fetch(`/api/search?code=${encCode}&vendor=${v}`)
+            .then(r => r.ok ? r.json() : null)
+            .catch(() => null)
+        );
 
-        const data = await resp.json();
+        // Afiseaza rezultate partial pe masura ce vin
+        const data = {
+          code: code,
+          category: '',
+          kuziini_price: null,
+          image_url: null,
+          prices: {},
+          urls: {},
+        };
+
+        // Asteapta toate rezultatele
+        const results = await Promise.all(fetches);
+
+        results.forEach((r, i) => {
+          const v = vendors[i];
+          if (r) {
+            data.prices[v] = r.price;
+            data.urls[v] = r.url;
+            if (!data.category && r.category) data.category = r.category;
+            if (!data.kuziini_price && r.kuziini_price) data.kuziini_price = r.kuziini_price;
+            if (!data.image_url && r.image_url) data.image_url = r.image_url;
+          } else {
+            data.prices[v] = null;
+          }
+        });
+
         hideLoading();
         displayResults(data);
 
