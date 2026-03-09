@@ -2001,6 +2001,15 @@ def search_product(code):
         # Imagine: dupa scrape_samsung (populeaza _samsung_image_cache)
         image_result[0] = ex.submit(get_product_image, code).result()
 
+    # Sanity check: elimina preturi aberante (prea mici fata de celelalte = produs gresit)
+    valid_prices = [v for v in results.values() if v and v > 0]
+    if len(valid_prices) >= 2:
+        median_price = sorted(valid_prices)[len(valid_prices) // 2]
+        for k in list(results.keys()):
+            if results[k] and results[k] < median_price * 0.15:
+                log(f"  SANITY: {k} pret {results[k]} e prea mic vs median {median_price}, marcat indisponibil")
+                results[k] = None
+
     return {
         'code': code,
         'category': category,
