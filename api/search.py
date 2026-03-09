@@ -78,6 +78,9 @@ class handler(BaseHTTPRequestHandler):
             products = load_products()
             self._json({'ok': True, 'count': len(products)})
 
+        elif path == '/api/ping':
+            self._json({'pong': True, 'time': time.time()})
+
         elif path == '/api/cache_status':
             try:
                 with open(CACHE_FILE, 'r', encoding='utf-8') as f:
