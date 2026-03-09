@@ -71,7 +71,9 @@ class handler(BaseHTTPRequestHandler):
                 return
 
             # Daca nu e in cache, returnam info din Excel + mesaj
+            import time as _t; _ts = _t.time()
             products = load_products()
+            _elapsed = _t.time() - _ts
             kuziini_price = None
             category = ''
             if code in products:
@@ -87,6 +89,7 @@ class handler(BaseHTTPRequestHandler):
                 'urls': {},
                 'not_cached': True,
                 'message': 'Prețurile nu sunt încă disponibile. Se actualizează automat.',
+                'excel_load_ms': round(_elapsed * 1000),
             })
 
         elif path == '/api/version':
