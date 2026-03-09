@@ -2,6 +2,13 @@
   "version": 2,
   "framework": null,
   "rewrites": [
+    { "source": "/api/cron", "destination": "/api/cron.py" },
     { "source": "/api/(.*)", "destination": "/api/search.py" }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron",
+      "schedule": "0 23 * * *"
+    }
   ]
 }

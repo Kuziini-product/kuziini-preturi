@@ -17,6 +17,33 @@ from scraper import search_product, load_products, APP_VERSION, warmup_session
 warmup_session()
 _start_time = time.time()
 
+CACHE_FILE = '/tmp/prices_cache.json'
+CACHE_MAX_AGE = 24 * 3600  # 24 ore
+
+
+def get_cached_result(code):
+    """Returneaza rezultatul din cache daca e valid (< 24h)."""
+    try:
+        with open(CACHE_FILE, 'r', encoding='utf-8') as f:
+            cache = json.load(f)
+        entry = cache.get('prices', {}).get(code.upper())
+        if entry and 'cached_at' in entry:
+            age = time.time() - entry['cached_at']
+            if age < CACHE_MAX_AGE and 'prices' in entry:
+                return {
+                    'code': code.upper(),
+                    'category': entry.get('category', ''),
+                    'kuziini_price': entry.get('kuziini_price'),
+                    'image_url': entry.get('image_url'),
+                    'prices': entry['prices'],
+                    'urls': entry.get('urls', {}),
+                    'cached': True,
+                    'cache_age_min': round(age / 60),
+                }
+    except Exception:
+        pass
+    return None
+
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -29,6 +56,16 @@ class handler(BaseHTTPRequestHandler):
             if not code:
                 self._json({'error': 'Codul produsului este gol.'}, 400)
                 return
+
+            # Verifica cache-ul mai intai
+            fresh = params.get('fresh', [''])[0]  # ?fresh=1 forteaza scrape live
+            if fresh != '1':
+                cached = get_cached_result(code)
+                if cached:
+                    self._json(cached)
+                    return
+
+            # Scrape live
             result = search_product(code)
             self._json(result)
 
@@ -40,6 +77,21 @@ class handler(BaseHTTPRequestHandler):
             scraper_mod._products_cache = None
             products = load_products()
             self._json({'ok': True, 'count': len(products)})
+
+        elif path == '/api/cache_status':
+            try:
+                with open(CACHE_FILE, 'r', encoding='utf-8') as f:
+                    cache = json.load(f)
+                last = cache.get('last_update')
+                age = round((time.time() - last) / 60) if last else None
+                self._json({
+                    'total_cached': cache.get('total_cached', 0),
+                    'total_products': cache.get('total_products', 0),
+                    'last_update_min_ago': age,
+                    'batch_index': cache.get('batch_index', 0),
+                })
+            except Exception:
+                self._json({'total_cached': 0, 'error': 'No cache file'})
 
         else:
             self._json({'error': 'Not found'}, 404)
