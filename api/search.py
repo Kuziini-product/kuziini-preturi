@@ -64,17 +64,30 @@ class handler(BaseHTTPRequestHandler):
                 self._json(result)
                 return
 
-            # Verifica cache-ul mai intai
-            fresh = params.get('fresh', [''])[0]
-            if fresh != '1':
-                cached = get_cached_result(code)
-                if cached:
-                    self._json(cached)
-                    return
+            # Verifica cache-ul
+            cached = get_cached_result(code)
+            if cached:
+                self._json(cached)
+                return
 
-            # Full search (poate dura > 10s pe Vercel)
-            result = search_product(code)
-            self._json(result)
+            # Daca nu e in cache, returnam info din Excel + mesaj
+            products = load_products()
+            kuziini_price = None
+            category = ''
+            if code in products:
+                kuziini_price = products[code]['price']
+                category = products[code]['category']
+
+            self._json({
+                'code': code,
+                'category': category,
+                'kuziini_price': round(kuziini_price, 2) if kuziini_price else None,
+                'image_url': None,
+                'prices': {'samsung': None, 'emag': None, 'flanco': None, 'altex': None},
+                'urls': {},
+                'not_cached': True,
+                'message': 'Prețurile nu sunt încă disponibile. Se actualizează automat.',
+            })
 
         elif path == '/api/version':
             self._json({'version': _start_time, 'app_version': APP_VERSION})
