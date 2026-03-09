@@ -1116,15 +1116,8 @@ def _samsung_shop_api(code):
                 root_price = data.get('price', {})
                 price = root_price.get('value')
 
-            # Construieste URL-ul produsului pe samsung.com
-            product_url = None
-            prod_path = data.get('url', '')
-            if prod_path:
-                product_url = f'https://www.samsung.com{prod_path}' if prod_path.startswith('/') else prod_path
-
-            # Daca nu avem URL din API, construim unul standard
-            if not product_url:
-                product_url = f'https://www.samsung.com/ro/search/?searchvalue={urllib.parse.quote(code)}'
+            # URL-ul produsului - folosim cautarea Samsung care functioneaza mereu
+            product_url = f'https://www.samsung.com/ro/search/?searchvalue={urllib.parse.quote(sku)}'
 
             if price and price > 100:
                 log(f"  Samsung API: pret={price}, imagine={image_url[:80] if image_url else 'N/A'}")
