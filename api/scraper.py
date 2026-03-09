@@ -177,6 +177,21 @@ def get_search_variants(code):
     return variants
 
 
+def product_matches_code(soup, code):
+    """
+    Verifica daca pagina produsului contine codul cautat (sau o varianta scurta).
+    Previne returnarea pretului de la un produs gresit.
+    """
+    if not soup:
+        return False
+    page_text = soup.get_text().upper()
+    variants = get_search_variants(code)
+    for v in variants:
+        if v.upper() in page_text:
+            return True
+    return False
+
+
 # ─── Parsare Pret ────────────────────────────────────────────────────────────
 
 def parse_ro_price(text):
@@ -899,10 +914,13 @@ def scrape_emag(code):
                         log(f"  eMAG AJAX: URL produs: {prod_url[:80]}")
                         _, pp = get_page_curl(prod_url, timeout=12, referer=search_url)
                         if pp:
-                            p, url = _emag_extract_price_from_product_page(pp, prod_url)
-                            if p:
-                                log(f"  eMAG PRET GASIT (AJAX → produs): {p}")
-                                return (p, url)
+                            if not product_matches_code(pp, code):
+                                log(f"  eMAG AJAX: produsul NU corespunde codului {code}, skip")
+                            else:
+                                p, url = _emag_extract_price_from_product_page(pp, prod_url)
+                                if p:
+                                    log(f"  eMAG PRET GASIT (AJAX → produs): {p}")
+                                    return (p, url)
         except Exception as e:
             log(f"  eMAG AJAX eroare: {e}", 'warning')
 
@@ -935,6 +953,9 @@ def scrape_emag(code):
                     if prod_url and '/pd/' in prod_url:
                         _, ps = get_page_curl(prod_url, timeout=12, referer='https://www.emag.ro/')
                         if ps:
+                            if not product_matches_code(ps, code):
+                                log(f"  eMAG suggest: produsul NU corespunde codului {code}, skip")
+                                continue
                             p, url = _emag_extract_price_from_product_page(ps, prod_url)
                             if p:
                                 log(f"  eMAG PRET GASIT (suggest → produs): {p}")
@@ -1290,6 +1311,10 @@ def scrape_flanco(code):
                 # Folosim curl si pentru pagina produs (Flanco blocheaza Python)
                 _, prod_soup = get_page_curl(product_url, timeout=10, referer=search_url)
                 if prod_soup:
+                    # Validare: codul trebuie sa apara pe pagina produsului
+                    if not product_matches_code(prod_soup, code):
+                        log(f"  Flanco: produsul gasit NU corespunde codului {code}, skip")
+                        continue
                     for sel in [
                         '[data-price-type="finalPrice"] .price',
                         '.special-price .price',
@@ -1311,11 +1336,6 @@ def scrape_flanco(code):
                     log(f"  Flanco preturi text: {prices[:8]}")
                     if prices:
                         return (prices[0], product_url)
-
-            prices = find_prices_in_soup(search_soup)
-            log(f"  Flanco preturi search: {prices[:8]}")
-            if prices:
-                return (prices[0], search_url)
 
     log("  Flanco: negasit", 'warning')
     return (None, None)
@@ -1828,9 +1848,12 @@ def scrape_altex(code):
                 _, prod_soup = _curl_with_cookies(
                     product_url, timeout=15, referer=search_url)
                 if prod_soup:
-                    price = _altex_extract_price_from_product_page(prod_soup, product_url)
-                    if price:
-                        return (price, product_url)
+                    if not product_matches_code(prod_soup, code):
+                        log(f"  Altex: produsul gasit NU corespunde codului {code}, skip")
+                    else:
+                        price = _altex_extract_price_from_product_page(prod_soup, product_url)
+                        if price:
+                            return (price, product_url)
 
         break  # nu incerca alte variante daca am obtinut HTML
 
@@ -1841,9 +1864,12 @@ def scrape_altex(code):
         log(f"  Altex DDG URL: {ddg_url}")
         _, pp = _curl_with_cookies(ddg_url, timeout=15, referer='https://duckduckgo.com/')
         if pp:
-            price = _altex_extract_price_from_product_page(pp, ddg_url)
-            if price:
-                return (price, ddg_url)
+            if not product_matches_code(pp, code):
+                log(f"  Altex DDG: produsul NU corespunde codului {code}, skip")
+            else:
+                price = _altex_extract_price_from_product_page(pp, ddg_url)
+                if price:
+                    return (price, ddg_url)
 
     log("  Altex: negasit", 'warning')
     return (None, None)
