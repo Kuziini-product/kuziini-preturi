@@ -30,9 +30,9 @@ DATA_DIR = os.path.join(PROJECT_ROOT, 'data')
 IS_VERCEL = os.environ.get('VERCEL', '') == '1' or os.environ.get('VERCEL_ENV', '') != ''
 IS_WINDOWS = platform.system() == 'Windows'
 
-# Pe Vercel timeout-uri mai scurte (60s total per functie)
-CURL_TIMEOUT = 7 if IS_VERCEL else 12
-REQ_TIMEOUT = 6 if IS_VERCEL else 10
+# Pe Vercel timeout-uri mai scurte (10s total per functie pe Hobby)
+CURL_TIMEOUT = 5 if IS_VERCEL else 12
+REQ_TIMEOUT = 5 if IS_VERCEL else 10
 
 EXCEL_FILE = None
 # Cauta in data/ (Vercel) si in BASE_DIR (local)
@@ -105,6 +105,8 @@ SESSION.headers.update(HEADERS)
 
 # Initializeaza sesiunea vizitand Google (pentru cookies realiste)
 def warmup_session():
+    if IS_VERCEL:
+        return  # Skip warmup pe Vercel (economisim timp)
     try:
         SESSION.get('https://www.google.com', timeout=5)
     except Exception:
@@ -884,12 +886,15 @@ def scrape_emag(code):
 
     # Warmup homepage (o singura data) pentru cookies realiste
     if not _emag_warmed:
-        try:
-            wr = SESSION.get('https://www.emag.ro/', timeout=8)
-            log(f"  eMAG warmup: {wr.status_code} ({len(wr.text):,}b)")
-            _emag_warmed = True
-        except Exception as e:
-            log(f"  eMAG warmup eroare: {e}", 'warning')
+        if IS_VERCEL:
+            _emag_warmed = True  # Skip warmup pe Vercel
+        else:
+            try:
+                wr = SESSION.get('https://www.emag.ro/', timeout=8)
+                log(f"  eMAG warmup: {wr.status_code} ({len(wr.text):,}b)")
+                _emag_warmed = True
+            except Exception as e:
+                log(f"  eMAG warmup eroare: {e}", 'warning')
 
     for variant in get_search_variants(code):
         v_enc = urllib.parse.quote(variant)
@@ -1246,7 +1251,8 @@ def scrape_flanco(code):
 
     # Warmup cu curl (prima oara) — Flanco e blocat pentru Python/OpenSSL
     if not _flanco_warmed:
-        get_page_curl('https://www.flanco.ro/', timeout=8)
+        if not IS_VERCEL:
+            get_page_curl('https://www.flanco.ro/', timeout=8)
         _flanco_warmed = True
 
     for variant in get_search_variants(code):
