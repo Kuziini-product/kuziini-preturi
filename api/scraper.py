@@ -1976,6 +1976,16 @@ def search_product(code):
     result_urls = {}
     image_result = [None]
 
+    # Timeout per-vendor: pe Vercel 7s, local fara limita
+    VENDOR_TIMEOUT = 7 if IS_VERCEL else 120
+
+    vendor_search_urls = {
+        'samsung': f'https://www.samsung.com/ro/search/?searchvalue={urllib.parse.quote(code)}',
+        'emag':    f'https://www.emag.ro/search/{urllib.parse.quote(code)}',
+        'flanco':  f'https://www.flanco.ro/catalogsearch/result/?q={urllib.parse.quote(code)}',
+        'altex':   f'https://altex.ro/cauta/{urllib.parse.quote(code)}/',
+    }
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:
         fut_aggregator = ex.submit(scrape_price_aggregator, code)
         futs = {
@@ -1985,19 +1995,20 @@ def search_product(code):
             'altex':   ex.submit(scrape_altex,   code),
         }
 
-        aggregator_prices = fut_aggregator.result()
-
-        vendor_search_urls = {
-            'samsung': f'https://www.samsung.com/ro/search/?searchvalue={urllib.parse.quote(code)}',
-            'emag':    f'https://www.emag.ro/search/{urllib.parse.quote(code)}',
-            'flanco':  f'https://www.flanco.ro/catalogsearch/result/?q={urllib.parse.quote(code)}',
-            'altex':   f'https://altex.ro/cauta/{urllib.parse.quote(code)}/',
-        }
+        try:
+            aggregator_prices = fut_aggregator.result(timeout=VENDOR_TIMEOUT)
+        except Exception:
+            aggregator_prices = {}
 
         for k, f in futs.items():
-            result = f.result()
-            ind_price = result[0] if result else None
-            ind_url   = result[1] if result else None
+            try:
+                result = f.result(timeout=VENDOR_TIMEOUT)
+                ind_price = result[0] if result else None
+                ind_url   = result[1] if result else None
+            except Exception:
+                ind_price = None
+                ind_url = None
+                log(f"  {k}: TIMEOUT ({VENDOR_TIMEOUT}s)")
             if ind_price is not None:
                 results[k] = ind_price
                 result_urls[k] = ind_url or vendor_search_urls[k]
@@ -2009,7 +2020,10 @@ def search_product(code):
                 result_urls[k] = vendor_search_urls[k]
 
         # Imagine: dupa scrape_samsung (populeaza _samsung_image_cache)
-        image_result[0] = ex.submit(get_product_image, code).result()
+        try:
+            image_result[0] = ex.submit(get_product_image, code).result(timeout=VENDOR_TIMEOUT)
+        except Exception:
+            image_result[0] = None
 
     # Sanity check: elimina preturi aberante (prea mici fata de celelalte = produs gresit)
     valid_prices = [v for v in results.values() if v and v > 0]
