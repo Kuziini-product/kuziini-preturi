@@ -30,6 +30,10 @@ DATA_DIR = os.path.join(PROJECT_ROOT, 'data')
 IS_VERCEL = os.environ.get('VERCEL', '') == '1' or os.environ.get('VERCEL_ENV', '') != ''
 IS_WINDOWS = platform.system() == 'Windows'
 
+# Pe Vercel timeout-uri mai scurte (60s total per functie)
+CURL_TIMEOUT = 7 if IS_VERCEL else 12
+REQ_TIMEOUT = 6 if IS_VERCEL else 10
+
 EXCEL_FILE = None
 # Cauta in data/ (Vercel) si in BASE_DIR (local)
 for search_dir in [DATA_DIR, BASE_DIR, PROJECT_ROOT]:
@@ -528,7 +532,9 @@ def _get_curl_bin():
     return _curl_bin
 
 
-def get_page_curl(url, timeout=12, referer=None):
+def get_page_curl(url, timeout=None, referer=None):
+    if timeout is None:
+        timeout = CURL_TIMEOUT
     """
     Fetch URL via curl (bypass TLS fingerprint Python/OpenSSL).
     Returneaza (text, soup) sau (None, None).
@@ -577,7 +583,9 @@ def get_page_curl(url, timeout=12, referer=None):
     return None, None
 
 
-def get_page(url, timeout=15, referer=None):
+def get_page(url, timeout=None, referer=None):
+    if timeout is None:
+        timeout = REQ_TIMEOUT
     """Fetch URL si returneaza (resp, soup) sau (None, None) la eroare."""
     try:
         headers_extra = {}
@@ -1361,7 +1369,9 @@ def _get_altex_cookie_file():
     return _altex_cookie_file
 
 
-def _curl_with_cookies(url, timeout=15, referer=None, save_cookies=False):
+def _curl_with_cookies(url, timeout=None, referer=None, save_cookies=False):
+    if timeout is None:
+        timeout = CURL_TIMEOUT
     """
     curl.exe cu suport cookie jar. Altex necesita cookies intre requests.
     Returneaza (text, soup) sau (None, None).

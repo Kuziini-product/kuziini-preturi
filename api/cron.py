@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from scraper import search_product, load_products, log
 
 CACHE_FILE = '/tmp/prices_cache.json'
-BATCH_SIZE = 2  # produse per invocatie (60s timeout pe Vercel Hobby)
+BATCH_SIZE = 1  # 1 produs per invocatie (scraping dureaza ~30-50s per produs)
 
 
 def load_cache():
