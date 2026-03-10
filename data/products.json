@@ -1,0 +1,432 @@
+{
+  "QE98QN990FTXXH": {
+    "category": "NeoQLED",
+    "code": "QE98QN990FTXXH",
+    "price": 90549.5514
+  },
+  "QE65QN900FTXXH": {
+    "category": "NeoQLED",
+    "code": "QE65QN900FTXXH",
+    "price": 8645.1475
+  },
+  "QE75QN900FTXXH": {
+    "category": "NeoQLED",
+    "code": "QE75QN900FTXXH",
+    "price": 12127.0193
+  },
+  "QE85QN900FTXXH": {
+    "category": "NeoQLED",
+    "code": "QE85QN900FTXXH",
+    "price": 18833.4322
+  },
+  "QE65QN990FTXXH": {
+    "category": "NeoQLED",
+    "code": "QE65QN990FTXXH",
+    "price": 15069.6304
+  },
+  "QE75QN990FTXXH": {
+    "category": "NeoQLED",
+    "code": "QE75QN990FTXXH",
+    "price": 20088.044899999997
+  },
+  "QE85QN990FTXXH": {
+    "category": "NeoQLED",
+    "code": "QE85QN990FTXXH",
+    "price": 27615.6364
+  },
+  "QE43QN90FATXXH": {
+    "category": "NeoQLED",
+    "code": "QE43QN90FATXXH",
+    "price": 3598.0802
+  },
+  "QE50QN90FATXXH": {
+    "category": "NeoQLED",
+    "code": "QE50QN90FATXXH",
+    "price": 4056.0289000000002
+  },
+  "QE55QN90FATXXH": {
+    "category": "NeoQLED",
+    "code": "QE55QN90FATXXH",
+    "price": 4803.7847
+  },
+  "QE65QN90FATXXH": {
+    "category": "NeoQLED",
+    "code": "QE65QN90FATXXH",
+    "price": 6247.2421
+  },
+  "QE75QN90FATXXH": {
+    "category": "NeoQLED",
+    "code": "QE75QN90FATXXH",
+    "price": 8884.146700000001
+  },
+  "QE85QN90FATXXH": {
+    "category": "NeoQLED",
+    "code": "QE85QN90FATXXH",
+    "price": 12698.514399999998
+  },
+  "QE98QN90FATXXH": {
+    "category": "NeoQLED",
+    "code": "QE98QN90FATXXH",
+    "price": 23076.224599999998
+  },
+  "QE55QN85FAUXXH": {
+    "category": "NeoQLED",
+    "code": "QE55QN85FAUXXH",
+    "price": 4027.5697
+  },
+  "QE65QN85FAUXXH": {
+    "category": "NeoQLED",
+    "code": "QE65QN85FAUXXH",
+    "price": 5547.8984
+  },
+  "QE75QN85FAUXXH": {
+    "category": "NeoQLED",
+    "code": "QE75QN85FAUXXH",
+    "price": 8064.2507
+  },
+  "QE85QN85FAUXXH": {
+    "category": "NeoQLED",
+    "code": "QE85QN85FAUXXH",
+    "price": 10580.723999999998
+  },
+  "QE50QN80FAUXXH": {
+    "category": "NeoQLED",
+    "code": "QE50QN80FAUXXH",
+    "price": 3022.1081
+  },
+  "QE55QN80FAUXXH": {
+    "category": "NeoQLED",
+    "code": "QE55QN80FAUXXH",
+    "price": 3567.2857
+  },
+  "QE65QN80FAUXXH": {
+    "category": "NeoQLED",
+    "code": "QE65QN80FAUXXH",
+    "price": 4414.5156
+  },
+  "QE75QN80FAUXXH": {
+    "category": "NeoQLED",
+    "code": "QE75QN80FAUXXH",
+    "price": 6327.6587
+  },
+  "QE85QN80FAUXXH": {
+    "category": "NeoQLED",
+    "code": "QE85QN80FAUXXH",
+    "price": 8570.0549
+  },
+  "QE100QN80FUXXH": {
+    "category": "NeoQLED",
+    "code": "QE100QN80FUXXH",
+    "price": 14681.196199999998
+  },
+  "QE55S95FATXXH": {
+    "category": "OLED",
+    "code": "QE55S95FATXXH",
+    "price": 7330.724499999999
+  },
+  "QE65S95FATXXH": {
+    "category": "OLED",
+    "code": "QE65S95FATXXH",
+    "price": 9349.0287
+  },
+  "QE77S95FATXXH": {
+    "category": "OLED",
+    "code": "QE77S95FATXXH",
+    "price": 12881.055
+  },
+  "QE83S95FAEXXH": {
+    "category": "OLED",
+    "code": "QE83S95FAEXXH",
+    "price": 16921.7169
+  },
+  "QE48S90FAEXXH": {
+    "category": "OLED",
+    "code": "QE48S90FAEXXH",
+    "price": 4187.3018
+  },
+  "QE55S90FAEXXH": {
+    "category": "OLED",
+    "code": "QE55S90FAEXXH",
+    "price": 5274.0028
+  },
+  "QE65S90FATXXH": {
+    "category": "OLED",
+    "code": "QE65S90FATXXH",
+    "price": 7215.3994
+  },
+  "QE77S90FAEXXH": {
+    "category": "OLED",
+    "code": "QE77S90FAEXXH",
+    "price": 10301.5407
+  },
+  "QE83S90FAEXXH": {
+    "category": "OLED",
+    "code": "QE83S90FAEXXH",
+    "price": 15445.1418
+  },
+  "QE55S85FAUXXH": {
+    "category": "OLED",
+    "code": "QE55S85FAUXXH",
+    "price": 4877.3285
+  },
+  "QE65S85FAEXXH": {
+    "category": "OLED",
+    "code": "QE65S85FAEXXH",
+    "price": 6338.500300000001
+  },
+  "QE77S85FAEXXH": {
+    "category": "OLED",
+    "code": "QE77S85FAEXXH",
+    "price": 9363.1857
+  },
+  "QE83S85FAEXXH": {
+    "category": "OLED",
+    "code": "QE83S85FAEXXH",
+    "price": 13762.7094
+  },
+  "QE85QN70FAUXXH": {
+    "category": "NeoQLED",
+    "code": "QE85QN70FAUXXH",
+    "price": 7103.4139
+  },
+  "QE75QN70FAUXXH": {
+    "category": "NeoQLED",
+    "code": "QE75QN70FAUXXH",
+    "price": 5881.1687
+  },
+  "QE65QN70FAUXXH": {
+    "category": "NeoQLED",
+    "code": "QE65QN70FAUXXH",
+    "price": 3936.0694999999996
+  },
+  "QE55QN70FAUXXH": {
+    "category": "NeoQLED",
+    "code": "QE55QN70FAUXXH",
+    "price": 3295.5439
+  },
+  "QE85Q8FAAUXXH": {
+    "category": "QLED Q60",
+    "code": "QE85Q8FAAUXXH",
+    "price": 6281.0253
+  },
+  "QE75Q8FAAUXXH": {
+    "category": "QLED Q60",
+    "code": "QE75Q8FAAUXXH",
+    "price": 4874.9085
+  },
+  "QE65Q8FAAUXXH": {
+    "category": "QLED Q60",
+    "code": "QE65Q8FAAUXXH",
+    "price": 3587.9283
+  },
+  "QE55Q8FAAUXXH": {
+    "category": "QLED Q60",
+    "code": "QE55Q8FAAUXXH",
+    "price": 2690.3019
+  },
+  "QE50Q8FAAUXXH": {
+    "category": "QLED Q60",
+    "code": "QE50Q8FAAUXXH",
+    "price": 2422.6983
+  },
+  "QE43Q8FAAUXXH": {
+    "category": "QLED Q60",
+    "code": "QE43Q8FAAUXXH",
+    "price": 1972.5178
+  },
+  "QE85Q7F2AUXXH": {
+    "category": "QLED",
+    "code": "QE85Q7F2AUXXH",
+    "price": 6056.534
+  },
+  "QE75Q7F2AUXXH": {
+    "category": "QLED",
+    "code": "QE75Q7F2AUXXH",
+    "price": 4638.1840999999995
+  },
+  "QE65Q7F2AUXXH": {
+    "category": "QLED",
+    "code": "QE65Q7F2AUXXH",
+    "price": 3096.7288000000003
+  },
+  "QE55Q7F2AUXXH": {
+    "category": "QLED",
+    "code": "QE55Q7F2AUXXH",
+    "price": 2480.1733
+  },
+  "QE50Q7F2AUXXH": {
+    "category": "QLED",
+    "code": "QE50Q7F2AUXXH",
+    "price": 2171.8653
+  },
+  "QE43Q7F2AUXXH": {
+    "category": "QLED",
+    "code": "QE43Q7F2AUXXH",
+    "price": 1786.6497
+  },
+  "UE85U7022FKXXH": {
+    "category": "UHD Premium",
+    "code": "UE85U7022FKXXH",
+    "price": 6002.5801
+  },
+  "UE75U7022FKXXH": {
+    "category": "UHD Step Up",
+    "code": "UE75U7022FKXXH",
+    "price": 3679.5978999999998
+  },
+  "UE65U7022FKXXH": {
+    "category": "UHD Step Up",
+    "code": "UE65U7022FKXXH",
+    "price": 2598.4991999999997
+  },
+  "UE55U7022FKXXH": {
+    "category": "UHD Basic",
+    "code": "UE55U7022FKXXH",
+    "price": 2018.5462
+  },
+  "UE50U7022FKXXH": {
+    "category": "UHD Basic",
+    "code": "UE50U7022FKXXH",
+    "price": 1864.3317
+  },
+  "UE43U7022FKXXH": {
+    "category": "UHD Basic",
+    "code": "UE43U7022FKXXH",
+    "price": 1588.9841
+  },
+  "UE32F6002FKXXH": {
+    "category": "FHD/HD",
+    "code": "UE32F6002FKXXH",
+    "price": 1072.8223
+  },
+  "QE85LS03FWUXXH": {
+    "category": "LTV",
+    "code": "QE85LS03FWUXXH",
+    "price": 11725.0936
+  },
+  "QE75LS03FWUXXH": {
+    "category": "LTV",
+    "code": "QE75LS03FWUXXH",
+    "price": 8618.212899999999
+  },
+  "QE65LS03FWUXXH": {
+    "category": "LTV",
+    "code": "QE65LS03FWUXXH",
+    "price": 5750.3193
+  },
+  "QE55LS03FAUXXH": {
+    "category": "LTV",
+    "code": "QE55LS03FAUXXH",
+    "price": 4046.3851999999997
+  },
+  "QE50LS03FAUXXH": {
+    "category": "LTV",
+    "code": "QE50LS03FAUXXH",
+    "price": 3572.0409999999997
+  },
+  "QE43LS03FAUXXH": {
+    "category": "LTV",
+    "code": "QE43LS03FAUXXH",
+    "price": 3097.721
+  },
+  "SP-LFF3CLAXXXH": {
+    "category": "LTV",
+    "code": "SP-LFF3CLAXXXH",
+    "price": 2654.0019
+  },
+  "SP-LPU7DSAXXXH": {
+    "category": "LTV",
+    "code": "SP-LPU7DSAXXXH",
+    "price": 8909.593
+  },
+  "SP-LPU9DSAXXXH": {
+    "category": "LTV",
+    "code": "SP-LPU9DSAXXXH",
+    "price": 17153.928
+  },
+  "HW-B400F/EN": {
+    "category": "AV",
+    "code": "HW-B400F/EN",
+    "price": 443.0657
+  },
+  "HW-B450F/EN": {
+    "category": "AV",
+    "code": "HW-B450F/EN",
+    "price": 601.5998999999999
+  },
+  "HW-B650F/EN": {
+    "category": "AV",
+    "code": "HW-B650F/EN",
+    "price": 945.5302999999999
+  },
+  "HW-B750F/EN": {
+    "category": "AV",
+    "code": "HW-B750F/EN",
+    "price": 1043.3951
+  },
+  "HW-Q600F/EN": {
+    "category": "AV",
+    "code": "HW-Q600F/EN",
+    "price": 1162.7979
+  },
+  "HW-Q800F/EN": {
+    "category": "AV",
+    "code": "HW-Q800F/EN",
+    "price": 1906.2340000000002
+  },
+  "HW-Q930F/EN": {
+    "category": "AV",
+    "code": "HW-Q930F/EN",
+    "price": 2487.1187000000004
+  },
+  "HW-Q990F/EN": {
+    "category": "AV",
+    "code": "HW-Q990F/EN",
+    "price": 3439.0499
+  },
+  "HW-QS700F/EN": {
+    "category": "AV",
+    "code": "HW-QS700F/EN",
+    "price": 1529.1133
+  },
+  "HW-LS60D/EN": {
+    "category": "AV",
+    "code": "HW-LS60D/EN",
+    "price": 1160.8498
+  },
+  "HW-S60D/EN": {
+    "category": "AV",
+    "code": "HW-S60D/EN",
+    "price": 955.4885999999999
+  },
+  "HW-S61D/EN": {
+    "category": "AV",
+    "code": "HW-S61D/EN",
+    "price": 955.4885999999999
+  },
+  "HW-S700D/EN": {
+    "category": "AV",
+    "code": "HW-S700D/EN",
+    "price": 1312.5475
+  },
+  "HW-S701D/EN": {
+    "category": "AV",
+    "code": "HW-S701D/EN",
+    "price": 1312.5475
+  },
+  "HW-S800D/EN": {
+    "category": "AV",
+    "code": "HW-S800D/EN",
+    "price": 1584.8943
+  },
+  "HW-S801D/EN": {
+    "category": "AV",
+    "code": "HW-S801D/EN",
+    "price": 1584.8943
+  },
+  "MX-T70/EN": {
+    "category": "AV",
+    "code": "MX-T70/EN",
+    "price": 1344.1406
+  }
+}

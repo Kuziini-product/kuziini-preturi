@@ -16,7 +16,7 @@ import threading
 import time
 import urllib.parse
 
-import openpyxl
+# openpyxl importat lazy in load_products() - heavy pe cold start
 import requests
 from bs4 import BeautifulSoup
 
@@ -120,11 +120,25 @@ def load_products():
     global _products_cache
     if _products_cache is not None:
         return _products_cache
+
+    # Prioritate: JSON pre-generat (rapid, fara openpyxl)
+    json_file = os.path.join(DATA_DIR, 'products.json')
+    if os.path.isfile(json_file):
+        try:
+            with open(json_file, 'r', encoding='utf-8') as f:
+                _products_cache = json.load(f)
+            print(f"  JSON incarcat: {len(_products_cache)} produse")
+            return _products_cache
+        except Exception as e:
+            print(f"  Eroare JSON: {e}")
+
+    # Fallback: Excel (doar local, nu pe Vercel)
     if not EXCEL_FILE:
-        print("  ATENTIE: Fisierul Excel nu a fost gasit!")
+        print("  ATENTIE: Fisierul nu a fost gasit!")
         _products_cache = {}
         return _products_cache
     try:
+        import openpyxl
         wb = openpyxl.load_workbook(EXCEL_FILE, data_only=True)
         ws = wb.active
         products = {}
