@@ -1834,11 +1834,44 @@ def _altex_search_duckduckgo(code):
 def scrape_altex(code):
     """
     Returneaza (price, source_url) sau (None, None).
-    Strategie multi-step cu cookie jar si fallback DuckDuckGo.
+    Strategie: URL direct /produs/cpd/CODE/ (Altex accepta orice slug),
+    fallback search page + DuckDuckGo.
     """
     log(f"\n--- Altex ({code}) ---")
     code_lower = code.lower()
     skip_to_ddg = False  # Flag: skip steps 2-5 daca ready=null (client-side only)
+
+    # ── STEP 0: URL direct cu /produs/cpd/CODE/ ─────────────────────────
+    # Altex accepta orice slug inainte de /cpd/ si serveste pagina produsului
+    # cu server-side rendering (pretul e in HTML, nu client-side ca search page)
+    # Codurile cu / (ex: HW-B400F/EN) trebuie incercate si fara sufix
+    altex_codes = [code]
+    if '/' in code:
+        altex_codes.append(code.split('/')[0])  # ex: HW-B400F
+    for altex_code in altex_codes:
+        direct_url = f'https://altex.ro/produs/cpd/{urllib.parse.quote(altex_code, safe="")}/'
+        log(f"  Altex STEP 0: URL direct {direct_url}")
+        _, direct_soup = _curl_with_cookies(
+            direct_url, timeout=20, referer='https://altex.ro/', save_cookies=True)
+        if direct_soup:
+            if product_matches_code(direct_soup, code):
+                price = _altex_extract_price_from_product_page(direct_soup, direct_url)
+                if price:
+                    log(f"  Altex PRET GASIT (URL direct): {price}")
+                    return (price, direct_url)
+                # Try generic price extraction
+                p = extract_json_ld_price(direct_soup)
+                if p:
+                    log(f"  Altex PRET GASIT (URL direct JSON-LD): {p}")
+                    return (p, direct_url)
+                prices = find_prices_in_soup(direct_soup)
+                if prices:
+                    log(f"  Altex PRET GASIT (URL direct soup): {prices[0]}")
+                    return (prices[0], direct_url)
+            else:
+                log(f"  Altex STEP 0: cod nu corespunde, skip")
+        else:
+            log(f"  Altex STEP 0: pagina nu s-a incarcat")
 
     for variant in get_search_variants(code):
         variant_lower = variant.lower()
@@ -2111,32 +2144,55 @@ def get_samsung_specs(code):
     log(f"\n--- Samsung Specs ({code}) ---")
     code_lower = code.lower()
 
-    # Pas 1: Gaseste URL-ul paginii produsului din Samsung search
-    # Samsung blocheaza curl dar accepta requests - folosim get_page()
+    # Pas 1: Gaseste URL-ul paginii produsului via Samsung Search API
+    # Samsung search API returneaza pdpUrl direct (nu necesita scraping HTML)
     product_url = None
-    spec_timeout = max(REQ_TIMEOUT, 10)  # min 10s pentru specs
-    for variant in get_search_variants(code)[:2]:
-        v_enc = urllib.parse.quote(variant)
-        search_url = f'https://www.samsung.com/ro/search/?searchvalue={v_enc}'
-        _, cs = get_page(search_url, timeout=spec_timeout, referer='https://www.samsung.com/ro/')
-        if not cs:
-            continue
+    spec_timeout = max(CURL_TIMEOUT, 12)  # min 12s pentru specs
+    try:
+        api_url = (f'https://searchapi.samsung.com/v6/front/b2c/product/card/detail/global'
+                   f'?siteCode=ro&modelList={urllib.parse.quote(code)}'
+                   f'&commonCodeYN=N&saleSkuYN=N&onlyRequestSkuYN=N&keySummaryYN=Y')
+        import urllib.request as urlreq
+        req = urlreq.Request(api_url, headers={
+            'Accept': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        })
+        with urlreq.urlopen(req, timeout=12) as resp:
+            api_data = json.loads(resp.read())
+            models = (api_data.get('response', {}).get('resultData', {})
+                      .get('productList', [{}])[0].get('modelList', []))
+            if models:
+                pdp = models[0].get('pdpUrl', '')
+                if pdp and '/ro/' in pdp:
+                    product_url = 'https://www.samsung.com' + pdp if not pdp.startswith('http') else pdp
+                    log(f"  Specs: PDP URL din API: {product_url[:80]}")
+    except Exception as e:
+        log(f"  Specs: Samsung API eroare: {e}", 'warning')
 
-        all_ro = [a['href'] for a in cs.find_all('a', href=True) if '/ro/' in a.get('href', '')]
-        variant_lower = variant.lower()
-        for href in all_ro:
-            hl = href.rstrip('/').lower()
-            if hl.endswith(code_lower) or hl.endswith(variant_lower):
-                if '?' not in href:
-                    product_url = href if href.startswith('http') else 'https://www.samsung.com' + href
-                    break
-        if not product_url:
+    # Fallback: cauta URL din pagina de search cu curl
+    if not product_url:
+        for variant in get_search_variants(code)[:2]:
+            v_enc = urllib.parse.quote(variant)
+            search_url = f'https://www.samsung.com/ro/search/?searchvalue={v_enc}'
+            _, cs = get_page_curl(search_url, timeout=spec_timeout, referer='https://www.samsung.com/ro/')
+            if not cs:
+                continue
+
+            all_ro = [a['href'] for a in cs.find_all('a', href=True) if '/ro/' in a.get('href', '')]
+            variant_lower = variant.lower()
             for href in all_ro:
-                if (code_lower in href.lower() or variant_lower in href.lower()) and '?' not in href and '/all-' not in href:
-                    product_url = href if href.startswith('http') else 'https://www.samsung.com' + href
-                    break
-        if product_url:
-            break
+                hl = href.rstrip('/').lower()
+                if hl.endswith(code_lower) or hl.endswith(variant_lower):
+                    if '?' not in href:
+                        product_url = href if href.startswith('http') else 'https://www.samsung.com' + href
+                        break
+            if not product_url:
+                for href in all_ro:
+                    if (code_lower in href.lower() or variant_lower in href.lower()) and '?' not in href and '/all-' not in href:
+                        product_url = href if href.startswith('http') else 'https://www.samsung.com' + href
+                        break
+            if product_url:
+                break
 
     if not product_url:
         log("  Specs: pagina produsului negasita")
@@ -2145,7 +2201,7 @@ def get_samsung_specs(code):
     log(f"  Specs: pagina gasita: {product_url[:80]}")
 
     # Pas 2: Descarca pagina si extrage specificatiile
-    _, soup = get_page(product_url, timeout=spec_timeout, referer='https://www.samsung.com/ro/')
+    _, soup = get_page_curl(product_url, timeout=spec_timeout, referer='https://www.samsung.com/ro/')
     if not soup:
         return None
 
