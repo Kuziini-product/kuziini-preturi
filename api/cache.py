@@ -100,6 +100,43 @@ def set_cache_status(status):
     _redis_cmd('SET', 'cache:status', payload)
 
 
+def save_cron_event(code, event_type, details=''):
+    """Save a cron event (vendor error, unavailability, etc). Key: events:{date}."""
+    today = time.strftime('%Y-%m-%d', time.gmtime())
+    now = time.strftime('%H:%M', time.gmtime())
+    raw = _redis_cmd('GET', f'events:{today}')
+    events = []
+    if raw:
+        try:
+            events = json.loads(raw)
+        except (json.JSONDecodeError, TypeError):
+            pass
+    events.append({
+        'time': now,
+        'code': code.upper(),
+        'type': event_type,
+        'details': details,
+    })
+    # Keep max 500 events per day
+    if len(events) > 500:
+        events = events[-500:]
+    payload = json.dumps(events, ensure_ascii=False)
+    _redis_cmd('SET', f'events:{today}', payload, 'EX', 604800)  # 7 days
+
+
+def get_cron_events(date=None):
+    """Get cron events for a date. Returns list of events."""
+    if not date:
+        date = time.strftime('%Y-%m-%d', time.gmtime())
+    raw = _redis_cmd('GET', f'events:{date}')
+    if raw:
+        try:
+            return json.loads(raw)
+        except (json.JSONDecodeError, TypeError):
+            pass
+    return []
+
+
 def save_price_history(code, prices):
     """Save daily price snapshot for a product. Key: history:{code}, stores last 90 days."""
     code = code.upper()

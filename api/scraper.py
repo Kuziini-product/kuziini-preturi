@@ -203,15 +203,21 @@ def get_search_variants(code):
     return variants
 
 
-def product_matches_code(soup, code):
+def product_matches_code(soup, code, strict=False):
     """
     Verifica daca pagina produsului contine codul cautat (sau o varianta scurta).
     Previne returnarea pretului de la un produs gresit.
+    strict=True: nu foloseste varianta cea mai scurta (fara litera de model).
+                 Ex: QE55QN90FATXXH -> accepta QE55QN90FATXXH si QE55QN90F,
+                 dar NU QE55QN90 (care ar potrivi si QN90B, QN90C, etc.)
     """
     if not soup:
         return False
     page_text = soup.get_text().upper()
     variants = get_search_variants(code)
+    if strict and len(variants) > 2:
+        # Exclude cea mai scurta varianta (fara litera de model)
+        variants = variants[:-1]
     for v in variants:
         if v.upper() in page_text:
             return True
@@ -1264,6 +1270,35 @@ def scrape_samsung(code):
 
 _flanco_warmed = False
 
+def _is_flanco_product_url(href):
+    """
+    Filtreaza URL-urile Flanco: accepta doar pagini de produs, nu categorii/navigatie.
+    Pagini de produs: /televizor-samsung-neo-qled-55qn90f-4k-138cm.html (slug lung, detaliat)
+    Pagini de categorie: /tv-electronice-foto.html, /electrocasnice.html (slug scurt, generic)
+    """
+    if not href or '.html' not in href:
+        return False
+    hl = href.lower()
+    # Trebuie sa fie de pe flanco.ro (sau relative path)
+    if href.startswith('http') and 'flanco.ro/' not in hl:
+        return False
+    # Extrage doar slug-ul (ultima parte din URL, fara domeniu)
+    slug = href.rstrip('/').split('/')[-1].replace('.html', '')
+    # Paginile de produs au slug-uri lungi (>30 chars) cu detalii (brand, model, specificatii)
+    if len(slug) < 25:
+        return False
+    # Categoriile au putine cuvinte separate de '-'
+    parts = slug.split('-')
+    if len(parts) < 4:
+        return False
+    # Exclude slug-uri cu pattern de categorie
+    _category_patterns = ['electronice-foto', 'electrocasnice', 'telefoane-tablete',
+                          'it-gaming', 'ingrijire-personala', 'casa-gradina']
+    if any(p in slug.lower() for p in _category_patterns):
+        return False
+    return True
+
+
 def scrape_flanco(code):
     """Returneaza (price, source_url) sau (None, None)."""
     global _flanco_warmed
@@ -1274,6 +1309,10 @@ def scrape_flanco(code):
         if not IS_VERCEL:
             get_page_curl('https://www.flanco.ro/', timeout=8)
         _flanco_warmed = True
+
+    _flanco_exclude = ['telefon', 'phone', 'mobil', 'smartphone', 'smartwatch',
+                       'tableta', 'laptop', 'notebook', 'casti', 'earbuds',
+                       'aspirator', 'masina-de-spalat', 'kit']
 
     for variant in get_search_variants(code):
         for search_url in [
@@ -1294,48 +1333,43 @@ def scrape_flanco(code):
             code_lower_f = code.lower()
             variant_lower_f = variant.lower()
 
-            # Prioritate: URL care contine codul exact
+            # Prioritate 1: URL care contine codul exact SI este pagina de produs
             for a in search_soup.find_all('a', href=True):
                 href = a['href']
                 hl = href.lower()
-                if '.html' in href and (code_lower_f in hl or variant_lower_f in hl):
+                # Exclude link-uri externe (Facebook, Twitter, etc.)
+                if 'facebook.com' in hl or 'twitter.com' in hl or 'pinterest.com' in hl:
+                    continue
+                if _is_flanco_product_url(href) and (code_lower_f in hl or variant_lower_f in hl):
                     product_url = href if href.startswith('http') else 'https://www.flanco.ro' + href
                     break
 
-            # Fallback: URL cu televizor/samsung - excludem telefoane, accesorii, etc.
-            _flanco_exclude = ['telefon', 'phone', 'mobil', 'smartphone', 'smartwatch',
-                               'tableta', 'laptop', 'notebook', 'casti', 'earbuds',
-                               'aspirator', 'frigider', 'masina-de-spalat', 'kit']
+            # Prioritate 2: CSS selectors specifice Magento product cards
             if not product_url:
-                for a in search_soup.find_all('a', href=True):
-                    href = a['href']
-                    hl = href.lower()
-                    if not '.html' in href:
-                        continue
-                    if any(x in hl for x in _flanco_exclude):
-                        continue
-                    if 'televizor' in hl or 'tv-' in hl or '-tv-' in hl:
-                        product_url = href if href.startswith('http') else 'https://www.flanco.ro' + href
+                for sel in ['a.product-item-link', '.product-item-name a', '.product-name a',
+                            '.product-item-info a', 'li.product-item a[href*=".html"]',
+                            '.products-grid .product-item a[href*=".html"]']:
+                    for a in search_soup.select(sel)[:5]:
+                        href = a.get('href', '')
+                        if _is_flanco_product_url(href):
+                            hl = href.lower()
+                            if any(x in hl for x in _flanco_exclude):
+                                continue
+                            product_url = href if href.startswith('http') else 'https://www.flanco.ro' + href
+                            break
+                    if product_url:
                         break
-            # Fallback 2: orice Samsung fara excludere categorie (dar cu excludere produse gresite)
+
+            # Prioritate 3: orice link de produs valid (slug lung) cu samsung
             if not product_url:
                 for a in search_soup.find_all('a', href=True):
                     href = a['href']
                     hl = href.lower()
-                    if not '.html' in href:
+                    if not _is_flanco_product_url(href):
                         continue
                     if any(x in hl for x in _flanco_exclude):
                         continue
                     if 'samsung' in hl:
-                        product_url = href if href.startswith('http') else 'https://www.flanco.ro' + href
-                        break
-
-            # Fallback final: CSS selectors (primul produs din search)
-            if not product_url:
-                for sel in ['a.product-item-link', '.product-item-name a', '.product-name a']:
-                    a = search_soup.select_one(sel)
-                    if a and a.get('href'):
-                        href = a['href']
                         product_url = href if href.startswith('http') else 'https://www.flanco.ro' + href
                         break
 
@@ -1371,23 +1405,39 @@ def scrape_flanco(code):
                     if prices:
                         return (prices[0], product_url)
 
-    # ── DuckDuckGo fallback (similar cu Altex) ──
+    # ── DuckDuckGo fallback ──
     log("  Flanco: cautare via DuckDuckGo...")
-    for variant in get_search_variants(code)[:1]:
-        ddg_q = f'site:flanco.ro televizor samsung {variant}'
-        ddg_url = f'https://html.duckduckgo.com/html/?q={urllib.parse.quote(ddg_q)}'
-        _, ddg_soup = get_page_curl(ddg_url, timeout=8)
-        if ddg_soup:
+    for variant in get_search_variants(code)[:2]:
+        # Query mai larg - nu doar 'televizor', Flanco poate folosi alte sluguri
+        for ddg_q in [
+            f'site:flanco.ro samsung {variant}',
+            f'site:flanco.ro {variant}',
+        ]:
+            ddg_url = f'https://html.duckduckgo.com/html/?q={urllib.parse.quote(ddg_q)}'
+            _, ddg_soup = get_page_curl(ddg_url, timeout=8)
+            if not ddg_soup:
+                continue
             flanco_urls = []
             for a in ddg_soup.find_all('a', href=True):
                 href = a['href']
-                if 'flanco.ro/' in href and '.html' in href and 'televizor' in href.lower():
-                    if href not in flanco_urls:
-                        flanco_urls.append(href)
+                # DDG wraps URLs: //duckduckgo.com/l/?uddg=https%3A%2F%2F...
+                if 'uddg=' in href:
+                    m = re.search(r'uddg=([^&]+)', href)
+                    if m:
+                        href = urllib.parse.unquote(m.group(1))
+                if 'flanco.ro/' in href and '.html' in href:
+                    if _is_flanco_product_url(href):
+                        if any(x in href.lower() for x in _flanco_exclude):
+                            continue
+                        if href not in flanco_urls:
+                            flanco_urls.append(href)
+            # Prioritizeaza URL-uri cu codul in ele
+            code_lower_f = code.lower()
+            flanco_urls.sort(key=lambda u: (0 if code_lower_f in u.lower() else 1))
             log(f"  DDG Flanco URLs: {flanco_urls[:3]}")
-            for furl in flanco_urls[:2]:
+            for furl in flanco_urls[:3]:
                 _, prod_soup = get_page_curl(furl, timeout=10, referer='https://www.flanco.ro/')
-                if prod_soup and product_matches_code(prod_soup, code):
+                if prod_soup and product_matches_code(prod_soup, code, strict=True):
                     for sel in [
                         '[data-price-type="finalPrice"] .price',
                         '.special-price .price',
@@ -1404,6 +1454,12 @@ def scrape_flanco(code):
                     if p:
                         log(f"  Flanco PRET GASIT (DDG + JSON-LD): {p}")
                         return (p, furl)
+                    prices = find_prices_in_soup(prod_soup)
+                    if prices:
+                        log(f"  Flanco PRET GASIT (DDG + text): {prices[0]}")
+                        return (prices[0], furl)
+            if flanco_urls:
+                break  # am gasit URL-uri dar nu s-a potrivit codul
 
     log("  Flanco: negasit", 'warning')
     return (None, None)
@@ -1459,12 +1515,11 @@ def _curl_with_cookies(url, timeout=None, referer=None, save_cookies=False):
         cmd += ['-H', f'Referer: {referer}', '-H', 'Sec-Fetch-Site: same-origin']
     cmd.append(url)
 
-    CREATE_NO_WINDOW = 0x08000000
     try:
-        result = subprocess.run(
-            cmd, capture_output=True, timeout=timeout + 5,
-            creationflags=CREATE_NO_WINDOW
-        )
+        run_kwargs = {'capture_output': True, 'timeout': timeout + 5}
+        if IS_WINDOWS:
+            run_kwargs['creationflags'] = 0x08000000  # CREATE_NO_WINDOW
+        result = subprocess.run(cmd, **run_kwargs)
         if result.returncode == 0 and result.stdout:
             text = result.stdout.decode('utf-8', errors='replace')
             size = len(text)
@@ -1508,12 +1563,11 @@ def _curl_json_with_cookies(url, timeout=12, referer=None):
         cmd += ['-H', f'Referer: {referer}']
     cmd.append(url)
 
-    CREATE_NO_WINDOW = 0x08000000
     try:
-        result = subprocess.run(
-            cmd, capture_output=True, timeout=timeout + 5,
-            creationflags=CREATE_NO_WINDOW
-        )
+        run_kwargs = {'capture_output': True, 'timeout': timeout + 5}
+        if IS_WINDOWS:
+            run_kwargs['creationflags'] = 0x08000000  # CREATE_NO_WINDOW
+        result = subprocess.run(cmd, **run_kwargs)
         if result.returncode == 0 and result.stdout:
             text = result.stdout.decode('utf-8', errors='replace').strip()
             log(f"  curl(json) {url[:65]} -> {len(text):,}b")
@@ -1568,15 +1622,21 @@ def _altex_find_product_slugs_in_html(html_text, code_lower):
     """
     Cauta URL-uri /cpd/ in intregul HTML (inclusiv in script-uri JS inline).
     Altex poate avea slug-uri de produs in analytics, GTM, sau JS bundles.
+    Formatul Altex: /product-name/cpd/CODE/ sau /product-name-cpd-CODE/
     """
     slugs = []
-    # Pattern: /slug-cu-cpd-ALTCODE/ sau /slug-cpd-ALTCODE/
+    # Pattern 1: /product-name/cpd/CODE/ (formatul actual Altex)
+    for m in re.finditer(r'(/[a-z0-9-]+/cpd/[A-Za-z0-9]+/?)', html_text):
+        slug = m.group(1)
+        if slug not in slugs:
+            slugs.append(slug)
+    # Pattern 2: /slug-cu-cpd-ALTCODE/ (format vechi)
     for m in re.finditer(r'(/[a-z0-9-]+-cpd-[A-Z0-9]+/?)', html_text):
         slug = m.group(1)
         if slug not in slugs:
             slugs.append(slug)
-    # Pattern in JSON strings: "url":"/slug-cpd-..."
-    for m in re.finditer(r'"(?:url|slug|href|path|link)"\s*:\s*"([^"]*cpd[^"]*)"',
+    # Pattern 3: in JSON strings - "url":"/slug/cpd/..." sau "url":"/slug-cpd-..."
+    for m in re.finditer(r'"(?:url|slug|href|path|link|urlAsPath|canonical|seoUrl)"\s*:\s*"([^"]*(?:/cpd/|cpd)[^"]*)"',
                          html_text, re.IGNORECASE):
         slug = m.group(1)
         if slug.startswith('/') and slug not in slugs:
@@ -1778,6 +1838,7 @@ def scrape_altex(code):
     """
     log(f"\n--- Altex ({code}) ---")
     code_lower = code.lower()
+    skip_to_ddg = False  # Flag: skip steps 2-5 daca ready=null (client-side only)
 
     for variant in get_search_variants(code):
         variant_lower = variant.lower()
@@ -1796,12 +1857,13 @@ def scrape_altex(code):
                 try:
                     nd_data = json.loads(nd.string)
                     build_id = nd_data.get('buildId', '')
+                    page_props = nd_data.get('props', {}).get('pageProps', {})
+                    ready_val = page_props.get('ready')
                     log(f"  Altex __NEXT_DATA__ buildId: {build_id}")
-                    log(f"  Altex __NEXT_DATA__ ready: {nd_data.get('props', {}).get('pageProps', {}).get('ready')}")
+                    log(f"  Altex __NEXT_DATA__ ready: {ready_val}")
 
                     # Verifica daca __NEXT_DATA__ are deja produse (ready != null)
-                    page_props = nd_data.get('props', {}).get('pageProps', {})
-                    if page_props.get('ready') is not None:
+                    if ready_val is not None:
                         log(f"  Altex: ready != null, caut produse in __NEXT_DATA__")
                         prod_url = _altex_find_product_url_in_json(nd_data, code_lower)
                         p = find_price_in_json(nd_data)
@@ -1816,8 +1878,65 @@ def scrape_altex(code):
                                 price = _altex_extract_price_from_product_page(pp, prod_url)
                                 if price:
                                     return (price, prod_url)
+                    else:
+                        # ready=null: Altex nu trimite produse server-side
+                        # Steps 2-5 vor esua (API-uri returneaza HTML, nu JSON)
+                        # Sarim direct la DuckDuckGo + pagina de produs directa
+                        log(f"  Altex: ready=null, skip steps 2-5 (client-side only)")
+                        skip_to_ddg = True
                 except Exception as e:
                     log(f"  Altex __NEXT_DATA__ parse: {e}", 'warning')
+
+        # ── STEP 1.5: Cauta link-uri /cpd/ direct in HTML-ul search page ────
+        # Chiar daca ready=null, HTML-ul poate contine link-uri de produs
+        if search_soup:
+            product_url = None
+            for a in search_soup.find_all('a', href=True):
+                href = a['href']
+                hl = href.lower()
+                if '/cpd/' in hl:
+                    if code_lower in hl or variant_lower in hl:
+                        product_url = (href if href.startswith('http')
+                                       else 'https://altex.ro' + href)
+                        break
+            if not product_url:
+                for a in search_soup.find_all('a', href=True):
+                    href = a['href']
+                    hl = href.lower()
+                    if '/cpd/' in hl and not any(
+                            x in hl for x in ['telefon', 'phone', 'laptop', 'tableta']):
+                        product_url = (href if href.startswith('http')
+                                       else 'https://altex.ro' + href)
+                        break
+            if product_url:
+                log(f"  Altex product URL (HTML direct): {product_url}")
+                _, prod_soup = _curl_with_cookies(
+                    product_url, timeout=15, referer=search_url)
+                if prod_soup:
+                    if product_matches_code(prod_soup, code):
+                        price = _altex_extract_price_from_product_page(prod_soup, product_url)
+                        if price:
+                            return (price, product_url)
+                    else:
+                        log(f"  Altex: produsul gasit NU corespunde codului {code}, skip")
+
+        # ── STEP 1.6: Cauta slugs /cpd/ in intregul HTML (regex) ─────────────
+        if search_text:
+            slugs = _altex_find_product_slugs_in_html(search_text, code_lower)
+            if slugs:
+                log(f"  Altex slugs in HTML: {slugs[:5]}")
+                for slug in slugs[:3]:
+                    prod_url = slug if slug.startswith('http') else 'https://altex.ro' + slug
+                    _, pp = _curl_with_cookies(
+                        prod_url, timeout=15, referer=search_url)
+                    if pp:
+                        if product_matches_code(pp, code):
+                            price = _altex_extract_price_from_product_page(pp, prod_url)
+                            if price:
+                                return (price, prod_url)
+
+        if skip_to_ddg:
+            break  # skip steps 2-5, go to DuckDuckGo
 
         # ── STEP 2: Next.js data route CU cookies ────────────────────────────
         # Cu cookies din step 1, data route ar trebui sa returneze JSON
@@ -1871,70 +1990,16 @@ def scrape_altex(code):
                         if price:
                             return (price, full_url)
 
-        # ── STEP 4: Cauta slugs /cpd/ in intregul HTML ───────────────────────
-        if search_text:
-            slugs = _altex_find_product_slugs_in_html(search_text, code_lower)
-            log(f"  Altex slugs in HTML: {slugs[:5]}")
-            for slug in slugs[:3]:
-                prod_url = slug if slug.startswith('http') else 'https://altex.ro' + slug
-                _, pp = _curl_with_cookies(
-                    prod_url, timeout=15, referer=search_url)
-                if pp:
-                    price = _altex_extract_price_from_product_page(pp, prod_url)
-                    if price:
-                        return (price, prod_url)
-
-        # ── STEP 5: Link-uri /cpd/ in HTML (fallback) ────────────────────────
-        if search_soup:
-            product_url = None
-            for a in search_soup.find_all('a', href=True):
-                href = a['href']
-                hl = href.lower()
-                if '/cpd/' in hl:
-                    if code_lower in hl or variant_lower in hl:
-                        product_url = (href if href.startswith('http')
-                                       else 'https://altex.ro' + href)
-                        break
-            if not product_url:
-                for a in search_soup.find_all('a', href=True):
-                    href = a['href']
-                    hl = href.lower()
-                    if '/cpd/' in hl and 'televizor' in hl:
-                        product_url = (href if href.startswith('http')
-                                       else 'https://altex.ro' + href)
-                        break
-            if not product_url:
-                for a in search_soup.find_all('a', href=True):
-                    href = a['href']
-                    hl = href.lower()
-                    if '/cpd/' in hl and not any(
-                            x in hl for x in ['telefon', 'phone', 'laptop', 'tableta']):
-                        product_url = (href if href.startswith('http')
-                                       else 'https://altex.ro' + href)
-                        break
-
-            if product_url:
-                log(f"  Altex product URL (HTML): {product_url}")
-                _, prod_soup = _curl_with_cookies(
-                    product_url, timeout=15, referer=search_url)
-                if prod_soup:
-                    if not product_matches_code(prod_soup, code):
-                        log(f"  Altex: produsul gasit NU corespunde codului {code}, skip")
-                    else:
-                        price = _altex_extract_price_from_product_page(prod_soup, product_url)
-                        if price:
-                            return (price, product_url)
-
         break  # nu incerca alte variante daca am obtinut HTML
 
-    # ── STEP 6: DuckDuckGo fallback ──────────────────────────────────────
+    # ── DuckDuckGo fallback ──────────────────────────────────────────────
     log("  Altex: cautare via DuckDuckGo...")
     ddg_url = _altex_search_duckduckgo(code)
     if ddg_url:
         log(f"  Altex DDG URL: {ddg_url}")
         _, pp = _curl_with_cookies(ddg_url, timeout=15, referer='https://duckduckgo.com/')
         if pp:
-            if not product_matches_code(pp, code):
+            if not product_matches_code(pp, code, strict=True):
                 log(f"  Altex DDG: produsul NU corespunde codului {code}, skip")
             else:
                 price = _altex_extract_price_from_product_page(pp, ddg_url)
@@ -2086,71 +2151,129 @@ def get_samsung_specs(code):
 
     html = str(soup)
 
-    # Extrage sectiunile (accordion headers)
+    # ── Metoda 1: Accordion + CSS classes (formatul clasic Samsung) ──────
     section_names = re.findall(r'an-la="accordion:([^"]+)"', html)
-    if not section_names:
-        log("  Specs: nu am gasit sectiuni accordion")
-        return None
 
-    # Extrage toate item-urile spec (title + value)
-    spec_pattern = re.compile(
-        r'<p\s+class="pdd32-product-spec__content-item-title">\s*([^<]+?)\s*</p>'
-        r'\s*(?:<p\s+class="pdd32-product-spec__content-item-desc">\s*([^<]*?)\s*</p>)?',
-        re.S
-    )
-    all_items = spec_pattern.findall(html)
+    # Incearca multiple pattern-uri pentru spec items (Samsung schimba clasele periodic)
+    spec_patterns = [
+        # Pattern clasic
+        re.compile(
+            r'<p\s+class="pdd32-product-spec__content-item-title">\s*([^<]+?)\s*</p>'
+            r'\s*(?:<p\s+class="pdd32-product-spec__content-item-desc">\s*([^<]*?)\s*</p>)?',
+            re.S
+        ),
+        # Pattern alternativ (class partial match)
+        re.compile(
+            r'<[a-z]+\s+class="[^"]*spec[^"]*item-title[^"]*"[^>]*>\s*([^<]+?)\s*</[a-z]+>'
+            r'\s*(?:<[a-z]+\s+class="[^"]*spec[^"]*item-(?:desc|value)[^"]*"[^>]*>\s*([^<]*?)\s*</[a-z]+>)?',
+            re.S
+        ),
+        # Pattern generic Samsung (dt/dd sau div-uri cu spec)
+        re.compile(
+            r'<dt[^>]*class="[^"]*spec[^"]*"[^>]*>\s*([^<]+?)\s*</dt>'
+            r'\s*<dd[^>]*>\s*([^<]*?)\s*</dd>',
+            re.S
+        ),
+    ]
+
+    all_items = []
+    for pat in spec_patterns:
+        all_items = pat.findall(html)
+        if all_items:
+            break
+
+    # ── Metoda 2: BeautifulSoup fallback (daca regex nu gaseste) ─────────
+    if not all_items:
+        # Cauta spec items prin BeautifulSoup (mai robust la schimbari HTML)
+        spec_containers = soup.find_all(class_=re.compile(r'spec.*item|product-spec'))
+        for container in spec_containers:
+            title_el = container.find(class_=re.compile(r'title|label|name|key'))
+            value_el = container.find(class_=re.compile(r'desc|value|data'))
+            if title_el:
+                t = title_el.get_text(strip=True)
+                v = value_el.get_text(strip=True) if value_el else ''
+                if t:
+                    all_items.append((t, v))
+
+    # ── Metoda 3: JSON-LD / structurata din pagina Samsung ───────────────
+    if not all_items:
+        for script in soup.find_all('script', type='application/ld+json'):
+            try:
+                ld = json.loads(script.string or '')
+                items_list = ld if isinstance(ld, list) else [ld]
+                for item in items_list:
+                    if not isinstance(item, dict):
+                        continue
+                    if 'Product' not in str(item.get('@type', '')):
+                        continue
+                    # additionalProperty contine specificatii
+                    for prop in item.get('additionalProperty', []):
+                        if isinstance(prop, dict) and prop.get('name'):
+                            all_items.append((prop['name'], str(prop.get('value', ''))))
+            except Exception:
+                continue
 
     if not all_items:
         log("  Specs: nu am gasit items")
         return None
 
-    # Grupeaza items pe sectiuni
-    # Samsung pune spec items in ordine, grupate pe sectiuni
-    # Extragem sectiunile si item-urile in ordine din HTML
-    sections = []
-    seen_sections = set()
-    for name in section_names:
-        clean_name = name.replace('&amp;', '&').strip()
-        if clean_name not in seen_sections:
-            seen_sections.add(clean_name)
-            sections.append({'name': clean_name, 'items': []})
+    # ── Extrage sectiuni (daca exista) ───────────────────────────────────
+    if not section_names:
+        # Fallback: cauta alte pattern-uri de sectiuni
+        section_names = re.findall(r'data-section[^"]*"([^"]+)"', html)
+    if not section_names:
+        section_names = re.findall(r'class="[^"]*spec[^"]*section[^"]*header[^"]*"[^>]*>([^<]+)', html)
 
-    # Assign items to sections based on position in HTML
-    # Find each section's start position and assign items between them
-    section_positions = []
-    for name in sections:
-        raw_name = name['name'].replace('&', '&amp;')
-        pos = html.find(f'accordion:{raw_name}"')
-        if pos < 0:
-            pos = html.find(f'accordion:{name["name"]}"')
-        section_positions.append(pos if pos >= 0 else 999999999)
+    if section_names:
+        sections = []
+        seen_sections = set()
+        for name in section_names:
+            clean_name = name.replace('&amp;', '&').strip()
+            if clean_name and clean_name not in seen_sections:
+                seen_sections.add(clean_name)
+                sections.append({'name': clean_name, 'items': []})
 
-    # Find each spec item's position
-    item_positions = []
-    search_start = 0
-    for title, value in all_items:
-        pos = html.find(title.strip(), search_start)
-        item_positions.append(pos)
-        if pos >= 0:
-            search_start = pos + 1
+        # Assign items to sections based on position in HTML
+        section_positions = []
+        for name in sections:
+            raw_name = name['name'].replace('&', '&amp;')
+            pos = html.find(f'accordion:{raw_name}"')
+            if pos < 0:
+                pos = html.find(f'"{raw_name}"')
+            if pos < 0:
+                pos = html.find(raw_name)
+            section_positions.append(pos if pos >= 0 else 999999999)
 
-    # Assign items to their section
-    for idx, (title, value) in enumerate(all_items):
-        item_pos = item_positions[idx]
-        # Find which section this item belongs to
-        assigned = len(sections) - 1  # default last
-        for si in range(len(sections)):
-            next_pos = section_positions[si + 1] if si + 1 < len(sections) else 999999999
-            if section_positions[si] <= item_pos < next_pos:
-                assigned = si
-                break
-        title_clean = title.strip()
-        value_clean = value.strip().replace('&quot;', '"').replace('&amp;', '&') if value else ''
-        if title_clean:
-            sections[assigned]['items'].append({'title': title_clean, 'value': value_clean})
+        item_positions = []
+        search_start = 0
+        for title, value in all_items:
+            pos = html.find(title.strip() if isinstance(title, str) else str(title), search_start)
+            item_positions.append(pos)
+            if pos >= 0:
+                search_start = pos + 1
 
-    # Filtreaza sectiuni goale
-    sections = [s for s in sections if s['items']]
+        for idx, (title, value) in enumerate(all_items):
+            item_pos = item_positions[idx]
+            assigned = len(sections) - 1
+            for si in range(len(sections)):
+                next_pos = section_positions[si + 1] if si + 1 < len(sections) else 999999999
+                if section_positions[si] <= item_pos < next_pos:
+                    assigned = si
+                    break
+            title_clean = title.strip() if isinstance(title, str) else str(title)
+            value_clean = value.strip().replace('&quot;', '"').replace('&amp;', '&') if value else ''
+            if title_clean:
+                sections[assigned]['items'].append({'title': title_clean, 'value': value_clean})
+
+        sections = [s for s in sections if s['items']]
+    else:
+        # Fara sectiuni: pune totul intr-o singura sectiune
+        sections = [{'name': 'Specificatii', 'items': []}]
+        for title, value in all_items:
+            title_clean = title.strip() if isinstance(title, str) else str(title)
+            value_clean = value.strip().replace('&quot;', '"').replace('&amp;', '&') if value else ''
+            if title_clean:
+                sections[0]['items'].append({'title': title_clean, 'value': value_clean})
 
     log(f"  Specs: {len(sections)} sectiuni, {sum(len(s['items']) for s in sections)} items total")
     return {'sections': sections}

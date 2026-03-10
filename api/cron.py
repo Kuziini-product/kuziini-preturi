@@ -1,6 +1,6 @@
 """
 Vercel Cron Job - Pre-cache prices for all products
-Runs nightly at 2:00 AM Romania time (23:00 UTC previous day)
+Runs daily at 8:00 AM Romania time (05:00 UTC)
 Processes products in batches to stay within 60s timeout.
 After each batch, triggers next batch via HTTP call (self-chain).
 """
@@ -18,7 +18,7 @@ from scraper import search_product, search_single_vendor, load_products, log, se
 set_cron_timeouts()
 from cache import (
     set_cached_price, get_cache_status, set_cache_status, is_configured,
-    save_price_history
+    save_price_history, save_cron_event
 )
 
 BATCH_SIZE = 1  # 1 produs per invocatie (scraping dureaza ~30-50s per produs)
@@ -115,8 +115,13 @@ class handler(BaseHTTPRequestHandler):
                                     result['prices'] = prices
                                     if vr.get('url'):
                                         result.setdefault('urls', {})[v] = vr['url']
+                                else:
+                                    save_cron_event(code, 'vendor_unavailable',
+                                                    f'{v}: produs negasit sau pret indisponibil')
                             except Exception as ve:
                                 log(f"  CRON: {code} {v} retry EROARE: {ve}")
+                                save_cron_event(code, 'vendor_error',
+                                                f'{v}: {str(ve)[:100]}')
                         # Re-save cu preturile completate
                         if any(prices.get(v) for v in missing):
                             set_cached_price(code, result)
@@ -124,6 +129,9 @@ class handler(BaseHTTPRequestHandler):
                                 save_price_history(code, result['prices'])
                     else:
                         log(f"  CRON: {code} skip retry (elapsed={round(elapsed2,1)}s > 45s)")
+                        for v in missing:
+                            save_cron_event(code, 'timeout',
+                                            f'{v}: skip retry (elapsed={round(elapsed2,1)}s)')
                 processed += 1
                 log(f"  CRON: {code} OK")
             except Exception as e:

@@ -12,7 +12,7 @@ import os
 # Add parent dir to path so we can import scraper
 sys.path.insert(0, os.path.dirname(__file__))
 from scraper import search_product, search_single_vendor, load_products, APP_VERSION, warmup_session, get_samsung_specs
-from cache import get_cached_price, get_cache_status, is_configured as cache_configured, test_connection as cache_test, get_price_history, get_all_history_codes
+from cache import get_cached_price, get_cache_status, is_configured as cache_configured, test_connection as cache_test, get_price_history, get_all_history_codes, get_cron_events
 
 # Warmup on cold start
 warmup_session()
@@ -215,6 +215,16 @@ class handler(BaseHTTPRequestHandler):
                     'products': summary,
                     'count': len(summary),
                 })
+
+        elif path == '/api/events':
+            # Evenimente cron (erori vendori, timeout-uri)
+            date = params.get('date', [''])[0].strip()
+            events = get_cron_events(date if date else None)
+            self._json({
+                'date': date if date else time.strftime('%Y-%m-%d', time.gmtime()),
+                'events': events,
+                'count': len(events),
+            })
 
         else:
             self._json({'error': 'Not found'}, 404)

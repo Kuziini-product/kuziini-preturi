@@ -1659,6 +1659,7 @@
           <div class="reports-tab active" onclick="switchReportTab('summary')">Sumar</div>
           <div class="reports-tab" onclick="switchReportTab('increases')">Scumpiri</div>
           <div class="reports-tab" onclick="switchReportTab('decreases')">Ieftiniri</div>
+          <div class="reports-tab" onclick="switchReportTab('events')">Evenimente</div>
         </div>
         <div class="report-actions">
           <button class="report-action-btn" onclick="exportReportExcel()">Excel</button>
@@ -1855,7 +1856,7 @@
         } else {
           priceEl.className = 'vendor-price not-available';
           priceEl.innerHTML = `
-            <span class="price-val" id="status-${v}">Se cauta...</span>
+            <span class="price-val">Indisponibil</span>
             <span class="currency">${sitenames[v]}</span>
           `;
         }
@@ -1897,90 +1898,10 @@
         }
         const data = await resp.json();
 
-        // Daca e din cache, afiseaza direct
-        if (!data.not_cached) {
-          hideLoading();
-          displayResults(data);
-
-          const encCode = encodeURIComponent(code);
-
-          // Daca nu are imagine, incearca sa o obtina de la Samsung
-          if (!data.image_url) {
-            fetch(`/api/search?code=${encCode}&vendor=samsung`)
-              .then(r => r.ok ? r.json() : null)
-              .then(r => {
-                if (r && r.image_url) {
-                  const img = document.getElementById('product-image');
-                  img.src = r.image_url;
-                  img.style.display = 'block';
-                  document.getElementById('image-placeholder').style.display = 'none';
-                }
-              })
-              .catch(() => {});
-          }
-
-          // Daca vendori sunt null in cache, incearca sa-i incarce live
-          const prices = data.prices || {};
-          ['samsung', 'emag', 'flanco', 'altex'].forEach(v => {
-            if (prices[v] === null || prices[v] === undefined) {
-              fetch(`/api/search?code=${encCode}&vendor=${v}`)
-                .then(r => r.ok ? r.json() : null)
-                .then(r => {
-                  if (r && r.price !== null && r.price !== undefined) {
-                    updateVendorPrice(v, r.price, r.url);
-                    if (v === 'samsung' && r.image_url && !data.image_url) {
-                      const img = document.getElementById('product-image');
-                      img.src = r.image_url;
-                      img.style.display = 'block';
-                      document.getElementById('image-placeholder').style.display = 'none';
-                    }
-                  } else {
-                    // Vendorul nu are produsul
-                    const st = document.getElementById(`status-${v}`);
-                    if (st) st.textContent = 'Indisponibil';
-                  }
-                })
-                .catch(() => {
-                  const st = document.getElementById(`status-${v}`);
-                  if (st) st.textContent = 'Indisponibil';
-                });
-            }
-          });
-
-          return;
-        }
-
-        // Pas 2: Nu e in cache - afisam ce avem (Kuziini) si incarcam per vendor
-        displayResults(data);
-
-        // Incarcam fiecare vendor individual (paralel, fiecare sub 10s)
-        const vendors = ['samsung', 'emag', 'flanco', 'altex'];
-        const encCode = encodeURIComponent(code);
-
-        for (const v of vendors) {
-          fetch(`/api/search?code=${encCode}&vendor=${v}`)
-            .then(r => r.ok ? r.json() : null)
-            .then(r => {
-              if (r && r.price !== null && r.price !== undefined) {
-                updateVendorPrice(v, r.price, r.url);
-                if (v === 'samsung' && r.image_url) {
-                  const img = document.getElementById('product-image');
-                  img.src = r.image_url;
-                  img.style.display = 'block';
-                  document.getElementById('image-placeholder').style.display = 'none';
-                }
-              } else {
-                const st = document.getElementById(`status-${v}`);
-                if (st) st.textContent = 'Indisponibil';
-              }
-            })
-            .catch(() => {
-              const st = document.getElementById(`status-${v}`);
-              if (st) st.textContent = 'Indisponibil';
-            });
-        }
-
+        // Afiseaza datele din cache (preturi stocate de la cron-ul de dimineata)
+        // NU facem fetch live la vendori - totul vine din cache
         hideLoading();
+        displayResults(data);
 
       } catch (err) {
         hideLoading();
@@ -2626,7 +2547,91 @@
       renderReport();
     }
 
+    let eventsData = null;
+
+    function loadEvents() {
+      const body = document.getElementById('reports-body');
+      const detail = document.getElementById('report-detail');
+      detail.innerHTML = '';
+      body.innerHTML = '<div style="text-align:center;padding:24px;color:#7c6fa8;font-size:13px;">Se incarca evenimentele...</div>';
+
+      fetch('/api/events')
+        .then(r => r.json())
+        .then(data => {
+          eventsData = data;
+          renderEvents();
+        })
+        .catch(() => {
+          body.innerHTML = '<div style="text-align:center;color:#dc2626;padding:24px;font-size:13px;">Eroare la incarcarea evenimentelor.</div>';
+        });
+    }
+
+    function renderEvents() {
+      if (!eventsData) return;
+      const body = document.getElementById('reports-body');
+      const events = eventsData.events || [];
+      const date = eventsData.date || '';
+
+      if (events.length === 0) {
+        body.innerHTML = `<div style="text-align:center;color:#16a34a;padding:24px;font-size:13px;">Niciun eveniment pentru ${date}. Toate prelucrarile cron au fost cu succes.</div>`;
+        return;
+      }
+
+      // Group by type
+      const byType = {};
+      events.forEach(ev => {
+        const t = ev.type || 'unknown';
+        if (!byType[t]) byType[t] = [];
+        byType[t].push(ev);
+      });
+
+      const typeLabels = {
+        'vendor_unavailable': 'Produs negasit',
+        'vendor_error': 'Eroare vendor',
+        'timeout': 'Timeout',
+      };
+      const typeColors = {
+        'vendor_unavailable': '#f59e0b',
+        'vendor_error': '#dc2626',
+        'timeout': '#6366f1',
+      };
+
+      let html = `<div style="margin-bottom:12px;font-size:13px;color:#6b7280;">Data: <strong>${date}</strong> | Total evenimente: <strong>${events.length}</strong></div>`;
+
+      // Summary badges
+      html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">';
+      Object.keys(byType).forEach(t => {
+        const color = typeColors[t] || '#6b7280';
+        const label = typeLabels[t] || t;
+        html += `<span style="background:${color}15;color:${color};border:1px solid ${color}40;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;">${label}: ${byType[t].length}</span>`;
+      });
+      html += '</div>';
+
+      // Table
+      html += '<table class="report-table"><thead><tr>';
+      html += '<th>Ora</th><th>Produs</th><th>Tip</th><th>Detalii</th>';
+      html += '</tr></thead><tbody>';
+
+      events.forEach(ev => {
+        const color = typeColors[ev.type] || '#6b7280';
+        const label = typeLabels[ev.type] || ev.type;
+        html += `<tr>`;
+        html += `<td style="font-size:11px;color:#6b7280;white-space:nowrap">${ev.time || ''}</td>`;
+        html += `<td><span class="cart-code">${ev.code || ''}</span></td>`;
+        html += `<td><span style="color:${color};font-weight:600;font-size:11px">${label}</span></td>`;
+        html += `<td style="font-size:11px;color:#6b7280;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(ev.details || '').replace(/"/g, '&quot;')}">${ev.details || ''}</td>`;
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+      body.innerHTML = html;
+    }
+
     function renderReport() {
+      if (currentReportTab === 'events') {
+        loadEvents();
+        return;
+      }
       if (!reportsData || !reportsData.products) return;
       const body = document.getElementById('reports-body');
       const detail = document.getElementById('report-detail');
@@ -2657,7 +2662,7 @@
       }
 
       if (items.length === 0) {
-        body.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:24px;font-size:13px;">Inca nu exista date suficiente. Rapoartele se populeaza automat de la fiecare cron nocturn (ora 2:00).</div>';
+        body.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:24px;font-size:13px;">Inca nu exista date suficiente. Rapoartele se populeaza automat zilnic (ora 8:00).</div>';
         return;
       }
 
@@ -2788,6 +2793,10 @@
     }
 
     function exportReportExcel() {
+      if (currentReportTab === 'events') {
+        exportEventsExcel();
+        return;
+      }
       const items = getReportItems();
       if (items.length === 0) return;
 
@@ -2832,7 +2841,30 @@
       URL.revokeObjectURL(url);
     }
 
+    function exportEventsExcel() {
+      if (!eventsData || !eventsData.events || eventsData.events.length === 0) return;
+      const events = eventsData.events;
+      const date = eventsData.date || '';
+      let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Evenimente</x:Name></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table border="1">';
+      html += '<tr><th>Ora</th><th>Cod Produs</th><th>Tip Eveniment</th><th>Detalii</th></tr>';
+      events.forEach(ev => {
+        html += `<tr><td>${ev.time || ''}</td><td>${ev.code || ''}</td><td>${ev.type || ''}</td><td>${ev.details || ''}</td></tr>`;
+      });
+      html += '</table></body></html>';
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Kuziini_Evenimente_${date}.xls`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
     function printReportPDF() {
+      if (currentReportTab === 'events') {
+        printEventsPDF();
+        return;
+      }
       const items = getReportItems();
       if (items.length === 0) return;
 
@@ -2883,6 +2915,40 @@
 
       printHtml += '</table></body></html>';
 
+      const printWin = window.open('', '_blank');
+      printWin.document.write(printHtml);
+      printWin.document.close();
+      printWin.focus();
+      setTimeout(() => { printWin.print(); }, 300);
+    }
+
+    function printEventsPDF() {
+      if (!eventsData || !eventsData.events || eventsData.events.length === 0) return;
+      const events = eventsData.events;
+      const date = eventsData.date || '';
+      const typeLabels = { 'vendor_unavailable': 'Produs negasit', 'vendor_error': 'Eroare vendor', 'timeout': 'Timeout' };
+
+      let printHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <title>Evenimente Cron - ${date}</title>
+        <style>
+          body { font-family: Arial, sans-serif; font-size: 11px; margin: 20px; color: #333; }
+          h1 { font-size: 18px; color: #0f766e; margin-bottom: 4px; }
+          .subtitle { font-size: 12px; color: #666; margin-bottom: 16px; }
+          table { width: 100%; border-collapse: collapse; }
+          th { background: #0f766e; color: #fff; padding: 6px 8px; text-align: left; font-size: 10px; }
+          td { padding: 5px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11px; }
+          tr:nth-child(even) { background: #f9fafb; }
+          @media print { body { margin: 10px; } }
+        </style></head><body>
+        <h1>Kuziini - Evenimente Cron</h1>
+        <div class="subtitle">Data: ${date} | Total: ${events.length} evenimente</div>
+        <table><tr><th>Ora</th><th>Produs</th><th>Tip</th><th>Detalii</th></tr>`;
+
+      events.forEach(ev => {
+        printHtml += `<tr><td>${ev.time || ''}</td><td>${ev.code || ''}</td><td>${typeLabels[ev.type] || ev.type}</td><td>${ev.details || ''}</td></tr>`;
+      });
+
+      printHtml += '</table></body></html>';
       const printWin = window.open('', '_blank');
       printWin.document.write(printHtml);
       printWin.document.close();
