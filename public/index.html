@@ -1476,8 +1476,6 @@
 
     function populateFilters() {
       const categories = [...new Set(allProducts.map(p => p.category))].sort();
-      const inches = [...new Set(allProducts.map(p => p.inches).filter(Boolean))].sort((a, b) => a - b);
-
       const catSelect = document.getElementById('filter-category');
       categories.forEach(c => {
         const opt = document.createElement('option');
@@ -1485,26 +1483,39 @@
         opt.textContent = c;
         catSelect.appendChild(opt);
       });
+    }
 
+    function applyFilters() {
+      const cat = document.getElementById('filter-category').value;
       const inchSelect = document.getElementById('filter-inches');
-      inches.forEach(i => {
+      const selectedInch = inchSelect.value;
+
+      // Filtreaza dupa categorie
+      let afterCat = allProducts;
+      if (cat) afterCat = afterCat.filter(p => p.category === cat);
+
+      // Actualizeaza diagonalele disponibile (doar cele din categoria selectata)
+      const availableInches = [...new Set(afterCat.map(p => p.inches).filter(Boolean))].sort((a, b) => a - b);
+      inchSelect.innerHTML = '<option value="">Toate</option>';
+      availableInches.forEach(i => {
         const opt = document.createElement('option');
         opt.value = i;
         opt.textContent = i + '"';
         inchSelect.appendChild(opt);
       });
-    }
 
-    function applyFilters() {
-      const cat = document.getElementById('filter-category').value;
-      const inch = document.getElementById('filter-inches').value;
+      // Pastreaza selectia de inch daca e inca disponibila
+      if (selectedInch && availableInches.includes(parseInt(selectedInch))) {
+        inchSelect.value = selectedInch;
+      }
 
-      let filtered = allProducts;
-      if (cat) filtered = filtered.filter(p => p.category === cat);
+      // Filtreaza si dupa diagonala
+      const inch = inchSelect.value;
+      let filtered = afterCat;
       if (inch) filtered = filtered.filter(p => p.inches === parseInt(inch));
 
+      // Actualizeaza dropdown-ul de produse
       const dropdown = document.getElementById('product-dropdown');
-      // Pastreaza prima optiune
       dropdown.innerHTML = '<option value="">-- Alege un produs din lista --</option>';
 
       filtered.forEach(p => {
@@ -1518,6 +1529,11 @@
 
       document.getElementById('product-count').textContent =
         `${filtered.length} produse${cat || inch ? ' (filtrate)' : ''}`;
+
+      // Daca ramane un singur produs, selecteaza-l automat
+      if (filtered.length === 1) {
+        dropdown.value = filtered[0].code;
+      }
     }
 
     function selectProduct() {
