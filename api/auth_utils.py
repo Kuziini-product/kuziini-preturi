@@ -37,29 +37,38 @@ _PEPPER = os.environ.get('KUZIINI_PEPPER', 'kuziini_kz_pepper')
 
 ROLE_PRESETS = {
     'admin': {
-        'offers':  'global',
-        'reports': ['prices', 'history', 'stats', 'events'],
-        'exports': ['excel', 'pdf_offer', 'pdf_specs'],
+        'offers':       'global',
+        'reports':      ['prices', 'history', 'stats', 'events'],
+        'exports':      ['excel', 'pdf_offer', 'pdf_specs'],
+        'vendors':      ['samsung', 'emag', 'flanco', 'altex'],
+        'show_kz_price': True,
     },
     'manager': {
-        'offers':  'global',
-        'reports': ['prices', 'history', 'stats'],
-        'exports': ['excel', 'pdf_offer'],
+        'offers':       'global',
+        'reports':      ['prices', 'history', 'stats'],
+        'exports':      ['excel', 'pdf_offer'],
+        'vendors':      ['samsung', 'emag', 'flanco', 'altex'],
+        'show_kz_price': True,
     },
     'agent': {
-        'offers':  'own',
-        'reports': ['stats'],
-        'exports': ['excel', 'pdf_offer'],
+        'offers':       'own',
+        'reports':      ['stats'],
+        'exports':      ['excel', 'pdf_offer'],
+        'vendors':      ['samsung', 'emag', 'flanco', 'altex'],
+        'show_kz_price': False,
     },
     'viewer': {
-        'offers':  'own',
-        'reports': ['stats'],
-        'exports': [],
+        'offers':       'own',
+        'reports':      ['stats'],
+        'exports':      [],
+        'vendors':      ['samsung', 'emag', 'flanco', 'altex'],
+        'show_kz_price': False,
     },
 }
 
-ALL_REPORTS = ['prices', 'history', 'stats', 'events']
-ALL_EXPORTS = ['excel', 'pdf_offer', 'pdf_specs']
+ALL_REPORTS  = ['prices', 'history', 'stats', 'events']
+ALL_EXPORTS  = ['excel', 'pdf_offer', 'pdf_specs']
+ALL_VENDORS  = ['samsung', 'emag', 'flanco', 'altex']
 
 
 def default_permissions(role):
@@ -127,6 +136,7 @@ def _safe(u):
         'username': u['username'],
         'name': u.get('name', u['username']),
         'role': u['role'],
+        'user_id': u.get('user_id', ''),
         'permissions': u.get('permissions', default_permissions(u['role'])),
         'created_at': u.get('created_at'),
     }
@@ -156,12 +166,20 @@ def create_user(username, password, role='agent', name=None, permissions=None):
     else:
         perms = permissions if permissions else default_permissions(role)
     pwd_hash, salt = _hash_password(password)
+    # Auto-increment user ID: KZ001, KZ002, …
+    seq = _rc('INCR', 'user_id_seq')
+    try:
+        seq = int(seq)
+    except (TypeError, ValueError):
+        seq = 1
+    user_id = f'KZ{seq:03d}'
     user = {
         'username': uname,
         'name': name or uname,
         'password_hash': pwd_hash,
         'salt': salt,
         'role': role,
+        'user_id': user_id,
         'permissions': perms,
         'created_at': time.time(),
     }
@@ -205,11 +223,12 @@ def ensure_admin_exists():
 
 # ── Sessions ──────────────────────────────────────────────────────────────
 
-def create_session(username, role, permissions):
+def create_session(username, role, permissions, user_id=''):
     token = secrets.token_hex(32)
     payload = json.dumps({
         'username': username,
         'role': role,
+        'user_id': user_id,
         'permissions': permissions,
         'created_at': time.time(),
     })
@@ -245,8 +264,82 @@ def do_login(username, password):
         return None, None, 'Username sau parola incorecte'
     # admin always gets full permissions regardless of stored value
     perms = dict(ROLE_PRESETS['admin']) if u['role'] == 'admin' else u.get('permissions', default_permissions(u['role']))
-    token = create_session(u['username'], u['role'], perms)
+    token = create_session(u['username'], u['role'], perms, u.get('user_id', ''))
+    log_activity(u['username'], 'login')
     return _safe(u), token, None
+
+
+# ── Activity logging ──────────────────────────────────────────────────────
+# Action types:
+#   login        – user authenticated
+#   cart_add     – product added to cart        {code, category}
+#   offer_gen    – offer window opened/created  {offer_id}
+#   offer_save   – offer saved                  {offer_id, client}
+#   export_excel – Excel export                 {offer_id}
+#   export_pdf   – Print/PDF of offer           {offer_id}
+#   specs_pdf    – Print/PDF of specs           {code}
+
+_MAX_PER_USER = 500
+_MAX_GLOBAL   = 2000
+
+def log_activity(username, action, data=None):
+    entry = {
+        'ts':       time.time(),
+        'username': username,
+        'action':   action,
+        'data':     data or {},
+    }
+    raw = json.dumps(entry, ensure_ascii=False)
+
+    # Per-user log
+    key_u = f'actlog:{username}'
+    lst_u = _jget(key_u) or []
+    lst_u.insert(0, entry)
+    if len(lst_u) > _MAX_PER_USER:
+        lst_u = lst_u[:_MAX_PER_USER]
+    _jset(key_u, lst_u)
+
+    # Global log
+    key_g = 'actlog:all'
+    lst_g = _jget(key_g) or []
+    lst_g.insert(0, entry)
+    if len(lst_g) > _MAX_GLOBAL:
+        lst_g = lst_g[:_MAX_GLOBAL]
+    _jset(key_g, lst_g)
+
+def get_activity_report():
+    """Return both the global log and per-user summary."""
+    log = _jget('actlog:all') or []
+
+    # Build per-user summary
+    summary = {}
+    for e in log:
+        u = e.get('username', '?')
+        if u not in summary:
+            summary[u] = {
+                'username': u,
+                'logins': 0, 'cart_adds': 0,
+                'offers_gen': 0, 'offers_saved': 0,
+                'exports_excel': 0, 'exports_pdf': 0, 'specs_pdf': 0,
+                'last_seen': None,
+            }
+        s = summary[u]
+        a = e.get('action', '')
+        if a == 'login':        s['logins']        += 1
+        elif a == 'cart_add':   s['cart_adds']     += 1
+        elif a == 'offer_gen':  s['offers_gen']    += 1
+        elif a == 'offer_save': s['offers_saved']  += 1
+        elif a == 'export_excel': s['exports_excel'] += 1
+        elif a == 'export_pdf': s['exports_pdf']   += 1
+        elif a == 'specs_pdf':  s['specs_pdf']     += 1
+        ts = e.get('ts')
+        if ts and (s['last_seen'] is None or ts > s['last_seen']):
+            s['last_seen'] = ts
+
+    return {
+        'summary': sorted(summary.values(), key=lambda x: x.get('last_seen') or 0, reverse=True),
+        'log': log[:200],  # last 200 entries for detail view
+    }
 
 def has_permission(session, category, value=None):
     """

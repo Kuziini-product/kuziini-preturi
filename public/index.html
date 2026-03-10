@@ -1206,6 +1206,31 @@
       border-radius: 10px; font-size: 11px; font-weight: 800;
       padding: 1px 7px; margin-left: 6px;
     }
+    .bell-wrap {
+      display: inline-flex; align-items: center; gap: 3px;
+      background: #fef08a; color: #92400e; border-radius: 10px;
+      font-size: 11px; font-weight: 800; padding: 1px 7px; margin-left: 6px;
+    }
+    .bell-icon { display: inline-block; }
+    .bell-icon.ringing { animation: bell-shake 0.7s ease-in-out infinite; }
+    @keyframes bell-shake {
+      0%,100% { transform: rotate(0); }
+      15%     { transform: rotate(18deg); }
+      30%     { transform: rotate(-12deg); }
+      45%     { transform: rotate(8deg); }
+      60%     { transform: rotate(-5deg); }
+      75%     { transform: rotate(3deg); }
+    }
+    .offers-shared-hdr {
+      font-size: 12px; font-weight: 800; color: #7c3aed;
+      text-transform: uppercase; letter-spacing: .06em;
+      margin: 18px 0 8px; display: flex; align-items: center; gap: 8px;
+    }
+    .offers-own-hdr {
+      font-size: 12px; font-weight: 800; color: #1e1b4b;
+      text-transform: uppercase; letter-spacing: .06em;
+      margin: 0 0 8px;
+    }
 
     /* ── Offers Section ── */
     .offers-section {
@@ -1627,7 +1652,7 @@
   .admin-overlay.open { display: flex; }
   .admin-modal {
     background: #fff; border-radius: 20px; padding: 28px 28px 24px;
-    max-width: 560px; width: 92%; max-height: 82vh; overflow-y: auto;
+    max-width: 820px; width: 96%; max-height: 88vh; overflow-y: auto;
     box-shadow: 0 8px 40px rgba(124,58,237,0.22);
   }
   .admin-modal-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
@@ -1676,9 +1701,17 @@
   <div class="admin-overlay" id="admin-overlay">
     <div class="admin-modal">
       <div class="admin-modal-hdr">
-        <span class="admin-modal-title">Administrare Utilizatori</span>
+        <div style="display:flex;gap:6px">
+          <button id="admin-tab-users" onclick="switchAdminTab('users')"
+            style="font-size:11px;font-weight:700;padding:5px 14px;border-radius:8px;border:none;cursor:pointer;background:#7c3aed;color:#fff">Utilizatori</button>
+          <button id="admin-tab-activity" onclick="switchAdminTab('activity')"
+            style="font-size:11px;font-weight:700;padding:5px 14px;border-radius:8px;border:none;cursor:pointer;background:#ede9fe;color:#7c3aed">Raport Activitate</button>
+        </div>
         <button class="admin-close" onclick="closeAdminModal()">&#x2715;</button>
       </div>
+
+      <!-- ── Users section ── -->
+      <div id="admin-users-section">
 
       <!-- Create user form -->
       <div class="admin-create">
@@ -1724,6 +1757,17 @@
               <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="nu-exp" value="pdf_offer"> PDF Oferta</label>
               <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="nu-exp" value="pdf_specs"> PDF Specificatii</label>
             </div>
+            <div>
+              <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Vendori vizibili</div>
+              <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="nu-ven" value="samsung" checked> Samsung</label>
+              <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="nu-ven" value="emag" checked> eMAG</label>
+              <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="nu-ven" value="flanco" checked> Flanco</label>
+              <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="nu-ven" value="altex" checked> Altex</label>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Pret achizitie</div>
+              <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" id="nu-show-kz"> Vizibil pret Kuziini</label>
+            </div>
           </div>
         </div>
         <div class="admin-msg" id="admin-msg"></div>
@@ -1733,7 +1777,7 @@
       <div id="admin-users-list"></div>
 
       <!-- Inline edit panel (hidden by default) -->
-      <div id="admin-edit-panel" style="display:none;background:#f5f3ff;border-radius:12px;padding:14px 16px;margin-top:14px;border:1px solid #ede9fe">
+      <div id="admin-edit-panel" style="display:none;background:#f5f3ff;border-radius:12px;padding:14px 16px;margin-top:14px;border:1px solid #ede9fe" >
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <span style="font-size:11px;font-weight:800;color:#7c3aed;text-transform:uppercase">Editeaza permisiuni: <span id="edit-username-lbl"></span></span>
           <button onclick="closeEditPanel()" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:18px">&#x2715;</button>
@@ -1758,12 +1802,55 @@
             <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="edit-exp" value="pdf_offer"> PDF Oferta</label>
             <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="edit-exp" value="pdf_specs"> PDF Specificatii</label>
           </div>
+          <div>
+            <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Vendori vizibili</div>
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="edit-ven" value="samsung"> Samsung</label>
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="edit-ven" value="emag"> eMAG</label>
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="edit-ven" value="flanco"> Flanco</label>
+            <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="edit-ven" value="altex"> Altex</label>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Pret achizitie</div>
+            <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" id="edit-show-kz"> Vizibil pret Kuziini</label>
+          </div>
         </div>
         <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
           <button onclick="adminSavePermissions()" class="admin-add-btn">Salveaza permisiuni</button>
           <input id="edit-newpass" class="admin-input" type="password" placeholder="Parola noua (optional)" style="max-width:200px">
           <span id="edit-msg" style="font-size:11px;display:none"></span>
         </div>
+      </div>
+
+      </div><!-- /admin-users-section -->
+
+      <!-- ── Activity report section ── -->
+      <div id="admin-activity-section" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <span style="font-size:12px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.06em">Raport activitate utilizatori</span>
+          <button onclick="loadActivityReport()" style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:8px;border:1.5px solid #7c3aed;background:#f5f3ff;color:#7c3aed;cursor:pointer">&#x21bb; Reincarca</button>
+        </div>
+        <div id="activity-loading" style="display:none;text-align:center;padding:18px;color:#9ca3af;font-size:12px">Se incarca...</div>
+        <div id="activity-summary-wrap"></div>
+        <div id="activity-log-wrap" style="margin-top:18px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share offer modal -->
+  <div id="share-overlay" style="display:none;position:fixed;inset:0;background:rgba(30,27,75,0.6);backdrop-filter:blur(4px);z-index:9000;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:18px;padding:26px 28px 22px;max-width:360px;width:92%;box-shadow:0 8px 40px rgba(124,58,237,0.22)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <span style="font-size:14px;font-weight:800;color:#1e1b4b">Partajeaza oferta</span>
+        <button onclick="closeShareModal()" style="background:none;border:none;font-size:22px;color:#9ca3af;cursor:pointer;line-height:1">&#x2715;</button>
+      </div>
+      <p style="font-size:12px;color:#6b7280;margin-bottom:14px">Selectati utilizatorul cu care doriti sa partajati aceasta oferta:</p>
+      <select id="share-user-select" style="width:100%;padding:9px 12px;border-radius:10px;border:1.5px solid #ede9fe;font-size:13px;color:#1e1b4b;background:#faf8ff;margin-bottom:6px">
+        <option value="">— Selectati utilizator —</option>
+      </select>
+      <div id="share-msg" style="font-size:11px;min-height:16px;margin-bottom:10px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button onclick="closeShareModal()" style="padding:8px 18px;border-radius:9px;border:1.5px solid #e0d8f8;background:#f5f3ff;color:#7c3aed;font-size:12px;font-weight:700;cursor:pointer">Anuleaza</button>
+        <button id="share-confirm-btn" onclick="confirmShare()" style="padding:8px 18px;border-radius:9px;border:none;background:#7c3aed;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Partajeaza</button>
       </div>
     </div>
   </div>
@@ -2041,7 +2128,7 @@
 
     <!-- ── Offers Button ── -->
     <button class="offers-btn" onclick="loadOffersSection()">
-      Ofertele mele <span class="offers-badge" id="offers-count">0</span>
+      Ofertele mele <span class="offers-badge" id="offers-count">0</span><span class="bell-wrap" id="offers-bell" style="display:none"><span class="bell-icon ringing" id="bell-icon">&#x1F514;</span> <span id="offers-bell-count">0</span> noi</span>
     </button>
 
     <!-- ── Offers Section ── -->
@@ -2789,6 +2876,7 @@
       saveCart();
       renderCart();
       updateCartButton(data.code);
+      logActivity('cart_add', {code: data.code, category: data.category || ''});
     }
 
     function updateCartButton(code) {
@@ -2898,6 +2986,7 @@
       const code  = currentSpecsCode;
       const specs = specsCache[code];
       if (!code || !specs) return;
+      logActivity('specs_pdf', {code});
 
       const logoSrc = window.location.origin + '/Kuziini%20logo-01.jpg';
       const date = new Date().toLocaleDateString('ro-RO', { day:'2-digit', month:'2-digit', year:'numeric' });
@@ -3169,6 +3258,7 @@ tr:nth-child(even) { background:#faf5ff; }
       const initPhone    = (savedState && savedState.phone)    || '';
       const initNotes    = (savedState && savedState.notes)    || '';
       const initDiscount = (savedState && savedState.discount) || 0;
+      const agentId      = currentUserId();
 
       const totalItems = offerData.products.reduce((s, p) => s + (p.qty || 1), 0);
       const logoSrc    = window.location.origin + '/Kuziini%20logo-01.jpg';
@@ -3182,10 +3272,6 @@ tr:nth-child(even) { background:#faf5ff; }
           ? `<img src="${item.image_url}" style="width:90px;height:70px;object-fit:contain;border-radius:6px;" loading="lazy">`
           : `<div style="width:90px;height:70px;background:#f3f4f6;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#9ca3af;">No img</div>`;
 
-        const adjBadge = sell !== item.kuziini_price
-          ? `<span style="background:#7c3aed;color:#fff;font-size:9px;padding:1px 5px;border-radius:6px;margin-left:5px;vertical-align:middle;">ajustat</span>`
-          : '';
-
         rowsHTML += `
         <tr class="prod-row" id="row-${idx}">
           <td class="prod-idx">${idx + 1}</td>
@@ -3195,10 +3281,7 @@ tr:nth-child(even) { background:#faf5ff; }
             <div class="prod-cat">${item.category || ''}</div>
           </td>
           <td class="prod-num">${item.qty || 1}</td>
-          <td class="prod-num kz-price" style="color:#6b7280;font-size:12px;">
-            <span id="kz-${idx}" style="text-decoration:none">${_fpOffer(item.kuziini_price)}</span>
-          </td>
-          <td class="prod-num sell-price" id="sell-${idx}">${_fpOffer(sell)}${adjBadge}</td>
+          <td class="prod-num sell-price" id="sell-${idx}">${_fpOffer(sell)}</td>
           <td class="prod-num sub-price"  id="sub-${idx}">${_fpOffer(sub)}</td>
         </tr>`;
       });
@@ -3407,8 +3490,7 @@ thead th.right { text-align: right; }
         <tr>
           <th>#</th><th></th><th>Produs</th>
           <th class="right">Cant.</th>
-          <th class="right">Pret Kuziini</th>
-          <th class="right">Pret Vanzare</th>
+          <th class="right">Pret Unitar</th>
           <th class="right">Subtotal</th>
         </tr>
       </thead>
@@ -3453,7 +3535,7 @@ thead th.right { text-align: right; }
     </div>
     <div class="footer-note" style="text-align:right">
       <strong>Kuziini</strong> · kuziini.ro<br>
-      Oferta nr. ${offerData.num} · ${offerData.date}
+      Oferta nr. ${offerData.num} · ${offerData.date}${agentId ? `<br><span style="color:#a78bfa;font-size:9px;letter-spacing:.08em">Agent ID: ${agentId}</span>` : ''}
     </div>
   </div>
 </div>
@@ -3504,7 +3586,7 @@ function _renderTotals() {
     grandTotal += sub;
     const se = document.getElementById('sell-' + i);
     const su = document.getElementById('sub-' + i);
-    if (se) se.innerHTML = _fp(sell) + (item.baseSellPrice !== item.kuziini_price ? '<span style="background:#7c3aed;color:#fff;font-size:9px;padding:1px 5px;border-radius:6px;margin-left:5px">ajustat</span>' : '');
+    if (se) se.textContent = _fp(sell);
     if (su) su.textContent = _fp(sub);
   });
   const discAmount = subtotal - grandTotal;
@@ -3567,6 +3649,18 @@ async function _saveToStorage() {
   } catch(e) { return false; }
 }
 
+function _logAct(action, data) {
+  try {
+    const auth = JSON.parse(localStorage.getItem('kuziini_auth') || 'null');
+    if (!auth || !auth.token) return;
+    fetch('/api/activity/log', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth.token},
+      body: JSON.stringify({action, data: data || {}}),
+    }).catch(() => {});
+  } catch(e) {}
+}
+
 async function saveAndToast() {
   const client = (document.getElementById('field-client') || {}).value || '';
   const phone  = (document.getElementById('field-phone')  || {}).value || '';
@@ -3576,13 +3670,18 @@ async function saveAndToast() {
     return;
   }
   if (await _saveToStorage()) {
+    _logAct('offer_save', {offer_id: _oData.num, client: client.trim()});
     const t = document.getElementById('saved-toast');
     t.style.display = 'block';
     setTimeout(() => t.style.display = 'none', 2200);
   }
 }
 
-async function doPrint() { await _saveToStorage(); window.print(); }
+async function doPrint() {
+  await _saveToStorage();
+  _logAct('export_pdf', {offer_id: _oData.num});
+  window.print();
+}
 
 async function closeOffer() {
   const client = (document.getElementById('field-client') || {}).value || '';
@@ -3596,6 +3695,7 @@ async function closeOffer() {
 
 function exportExcel() {
   _saveToStorage();
+  _logAct('export_excel', {offer_id: _oData.num});
   const state = _getState();
   let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
            + '<head><meta charset="UTF-8"></head><body><table border="1" style="border-collapse:collapse">';
@@ -3705,7 +3805,20 @@ else { setTimeout(_renderTotals, 100); }
           };
         }),
       };
+      logActivity('offer_gen', {offer_id: offerData.num, products: offerData.products.length});
       _openOfferWindow(offerData, savedState || null);
+    }
+
+    // ── Activity logging ──────────────────────────────────────────────────
+
+    function logActivity(action, data) {
+      const a = authLoad();
+      if (!a || !a.token) return;
+      fetch('/api/activity/log', {
+        method: 'POST',
+        headers: {...authHeaders(), 'Content-Type': 'application/json'},
+        body: JSON.stringify({action, data: data || {}}),
+      }).catch(() => {});
     }
 
     // ── Auth ──────────────────────────────────────────────────────────────
@@ -3719,6 +3832,7 @@ else { setTimeout(_renderTotals, 100); }
     function authHeaders()      { const a = authLoad(); return a ? {'Authorization': 'Bearer ' + a.token} : {}; }
     function isAdmin()          { const a = authLoad(); return a && a.role === 'admin'; }
     function currentUsername()  { const a = authLoad(); return a ? a.username : null; }
+    function currentUserId()    { const a = authLoad(); return a ? (a.user_id || '') : ''; }
 
     // ── Granular permission helpers ────────────────────────────────────────
     // category: 'offers' | 'reports' | 'exports'
@@ -3735,30 +3849,47 @@ else { setTimeout(_renderTotals, 100); }
       }
       if (category === 'reports') return (p.reports || []).includes(value);
       if (category === 'exports') return (p.exports || []).includes(value);
+      if (category === 'vendors') return (p.vendors || ['samsung','emag','flanco','altex']).includes(value);
+      if (category === 'show_kz_price') return p.show_kz_price === true;
       return false;
     }
 
     // Presets used in the admin panel (mirrors Python ROLE_PRESETS)
     const ROLE_PRESETS = {
-      admin:   { offers:'global', reports:['prices','history','stats','events'], exports:['excel','pdf_offer','pdf_specs'] },
-      manager: { offers:'global', reports:['prices','history','stats'],          exports:['excel','pdf_offer'] },
-      agent:   { offers:'own',    reports:['stats'],                             exports:['excel','pdf_offer'] },
-      viewer:  { offers:'own',    reports:['stats'],                             exports:[] },
+      admin:   { offers:'global', reports:['prices','history','stats','events'], exports:['excel','pdf_offer','pdf_specs'], vendors:['samsung','emag','flanco','altex'], show_kz_price:true  },
+      manager: { offers:'global', reports:['prices','history','stats'],          exports:['excel','pdf_offer'],            vendors:['samsung','emag','flanco','altex'], show_kz_price:true  },
+      agent:   { offers:'own',    reports:['stats'],                             exports:['excel','pdf_offer'],            vendors:['samsung','emag','flanco','altex'], show_kz_price:false },
+      viewer:  { offers:'own',    reports:['stats'],                             exports:[],                               vendors:['samsung','emag','flanco','altex'], show_kz_price:false },
     };
 
     function applyPermGating() {
       // Reports tabs — hide based on permissions
-      const tabMap = { 'summary':'prices', 'history':'history', 'stats':'stats', 'events':'events' };
       document.querySelectorAll('.reports-tab[data-report]').forEach(tab => {
-        const key = tab.dataset.report;
-        tab.style.display = hasPerm('reports', key) ? '' : 'none';
+        tab.style.display = hasPerm('reports', tab.dataset.report) ? '' : 'none';
       });
+      // Reports button — hide entirely when user has no report access at all
+      const hasAnyReport = ['prices','history','stats','events'].some(k => hasPerm('reports', k));
+      const rBtn = document.querySelector('.reports-btn');
+      if (rBtn) rBtn.style.display = hasAnyReport ? '' : 'none';
+      // If reports section is open but user has no access, collapse it
+      if (!hasAnyReport) {
+        const sec = document.getElementById('reports-section');
+        if (sec) sec.classList.remove('visible');
+      }
       // Export buttons in main UI
       const excelBtn = document.querySelector('.btn-export');
       if (excelBtn) excelBtn.style.display = hasPerm('exports', 'excel') ? '' : 'none';
       // Offers section button
       const offBtn = document.querySelector('.offers-btn');
       if (offBtn) offBtn.style.display = '';  // always visible if logged in
+      // Vendor cards
+      ['samsung','emag','flanco','altex'].forEach(v => {
+        const card = document.getElementById('card-' + v);
+        if (card) card.style.display = hasPerm('vendors', v) ? '' : 'none';
+      });
+      // Kuziini acquisition price section
+      const kzSec = document.getElementById('kuziini-section');
+      if (kzSec) kzSec.style.display = hasPerm('show_kz_price') ? '' : 'none';
     }
 
     async function doLogin() {
@@ -3777,7 +3908,7 @@ else { setTimeout(_renderTotals, 100); }
         });
         const d = await r.json();
         if (!r.ok) { errEl.textContent = d.error || 'Eroare la autentificare.'; errEl.style.display = 'block'; btn.disabled = false; btn.textContent = 'Autentificare'; return; }
-        authSave({token: d.token, username: d.username, name: d.name, role: d.role, permissions: d.permissions});
+        authSave({token: d.token, username: d.username, name: d.name, role: d.role, user_id: d.user_id || '', permissions: d.permissions});
         document.getElementById('login-overlay').style.display = 'none';
         updateUserBadge();
         applyPermGating();
@@ -3844,54 +3975,79 @@ else { setTimeout(_renderTotals, 100); }
         _serverOffers = d.offers || [];
         updateOffersBadge();
         const section = document.getElementById('offers-section');
-        if (section.classList.contains('visible')) renderOffersList(document.getElementById('offers-search').value || '');
+        if (section.classList.contains('visible')) {
+          _markAllSharedSeen();
+          renderOffersList(document.getElementById('offers-search').value || '');
+        }
       } catch(e) {}
     }
 
     function updateOffersBadge() {
+      const me = currentUsername();
       const el = document.getElementById('offers-count');
       if (el) el.textContent = _serverOffers.length;
+      _updateBell(me);
+    }
+
+    function _seenShared() {
+      try { return JSON.parse(localStorage.getItem('kuziini_seen_shared') || '[]'); } catch(e) { return []; }
+    }
+    function _markSharedSeen(ids) {
+      localStorage.setItem('kuziini_seen_shared', JSON.stringify(ids));
+    }
+
+    function _sharedWithMe() {
+      const me = currentUsername();
+      return _serverOffers.filter(o => (o.shared_with || []).includes(me));
+    }
+
+    function _updateBell(me) {
+      const bellWrap  = document.getElementById('offers-bell');
+      const bellCount = document.getElementById('offers-bell-count');
+      const bellIcon  = document.getElementById('bell-icon');
+      if (!bellWrap || !me) return;
+      const sharedOffers = _sharedWithMe();
+      const seen   = _seenShared();
+      const unseen = sharedOffers.filter(o => !seen.includes(o.id));
+      if (unseen.length > 0) {
+        bellCount.textContent = unseen.length;
+        bellWrap.style.display = '';
+        bellIcon.classList.add('ringing');
+      } else {
+        bellWrap.style.display = 'none';
+        bellIcon.classList.remove('ringing');
+      }
     }
 
     function loadOffersSection() {
       const section = document.getElementById('offers-section');
       if (section.classList.contains('visible')) { section.classList.remove('visible'); return; }
       section.classList.add('visible');
+      _markAllSharedSeen();
       renderOffersList('');
       loadOffersFromServer();
     }
 
-    function renderOffersList(filter) {
-      const body = document.getElementById('offers-body');
-      const q = (filter || '').toLowerCase();
+    function _markAllSharedSeen() {
       const me = currentUsername();
-      const items = q
-        ? _serverOffers.filter(o =>
-            (o.client || '').toLowerCase().includes(q) ||
-            (o.phone  || '').toLowerCase().includes(q) ||
-            (o.num    || '').toLowerCase().includes(q) ||
-            (o.product_codes || []).some(c => c.toLowerCase().includes(q)))
-        : _serverOffers;
+      const sharedIds = _sharedWithMe().map(o => o.id);
+      _markSharedSeen(sharedIds);
+      _updateBell(me);
+    }
 
-      if (items.length === 0) {
-        body.innerHTML = `<div style="text-align:center;padding:28px;color:#9ca3af;font-size:13px;">
-          ${q ? 'Nicio oferta gasita pentru &quot;' + filter + '&quot;.' : 'Nu ai salvat inca nicio oferta.'}
-        </div>`;
-        return;
-      }
-
-      let html = '<table class="report-table"><thead><tr>'
+    function _offersTableHtml(items, me, showShare) {
+      if (items.length === 0) return '';
+      const thead = '<table class="report-table"><thead><tr>'
         + '<th>Nr. Oferta</th><th>Data</th><th>Client</th><th>Telefon/Email</th>'
         + '<th style="text-align:center">Buc.</th>'
         + '<th style="text-align:right">Total</th><th></th>'
         + '</tr></thead><tbody>';
-
+      let rows = '';
       items.forEach(o => {
-        const isOwn = isAdmin() || o.owner_id === me;
         const discTxt = o.discount > 0 ? `<br><span style="font-size:10px;color:#7c3aed">-${o.discount}%</span>` : '';
-        const sharedTag = !isOwn ? `<span style="font-size:9px;background:#ede9fe;color:#7c3aed;padding:1px 6px;border-radius:4px;margin-left:4px">partajata</span>` : '';
-        html += `<tr>
-          <td><span class="cart-code">${o.num}</span>${discTxt}${sharedTag}</td>
+        const ownerTag = showShare ? '' : `<span style="font-size:9px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;padding:1px 6px;border-radius:4px;margin-left:4px">de la: ${o.owner_id}</span>`;
+        rows += `<tr>
+          <td><span class="cart-code">${o.num}</span>${discTxt}${ownerTag}</td>
           <td style="font-size:11px;color:#6b7280;white-space:nowrap">${o.date || ''}</td>
           <td style="font-size:12px;font-weight:600">${o.client || '—'}</td>
           <td style="font-size:11px;color:#6b7280">${o.phone || '—'}</td>
@@ -3899,13 +4055,77 @@ else { setTimeout(_renderTotals, 100); }
           <td style="text-align:right;font-weight:700;white-space:nowrap">${o.total ? formatPrice(o.total) : '—'}</td>
           <td style="white-space:nowrap;display:flex;gap:4px;align-items:center">
             <button class="offer-open-btn" onclick="openSavedOffer('${o.id}')">Deschide</button>
-            ${isOwn ? `<button class="offer-open-btn" style="background:#e0f2fe;color:#0369a1" onclick="shareOfferPrompt('${o.id}')">Partajeaza</button>` : ''}
-            ${isOwn ? `<button class="offer-del-btn" onclick="deleteOffer('${o.id}')">&#x2715;</button>` : ''}
+            ${showShare ? `<button class="offer-open-btn" style="background:#e0f2fe;color:#0369a1" onclick="shareOfferPrompt('${o.id}')">Partajeaza</button>` : ''}
+            ${showShare ? `<button class="offer-del-btn" onclick="deleteOffer('${o.id}')">&#x2715;</button>` : ''}
           </td>
         </tr>`;
       });
+      return thead + rows + '</tbody></table>';
+    }
 
-      html += '</tbody></table>';
+    function renderOffersList(filter) {
+      const body = document.getElementById('offers-body');
+      const q = (filter || '').toLowerCase();
+      const me = currentUsername();
+
+      const matches = o =>
+        (o.client || '').toLowerCase().includes(q) ||
+        (o.phone  || '').toLowerCase().includes(q) ||
+        (o.num    || '').toLowerCase().includes(q) ||
+        (o.product_codes || []).some(c => c.toLowerCase().includes(q));
+
+      const allItems = q ? _serverOffers.filter(matches) : _serverOffers;
+
+      // Own = I am the owner; Shared = explicitly in shared_with list (works for ALL roles incl. admin)
+      const ownItems    = allItems.filter(o => o.owner_id === me);
+      const sharedItems = allItems.filter(o => (o.shared_with || []).includes(me));
+      const seen = _seenShared();
+
+      // For admin/global users: offers that are neither mine nor shared with me
+      const ownAndSharedIds = new Set([...ownItems, ...sharedItems].map(o => o.id));
+      const teamItems = hasPerm('offers', 'global')
+        ? allItems.filter(o => !ownAndSharedIds.has(o.id))
+        : [];
+
+      if (allItems.length === 0) {
+        body.innerHTML = `<div style="text-align:center;padding:28px;color:#9ca3af;font-size:13px;">
+          ${q ? 'Nicio oferta gasita pentru &quot;' + filter + '&quot;.' : 'Nu ai salvat inca nicio oferta.'}
+        </div>`;
+        return;
+      }
+
+      let html = '';
+
+      // ── Own offers ────────────────────────────────────────────────────
+      if (ownItems.length > 0) {
+        html += `<div class="offers-own-hdr">Ofertele mele (${ownItems.length})</div>`;
+        html += _offersTableHtml(ownItems, me, true);
+      }
+
+      // ── Shared with me ────────────────────────────────────────────────
+      if (sharedItems.length > 0) {
+        const newCount = sharedItems.filter(o => !seen.includes(o.id)).length;
+        const newBadge = newCount > 0
+          ? `<span style="background:#fef08a;color:#92400e;border-radius:8px;padding:1px 8px;font-size:10px;margin-left:6px">&#x1F514; ${newCount} noi</span>`
+          : '';
+        html += `<div class="offers-shared-hdr" style="margin-top:${ownItems.length>0?'22px':'0'}">
+          &#x1F4E8; Partajate cu mine (${sharedItems.length})${newBadge}
+        </div>`;
+        html += `<div style="background:#f0fdf4;border-radius:12px;padding:2px 6px 6px;border:1px solid #bbf7d0">`;
+        html += _offersTableHtml(sharedItems, me, false);
+        html += `</div>`;
+      }
+
+      // ── Team offers (admin / global access) ───────────────────────────
+      if (teamItems.length > 0) {
+        html += `<div class="offers-shared-hdr" style="margin-top:22px;color:#0369a1">
+          &#x1F465; Oferte echipa (${teamItems.length})
+        </div>`;
+        html += `<div style="background:#f0f9ff;border-radius:12px;padding:2px 6px 6px;border:1px solid #bae6fd">`;
+        html += _offersTableHtml(teamItems, me, false);
+        html += `</div>`;
+      }
+
       body.innerHTML = html;
     }
 
@@ -3918,13 +4138,51 @@ else { setTimeout(_renderTotals, 100); }
       await loadOffersFromServer();
     }
 
+    let _shareOfferId = null;
+
     async function shareOfferPrompt(id) {
-      const target = prompt('Username-ul utilizatorului cu care doriti sa partajati oferta:');
-      if (!target) return;
-      const r = await fetch('/api/offers/share', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({offer_id: id, target_username: target.trim()})});
-      const d = await r.json();
-      if (r.ok) alert('Oferta partajata cu succes cu "' + target + '".');
-      else alert('Eroare: ' + (d.error || 'necunoscut'));
+      _shareOfferId = id;
+      const msgEl = document.getElementById('share-msg');
+      const sel   = document.getElementById('share-user-select');
+      msgEl.textContent = '';
+      sel.innerHTML = '<option value="">— Selectati utilizator —</option>';
+      document.getElementById('share-overlay').style.display = 'flex';
+      // Load users
+      try {
+        const r = await fetch('/api/users/for_share', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
+        if (r.ok) {
+          const d = await r.json();
+          const me = currentUsername();
+          (d.users || []).filter(u => u.username !== me).forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u.username;
+            opt.textContent = u.name && u.name !== u.username ? `${u.name} (${u.username})` : u.username;
+            sel.appendChild(opt);
+          });
+        }
+      } catch(e) { msgEl.textContent = 'Eroare la incarcarea utilizatorilor.'; msgEl.style.color='#dc2626'; }
+    }
+
+    function closeShareModal() {
+      document.getElementById('share-overlay').style.display = 'none';
+      _shareOfferId = null;
+    }
+
+    async function confirmShare() {
+      const target = document.getElementById('share-user-select').value;
+      const msgEl  = document.getElementById('share-msg');
+      if (!target) { msgEl.textContent = 'Selectati un utilizator.'; msgEl.style.color='#dc2626'; return; }
+      const btn = document.getElementById('share-confirm-btn');
+      btn.disabled = true; btn.textContent = 'Se trimite...';
+      try {
+        const r = await fetch('/api/offers/share', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({offer_id: _shareOfferId, target_username: target})});
+        const d = await r.json();
+        if (r.ok) {
+          msgEl.textContent = 'Partajat cu succes!'; msgEl.style.color='#16a34a';
+          setTimeout(closeShareModal, 1200);
+        } else { msgEl.textContent = d.error || 'Eroare la partajare.'; msgEl.style.color='#dc2626'; }
+      } catch(e) { msgEl.textContent = 'Eroare de retea.'; msgEl.style.color='#dc2626'; }
+      btn.disabled = false; btn.textContent = 'Partajeaza';
     }
 
     async function openSavedOffer(id) {
@@ -3944,10 +4202,12 @@ else { setTimeout(_renderTotals, 100); }
     // ── Admin modal ────────────────────────────────────────────────────────
 
     function _readPerms(prefix) {
-      const offers   = document.querySelector(`input[name="${prefix}-offers"]:checked`)?.value || 'own';
-      const reports  = [...document.querySelectorAll(`.${prefix}-rep:checked`)].map(el => el.value);
-      const exports_ = [...document.querySelectorAll(`.${prefix}-exp:checked`)].map(el => el.value);
-      return { offers, reports, exports: exports_ };
+      const offers    = document.querySelector(`input[name="${prefix}-offers"]:checked`)?.value || 'own';
+      const reports   = [...document.querySelectorAll(`.${prefix}-rep:checked`)].map(el => el.value);
+      const exports_  = [...document.querySelectorAll(`.${prefix}-exp:checked`)].map(el => el.value);
+      const vendors   = [...document.querySelectorAll(`.${prefix}-ven:checked`)].map(el => el.value);
+      const show_kz_price = document.getElementById(`${prefix}-show-kz`)?.checked || false;
+      return { offers, reports, exports: exports_, vendors, show_kz_price };
     }
 
     function _writePerms(prefix, perms) {
@@ -3956,6 +4216,10 @@ else { setTimeout(_renderTotals, 100); }
       document.querySelectorAll(`input[name="${prefix}-offers"]`).forEach(r => { r.checked = r.value === offersVal; });
       document.querySelectorAll(`.${prefix}-rep`).forEach(cb => { cb.checked = (p.reports || []).includes(cb.value); });
       document.querySelectorAll(`.${prefix}-exp`).forEach(cb => { cb.checked = (p.exports || []).includes(cb.value); });
+      const defaultVendors = ['samsung','emag','flanco','altex'];
+      document.querySelectorAll(`.${prefix}-ven`).forEach(cb => { cb.checked = (p.vendors || defaultVendors).includes(cb.value); });
+      const kzCb = document.getElementById(`${prefix}-show-kz`);
+      if (kzCb) kzCb.checked = p.show_kz_price === true;
     }
 
     function applyRolePreset(prefix) {
@@ -3966,6 +4230,7 @@ else { setTimeout(_renderTotals, 100); }
 
     async function openAdminModal() {
       document.getElementById('admin-overlay').classList.add('open');
+      switchAdminTab('users');
       closeEditPanel();
       applyRolePreset('nu');
       await refreshAdminUsers();
@@ -3974,6 +4239,113 @@ else { setTimeout(_renderTotals, 100); }
     function closeAdminModal() {
       document.getElementById('admin-overlay').classList.remove('open');
       closeEditPanel();
+    }
+
+    function switchAdminTab(tab) {
+      const isUsers = tab === 'users';
+      document.getElementById('admin-users-section').style.display  = isUsers ? '' : 'none';
+      document.getElementById('admin-activity-section').style.display = isUsers ? 'none' : '';
+      // Update tab button styles
+      const btnU = document.getElementById('admin-tab-users');
+      const btnA = document.getElementById('admin-tab-activity');
+      if (isUsers) {
+        btnU.style.background = '#7c3aed'; btnU.style.color = '#fff';
+        btnA.style.background = '#ede9fe'; btnA.style.color = '#7c3aed';
+      } else {
+        btnA.style.background = '#7c3aed'; btnA.style.color = '#fff';
+        btnU.style.background = '#ede9fe'; btnU.style.color = '#7c3aed';
+        loadActivityReport();
+      }
+    }
+
+    const _ACT_LABELS = {
+      login: 'Login', cart_add: 'Cos', offer_gen: 'Oferta noua',
+      offer_save: 'Salvare oferta', export_excel: 'Export Excel',
+      export_pdf: 'Print PDF', specs_pdf: 'PDF Specs',
+    };
+
+    async function loadActivityReport() {
+      const loadEl = document.getElementById('activity-loading');
+      const sumWrap = document.getElementById('activity-summary-wrap');
+      const logWrap = document.getElementById('activity-log-wrap');
+      loadEl.style.display = 'block';
+      sumWrap.innerHTML = ''; logWrap.innerHTML = '';
+      try {
+        const r = await fetch('/api/activity/report', {
+          method: 'POST',
+          headers: {...authHeaders(), 'Content-Type': 'application/json'},
+          body: '{}',
+        });
+        if (!r.ok) { sumWrap.innerHTML = '<p style="color:#dc2626;font-size:12px">Eroare la incarcare.</p>'; return; }
+        const d = await r.json();
+        loadEl.style.display = 'none';
+
+        // ── Summary table ─────────────────────────────────────
+        const summary = d.summary || [];
+        if (summary.length === 0) {
+          sumWrap.innerHTML = '<p style="color:#9ca3af;font-size:12px;padding:8px 0">Nicio activitate inregistrata.</p>';
+        } else {
+          let sh = `<div style="font-size:11px;font-weight:800;color:#1e1b4b;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Sumar per utilizator</div>
+          <div style="overflow-x:auto"><table class="report-table" style="min-width:600px">
+          <thead><tr>
+            <th>User</th><th>Login</th><th>Cos</th><th>Oferte<br>generate</th><th>Oferte<br>salvate</th><th>Excel</th><th>Print<br>PDF</th><th>Specs<br>PDF</th><th>Ultima activitate</th>
+          </tr></thead><tbody>`;
+          summary.forEach(u => {
+            const last = u.last_seen ? new Date(u.last_seen * 1000).toLocaleString('ro-RO', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+            sh += `<tr>
+              <td style="font-weight:700">${u.username}</td>
+              <td style="text-align:center">${u.logins}</td>
+              <td style="text-align:center">${u.cart_adds}</td>
+              <td style="text-align:center">${u.offers_gen}</td>
+              <td style="text-align:center">${u.offers_saved}</td>
+              <td style="text-align:center">${u.exports_excel}</td>
+              <td style="text-align:center">${u.exports_pdf}</td>
+              <td style="text-align:center">${u.specs_pdf}</td>
+              <td style="font-size:11px;white-space:nowrap">${last}</td>
+            </tr>`;
+          });
+          sh += '</tbody></table></div>';
+          sumWrap.innerHTML = sh;
+        }
+
+        // ── Detail log ────────────────────────────────────────
+        const log = d.log || [];
+        if (log.length > 0) {
+          // Filter selector
+          const users = [...new Set(log.map(e => e.username))].sort();
+          let opts = '<option value="">Toti utilizatorii</option>' + users.map(u => `<option value="${u}">${u}</option>`).join('');
+          let lh = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="font-size:11px;font-weight:800;color:#1e1b4b;text-transform:uppercase;letter-spacing:.06em">Log detaliat (ultimele ${log.length})</span>
+            <select id="act-filter-user" onchange="filterActivityLog()" style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid #ede9fe;color:#1e1b4b">${opts}</select>
+          </div>
+          <div style="overflow-x:auto"><table class="report-table" id="act-log-table">
+          <thead><tr><th>Ora</th><th>User</th><th>Actiune</th><th>Detalii</th></tr></thead><tbody>`;
+          log.forEach((e, idx) => {
+            const ts = e.ts ? new Date(e.ts * 1000).toLocaleString('ro-RO', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '—';
+            const actLabel = _ACT_LABELS[e.action] || e.action;
+            const data = e.data && Object.keys(e.data).length ? JSON.stringify(e.data).replace(/"/g,'').replace(/[{}]/g,'') : '—';
+            lh += `<tr data-user="${e.username}">
+              <td style="white-space:nowrap;font-size:11px">${ts}</td>
+              <td style="font-weight:700">${e.username}</td>
+              <td><span style="background:#ede9fe;color:#7c3aed;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700">${actLabel}</span></td>
+              <td style="font-size:11px;color:#4b5563">${data}</td>
+            </tr>`;
+          });
+          lh += '</tbody></table></div>';
+          logWrap.innerHTML = lh;
+        }
+      } catch(err) {
+        loadEl.style.display = 'none';
+        sumWrap.innerHTML = '<p style="color:#dc2626;font-size:12px">Eroare: ' + err.message + '</p>';
+      }
+    }
+
+    function filterActivityLog() {
+      const val = document.getElementById('act-filter-user')?.value || '';
+      const rows = document.querySelectorAll('#act-log-table tbody tr');
+      rows.forEach(r => {
+        r.style.display = (!val || r.dataset.user === val) ? '' : 'none';
+      });
     }
 
     const _ROLE_LABELS = { admin:'Administrator', manager:'Manager', agent:'Agent vanzari', viewer:'Vizualizare', custom:'Personalizat' };
@@ -3994,14 +4366,16 @@ else { setTimeout(_renderTotals, 100); }
       const d = await r.json();
       const el = document.getElementById('admin-users-list');
       if (!d.users || d.users.length === 0) { el.innerHTML = '<p style="color:#9ca3af;font-size:13px;padding:8px 0">Niciun utilizator.</p>'; return; }
-      let html = '<table class="report-table"><thead><tr><th>Username</th><th>Rol</th><th>Permisiuni</th><th></th></tr></thead><tbody>';
+      let html = '<table class="report-table"><thead><tr><th>ID Agent</th><th>Username</th><th>Rol</th><th>Permisiuni</th><th></th></tr></thead><tbody>';
       d.users.forEach(u => {
         const isSelf = u.username === currentUsername();
         const roleLabel = _ROLE_LABELS[u.role] || u.role;
         const summary = _permSummary(u.permissions);
+        const agId = u.user_id ? `<span style="background:#1e1b4b;color:#a78bfa;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;font-family:monospace">${u.user_id}</span>` : '<span style="color:#d1d5db;font-size:10px">—</span>';
         const actions = `<button class="offer-open-btn" style="font-size:11px" onclick="adminEditUser('${u.username}',${JSON.stringify(u).replace(/"/g,'&quot;')})">Editeaza</button>`
           + (isSelf ? '' : ` <button class="admin-del-btn" onclick="adminDeleteUser('${u.username}')">Sterge</button>`);
         html += `<tr>
+          <td>${agId}</td>
           <td style="font-weight:700">${u.username}${isSelf ? ' <span style="font-size:9px;color:#9ca3af">(tu)</span>' : ''}</td>
           <td><span style="background:#ede9fe;color:#7c3aed;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700">${roleLabel}</span></td>
           <td style="font-size:11px;color:#4b5563">${summary}</td>
@@ -4076,7 +4450,30 @@ else { setTimeout(_renderTotals, 100); }
     let reportsData = null;
     let currentReportTab = 'summary';
 
+    // Tab → required report permission
+    function _tabPerm(tab) {
+      if (tab === 'events') return 'events';
+      if (tab === 'stats')  return 'stats';
+      return 'prices'; // summary, increases, decreases
+    }
+
+    // Find and activate the first tab the user is allowed to see
+    function _activateFirstPermittedTab() {
+      const order = ['summary', 'increases', 'decreases', 'stats', 'events'];
+      const first = order.find(t => hasPerm('reports', _tabPerm(t)));
+      if (!first) return false;
+      currentReportTab = first;
+      document.querySelectorAll('.reports-tab').forEach(t => {
+        const match = t.getAttribute('onclick') && t.getAttribute('onclick').includes(`'${first}'`);
+        t.classList.toggle('active', !!match);
+      });
+      return true;
+    }
+
     function loadReports() {
+      // Block if user has no report access at all
+      if (!['prices','history','stats','events'].some(k => hasPerm('reports', k))) return;
+
       const section = document.getElementById('reports-section');
       const btn = document.querySelector('.reports-btn');
 
@@ -4096,6 +4493,8 @@ else { setTimeout(_renderTotals, 100); }
           btn.classList.remove('loading');
           btn.textContent = 'Rapoarte preturi';
           section.classList.add('visible');
+          // Always start on a tab the user is permitted to see
+          _activateFirstPermittedTab();
           renderReport();
         })
         .catch(() => {
@@ -4105,6 +4504,8 @@ else { setTimeout(_renderTotals, 100); }
     }
 
     function switchReportTab(tab) {
+      // Block if user doesn't have permission for this tab
+      if (!hasPerm('reports', _tabPerm(tab))) return;
       currentReportTab = tab;
       document.querySelectorAll('.reports-tab').forEach(t => t.classList.remove('active'));
       event.target.classList.add('active');
@@ -4114,6 +4515,7 @@ else { setTimeout(_renderTotals, 100); }
     let eventsData = null;
 
     function loadEvents() {
+      if (!hasPerm('reports', 'events')) return;
       const body = document.getElementById('reports-body');
       const detail = document.getElementById('report-detail');
       detail.innerHTML = '';
@@ -4192,63 +4594,64 @@ else { setTimeout(_renderTotals, 100); }
     }
 
     function renderReport() {
-      if (currentReportTab === 'events') {
-        loadEvents();
+      // Per-tab permission gate
+      if (!hasPerm('reports', _tabPerm(currentReportTab))) {
+        const body = document.getElementById('reports-body');
+        if (body) body.innerHTML = '<div style="padding:24px;color:#dc2626;font-size:13px;text-align:center">&#x26A0; Acces restrictionat pentru acest raport.</div>';
         return;
       }
-      if (currentReportTab === 'stats') {
-        loadStats();
-        return;
-      }
+
+      if (currentReportTab === 'events') { loadEvents(); return; }
+      if (currentReportTab === 'stats')  { loadStats();  return; }
       if (!reportsData || !reportsData.products) return;
-      const body = document.getElementById('reports-body');
+
+      const body   = document.getElementById('reports-body');
       const detail = document.getElementById('report-detail');
       detail.innerHTML = '';
 
       let items = reportsData.products;
 
+      // ── Tab-level filters (scumpiri / ieftiniri) ──────────────────────
       if (currentReportTab === 'increases') {
-        // Filtrare produse cu scumpiri la orice vendor
-        items = items.filter(p => {
-          return Object.values(p.changes || {}).some(v => v > 0);
-        });
+        items = items.filter(p => Object.values(p.changes || {}).some(v => v > 0));
         items.sort((a, b) => {
-          const maxA = Math.max(...Object.values(a.changes || {0: 0}).filter(v => v > 0), 0);
-          const maxB = Math.max(...Object.values(b.changes || {0: 0}).filter(v => v > 0), 0);
+          const maxA = Math.max(...Object.values(a.changes || {0:0}).filter(v => v > 0), 0);
+          const maxB = Math.max(...Object.values(b.changes || {0:0}).filter(v => v > 0), 0);
           return maxB - maxA;
         });
       } else if (currentReportTab === 'decreases') {
-        // Filtrare produse cu ieftiniri
-        items = items.filter(p => {
-          return Object.values(p.changes || {}).some(v => v < 0);
-        });
+        items = items.filter(p => Object.values(p.changes || {}).some(v => v < 0));
         items.sort((a, b) => {
-          const minA = Math.min(...Object.values(a.changes || {0: 0}).filter(v => v < 0), 0);
-          const minB = Math.min(...Object.values(b.changes || {0: 0}).filter(v => v < 0), 0);
+          const minA = Math.min(...Object.values(a.changes || {0:0}).filter(v => v < 0), 0);
+          const minB = Math.min(...Object.values(b.changes || {0:0}).filter(v => v < 0), 0);
           return minA - minB;
         });
       }
 
       if (items.length === 0) {
-        body.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:24px;font-size:13px;">Inca nu exista date suficiente. Rapoartele se populeaza automat zilnic (ora 8:00).</div>';
+        body.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:24px;font-size:13px;">Nu exista produse in raport.</div>';
         return;
       }
 
+      const showKz = hasPerm('show_kz_price');
+      const visVendors = ['samsung','emag','altex'].filter(v => hasPerm('vendors', v));
+
       let html = '<table class="report-table"><thead><tr>';
-      html += '<th>Produs</th><th>Kuziini</th>';
-      html += '<th style="text-align:right">Samsung</th>';
-      html += '<th style="text-align:right">eMAG</th>';
-      html += '<th style="text-align:right">Altex</th>';
+      html += '<th>Produs</th>';
+      if (showKz) html += '<th>Kuziini</th>';
+      if (visVendors.includes('samsung')) html += '<th style="text-align:right">Samsung</th>';
+      if (visVendors.includes('emag'))    html += '<th style="text-align:right">eMAG</th>';
+      if (visVendors.includes('altex'))   html += '<th style="text-align:right">Altex</th>';
       html += '<th>Perioada</th>';
       html += '</tr></thead><tbody>';
 
       items.forEach(p => {
-        const latest = p.latest || {};
+        const latest  = p.latest  || {};
         const changes = p.changes || {};
 
         function priceCell(vendor) {
           const cur = latest[vendor];
-          const ch = changes[vendor];
+          const ch  = changes[vendor];
           if (cur === null || cur === undefined) return '<td style="text-align:right;color:#d1d5db">—</td>';
           let changeHtml = '';
           if (ch && ch > 0) changeHtml = `<br><span class="price-up">+${formatPrice(ch)}</span>`;
@@ -4258,10 +4661,10 @@ else { setTimeout(_renderTotals, 100); }
 
         html += `<tr style="cursor:pointer" onclick="loadProductHistory('${p.code}')">`;
         html += `<td><span class="cart-code">${p.code}</span><br><span class="cart-cat">${p.category}</span></td>`;
-        html += `<td style="font-weight:600">${p.kuziini_price ? formatPrice(p.kuziini_price) : '—'}</td>`;
-        html += priceCell('samsung');
-        html += priceCell('emag');
-        html += priceCell('altex');
+        if (showKz) html += `<td style="font-weight:600">${p.kuziini_price ? formatPrice(p.kuziini_price) : '—'}</td>`;
+        if (visVendors.includes('samsung')) html += priceCell('samsung');
+        if (visVendors.includes('emag'))    html += priceCell('emag');
+        if (visVendors.includes('altex'))   html += priceCell('altex');
         html += `<td style="font-size:10px;color:#9ca3af">${p.first_date || ''}<br>${p.latest_date || ''}<br>(${p.days_tracked} zile)</td>`;
         html += '</tr>';
       });
@@ -4271,6 +4674,7 @@ else { setTimeout(_renderTotals, 100); }
     }
 
     function loadStats() {
+      if (!hasPerm('reports', 'stats')) return;
       const body = document.getElementById('reports-body');
       document.getElementById('report-detail').innerHTML = '';
       body.innerHTML = '<div style="text-align:center;padding:24px;color:#7c6fa8;font-size:13px;">Se incarca statisticile...</div>';

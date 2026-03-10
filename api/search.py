@@ -300,6 +300,7 @@ class handler(BaseHTTPRequestHandler):
                 return
             self._json({'token': token, 'username': user['username'],
                         'name': user['name'], 'role': user['role'],
+                        'user_id': user.get('user_id', ''),
                         'permissions': user['permissions']})
 
         elif path == '/api/auth/logout':
@@ -313,6 +314,7 @@ class handler(BaseHTTPRequestHandler):
             if not session:
                 return
             self._json({'username': session['username'], 'role': session['role'],
+                        'user_id': session.get('user_id', ''),
                         'permissions': session.get('permissions', {})})
 
         # ── Offers ────────────────────────────────────────────────────────
@@ -381,6 +383,17 @@ class handler(BaseHTTPRequestHandler):
             if not session:
                 return
             self._json({'users': auth_utils.list_users()})
+
+        elif path == '/api/users/for_share':
+            # Any authenticated user can fetch the list of users for sharing offers
+            session = self._require_auth()
+            if not session:
+                return
+            me = session['username']
+            all_users = auth_utils.list_users()
+            result = [{'username': u['username'], 'name': u.get('name', u['username'])}
+                      for u in all_users if u['username'] != me]
+            self._json({'users': result})
 
         elif path == '/api/users/create':
             session = self._require_auth(require_admin=True)
@@ -460,6 +473,25 @@ class handler(BaseHTTPRequestHandler):
                 self._json({'error': err}, 400)
                 return
             self._json({'ok': True})
+
+        # ── Activity logging ──────────────────────────────────────────────
+
+        elif path == '/api/activity/log':
+            session = self._require_auth()
+            if not session:
+                return
+            action = (body.get('action') or '').strip()
+            data   = body.get('data') or {}
+            if action:
+                auth_utils.log_activity(session['username'], action, data)
+            self._json({'ok': True})
+
+        elif path == '/api/activity/report':
+            session = self._require_auth(require_admin=True)
+            if not session:
+                return
+            report = auth_utils.get_activity_report()
+            self._json(report)
 
         else:
             self._json({'error': 'Not found'}, 404)
