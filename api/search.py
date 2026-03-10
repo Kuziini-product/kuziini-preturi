@@ -12,7 +12,7 @@ import os
 # Add parent dir to path so we can import scraper
 sys.path.insert(0, os.path.dirname(__file__))
 from scraper import search_product, search_single_vendor, load_products, APP_VERSION, warmup_session
-from cache import get_cached_price, get_cache_status, is_configured as cache_configured
+from cache import get_cached_price, get_cache_status, is_configured as cache_configured, test_connection as cache_test
 
 # Warmup on cold start
 warmup_session()
@@ -82,6 +82,9 @@ class handler(BaseHTTPRequestHandler):
 
         elif path == '/api/ping':
             self._json({'pong': True, 'time': time.time()})
+
+        elif path == '/api/test_redis':
+            self._json(cache_test())
 
         elif path == '/api/test_excel':
             t0 = time.time()

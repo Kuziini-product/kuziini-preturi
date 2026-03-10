@@ -103,3 +103,39 @@ def set_cache_status(status):
 def is_configured():
     """Check if Redis is configured."""
     return bool(REDIS_URL and REDIS_TOKEN)
+
+
+def test_connection():
+    """Test Redis connection. Returns dict with debug info."""
+    info = {
+        'url_set': bool(REDIS_URL),
+        'token_set': bool(REDIS_TOKEN),
+        'url_preview': REDIS_URL[:40] + '...' if len(REDIS_URL) > 40 else REDIS_URL,
+    }
+    if not REDIS_URL or not REDIS_TOKEN:
+        info['error'] = 'Missing UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN'
+        return info
+    try:
+        data = json.dumps(['SET', 'test:ping', 'hello']).encode('utf-8')
+        req = urllib.request.Request(REDIS_URL, data=data, method='POST')
+        req.add_header('Authorization', f'Bearer {REDIS_TOKEN}')
+        req.add_header('Content-Type', 'application/json')
+        resp = urllib.request.urlopen(req, timeout=5)
+        body = resp.read().decode('utf-8')
+        info['set_response'] = body
+        info['set_status'] = resp.status
+
+        # Now GET it back
+        data2 = json.dumps(['GET', 'test:ping']).encode('utf-8')
+        req2 = urllib.request.Request(REDIS_URL, data=data2, method='POST')
+        req2.add_header('Authorization', f'Bearer {REDIS_TOKEN}')
+        req2.add_header('Content-Type', 'application/json')
+        resp2 = urllib.request.urlopen(req2, timeout=5)
+        body2 = resp2.read().decode('utf-8')
+        info['get_response'] = body2
+        info['ok'] = True
+    except urllib.error.HTTPError as e:
+        info['error'] = f'HTTP {e.code}: {e.read().decode("utf-8", errors="replace")[:200]}'
+    except Exception as e:
+        info['error'] = str(e)
+    return info
