@@ -2419,15 +2419,9 @@
     }
 
     function showCartImage(code) {
-      const item = cart.find(i => i.code === code);
-      if (!item || !item.image_url) return;
-      const img = document.getElementById('product-image');
-      img.src = item.image_url;
-      img.style.display = 'block';
-      const placeholder = img.previousElementSibling;
-      if (placeholder) placeholder.style.display = 'none';
-      // Scroll sus la imagine
-      img.closest('.product-image-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      // Cauta produsul si afiseaza preturile in taburile de vendor
+      document.getElementById('code-input').value = code;
+      doSearch();
     }
 
     function removeFromCart(code) {
