@@ -1678,6 +1678,7 @@
           <div class="reports-tab" onclick="switchReportTab('increases')">Scumpiri</div>
           <div class="reports-tab" onclick="switchReportTab('decreases')">Ieftiniri</div>
           <div class="reports-tab" onclick="switchReportTab('events')">Evenimente</div>
+          <div class="reports-tab" onclick="switchReportTab('stats')">Statistici</div>
         </div>
         <div class="report-actions">
           <button class="report-action-btn" onclick="exportReportExcel()">Excel</button>
@@ -1903,6 +1904,13 @@
         setTimeout(() => input.style.borderColor = '', 1500);
         return;
       }
+
+      // Tracking cautari in localStorage
+      try {
+        const _sh = JSON.parse(localStorage.getItem('kuziini_searches') || '{}');
+        _sh[code] = (_sh[code] || 0) + 1;
+        localStorage.setItem('kuziini_searches', JSON.stringify(_sh));
+      } catch(e) {}
 
       document.getElementById('error-msg').classList.remove('visible');
       showLoading(code);
@@ -2784,6 +2792,10 @@
         loadEvents();
         return;
       }
+      if (currentReportTab === 'stats') {
+        loadStats();
+        return;
+      }
       if (!reportsData || !reportsData.products) return;
       const body = document.getElementById('reports-body');
       const detail = document.getElementById('report-detail');
@@ -2852,6 +2864,187 @@
 
       html += '</tbody></table>';
       body.innerHTML = html;
+    }
+
+    function loadStats() {
+      const body = document.getElementById('reports-body');
+      document.getElementById('report-detail').innerHTML = '';
+      body.innerHTML = '<div style="text-align:center;padding:24px;color:#7c6fa8;font-size:13px;">Se incarca statisticile...</div>';
+
+      fetch('/api/cache_status')
+        .then(r => r.json())
+        .then(cs => {
+          // Statistici cautari din localStorage
+          let searches = {};
+          try { searches = JSON.parse(localStorage.getItem('kuziini_searches') || '{}'); } catch(e) {}
+          const allCodes = Object.keys(searches);
+          const totalSearches = Object.values(searches).reduce((s, v) => s + v, 0);
+          const uniqueSearches = allCodes.length;
+          const multipleSearches = allCodes.filter(c => searches[c] > 1).length;
+          const topCode = allCodes.sort((a, b) => searches[b] - searches[a])[0] || null;
+          const topCount = topCode ? searches[topCode] : 0;
+
+          // Statistici arhiva (din _priceArchive deja incarcat)
+          const archive = _priceArchive || {};
+          const archiveCodes = Object.keys(archive);
+          let withLinks = 0, withImages = 0;
+          archiveCodes.forEach(c => {
+            const e = archive[c];
+            const vendors = e.vendors || {};
+            if (Object.values(vendors).some(v => v && v.url)) withLinks++;
+            if (e.image_url) withImages++;
+          });
+
+          // Formatare data/ora
+          function tsToStr(ts) {
+            if (!ts) return 'Necunoscut';
+            const d = new Date(ts * 1000);
+            return d.toLocaleDateString('ro-RO', { day: '2-digit', month: '2-digit', year: 'numeric' })
+              + ' ' + d.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
+          }
+          function agoStr(mins) {
+            if (mins === null || mins === undefined) return '';
+            if (mins < 60) return `(acum ${mins} min)`;
+            if (mins < 1440) return `(acum ${Math.round(mins/60)} ore)`;
+            return `(acum ${Math.round(mins/1440)} zile)`;
+          }
+
+          const completedTs = cs.completed_at_ts;
+          const lastUpdateTs = cs.last_update_ts;
+          const isRunning = cs.batch_index > 0 && cs.batch_index < cs.total_products;
+
+          const cardStyle = `
+            display:inline-flex;flex-direction:column;gap:4px;
+            background:#fff;border:1px solid #e5e7eb;border-radius:12px;
+            padding:16px 20px;min-width:160px;box-shadow:0 1px 4px rgba(0,0,0,0.06);`;
+          const labelStyle = `font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;`;
+          const valStyle = `font-size:20px;font-weight:700;color:#1e293b;line-height:1.2;`;
+          const subStyle = `font-size:11px;color:#6b7280;`;
+
+          let html = '';
+
+          // ── Sectiunea: Regenerare ─────────────────────────────────────
+          html += `<div style="margin-bottom:20px;">
+            <div style="font-size:12px;font-weight:700;color:#7c6fa8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">
+              Ultima regenerare
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:12px;">`;
+
+          // Card: Completat la
+          html += `<div style="${cardStyle}">
+            <span style="${labelStyle}">Completat la</span>
+            <span style="font-size:15px;font-weight:700;color:#14532d;">${tsToStr(completedTs)}</span>
+            <span style="${subStyle}">${agoStr(cs.completed_at_min_ago)}</span>
+          </div>`;
+
+          // Card: Ultima actualizare (batch)
+          html += `<div style="${cardStyle}">
+            <span style="${labelStyle}">Ultima actualizare</span>
+            <span style="font-size:15px;font-weight:700;color:#1e293b;">${tsToStr(lastUpdateTs)}</span>
+            <span style="${subStyle}">${agoStr(cs.last_update_min_ago)}</span>
+          </div>`;
+
+          // Card: Status cron
+          const cronColor = isRunning ? '#f59e0b' : (completedTs ? '#16a34a' : '#6b7280');
+          const cronLabel = isRunning
+            ? `In progres (${cs.batch_index}/${cs.total_products})`
+            : (completedTs ? 'Finalizat' : 'In asteptare');
+          html += `<div style="${cardStyle}border-left:3px solid ${cronColor};">
+            <span style="${labelStyle}">Status cron</span>
+            <span style="font-size:14px;font-weight:700;color:${cronColor};">${cronLabel}</span>
+            <span style="${subStyle}">${cs.total_cached || 0} / ${cs.total_products || 0} produse</span>
+          </div>`;
+
+          html += '</div></div>';
+
+          // ── Sectiunea: Arhiva ─────────────────────────────────────────
+          html += `<div style="margin-bottom:20px;">
+            <div style="font-size:12px;font-weight:700;color:#7c6fa8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">
+              Arhiva preturi
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:12px;">`;
+
+          html += `<div style="${cardStyle}">
+            <span style="${labelStyle}">Produse in arhiva</span>
+            <span style="${valStyle}">${archiveCodes.length}</span>
+            <span style="${subStyle}">din ${cs.total_products || '?'} total</span>
+          </div>`;
+
+          html += `<div style="${cardStyle}">
+            <span style="${labelStyle}">Linkuri salvate</span>
+            <span style="${valStyle}">${withLinks}</span>
+            <span style="${subStyle}">produse cu URL vendor</span>
+          </div>`;
+
+          html += `<div style="${cardStyle}">
+            <span style="${labelStyle}">Poze salvate</span>
+            <span style="${valStyle}">${withImages}</span>
+            <span style="${subStyle}">produse cu imagine</span>
+          </div>`;
+
+          html += '</div></div>';
+
+          // ── Sectiunea: Cautari utilizator ─────────────────────────────
+          html += `<div style="margin-bottom:20px;">
+            <div style="font-size:12px;font-weight:700;color:#7c6fa8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">
+              Statistici cautari (sesiune curenta)
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:12px;">`;
+
+          html += `<div style="${cardStyle}">
+            <span style="${labelStyle}">Total cautari</span>
+            <span style="${valStyle}">${totalSearches}</span>
+            <span style="${subStyle}">apasari buton Comit</span>
+          </div>`;
+
+          html += `<div style="${cardStyle}">
+            <span style="${labelStyle}">Produse unice</span>
+            <span style="${valStyle}">${uniqueSearches}</span>
+            <span style="${subStyle}">coduri diferite</span>
+          </div>`;
+
+          html += `<div style="${cardStyle}">
+            <span style="${labelStyle}">Cautari multiple</span>
+            <span style="${valStyle}">${multipleSearches}</span>
+            <span style="${subStyle}">coduri > 1 cautare</span>
+          </div>`;
+
+          if (topCode) {
+            html += `<div style="${cardStyle}border-left:3px solid #6366f1;">
+              <span style="${labelStyle}">Cel mai cautat</span>
+              <span style="font-size:16px;font-weight:700;color:#4f46e5;font-family:monospace;">${topCode}</span>
+              <span style="${subStyle}">${topCount} cautari</span>
+            </div>`;
+          }
+
+          html += '</div></div>';
+
+          // ── Top 10 produse cautate ─────────────────────────────────────
+          if (allCodes.length > 0) {
+            const top10 = [...allCodes].sort((a, b) => searches[b] - searches[a]).slice(0, 10);
+            html += `<div style="margin-bottom:8px;">
+              <div style="font-size:12px;font-weight:700;color:#7c6fa8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">
+                Top produse cautate
+              </div>
+              <table class="report-table"><thead><tr>
+                <th>#</th><th>Cod produs</th><th style="text-align:right">Nr. cautari</th>
+              </tr></thead><tbody>`;
+            top10.forEach((c, i) => {
+              const isBest = i === 0;
+              html += `<tr>
+                <td style="color:#9ca3af;font-size:11px;">${i + 1}</td>
+                <td><span class="cart-code" style="${isBest ? 'color:#4f46e5' : ''}">${c}</span></td>
+                <td style="text-align:right;font-weight:600;color:${isBest ? '#4f46e5' : '#374151'}">${searches[c]}</td>
+              </tr>`;
+            });
+            html += '</tbody></table></div>';
+          }
+
+          body.innerHTML = html;
+        })
+        .catch(() => {
+          body.innerHTML = '<div style="text-align:center;color:#dc2626;padding:24px;font-size:13px;">Eroare la incarcarea statisticilor.</div>';
+        });
     }
 
     function loadProductHistory(code) {

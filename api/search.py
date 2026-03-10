@@ -117,11 +117,17 @@ class handler(BaseHTTPRequestHandler):
         elif path == '/api/cache_status':
             status = get_cache_status()
             last = status.get('last_update')
-            age = round((time.time() - last) / 60) if last else None
+            completed = status.get('completed_at')
+            now = time.time()
+            age = round((now - last) / 60) if last else None
+            completed_age = round((now - completed) / 60) if completed else None
             self._json({
                 'total_cached': status.get('total_cached', 0),
                 'total_products': status.get('total_products', 0),
                 'last_update_min_ago': age,
+                'last_update_ts': last,
+                'completed_at_min_ago': completed_age,
+                'completed_at_ts': completed,
                 'batch_index': status.get('batch_index', 0),
                 'cache_backend': 'redis' if cache_configured() else 'none',
             })
