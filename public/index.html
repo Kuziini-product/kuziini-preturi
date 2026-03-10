@@ -2733,7 +2733,8 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f5f3ff; }
   background:linear-gradient(135deg,#1e1b4b 0%,#4c1d95 55%,#7c3aed 100%);
   padding:22px 36px; display:flex; justify-content:space-between; align-items:center;
 }
-.hdr img { height:50px; object-fit:contain; filter:brightness(0) invert(1); }
+.hdr-logo-wrap { background:#fff; border-radius:10px; padding:5px 12px; display:inline-flex; align-items:center; }
+.hdr-logo-wrap img { height:38px; max-width:140px; object-fit:contain; display:block; }
 .hdr-fb { font-size:22px; font-weight:900; color:#fff; letter-spacing:2px; }
 .hdr-right { text-align:right; }
 .hdr-title { font-size:13px; font-weight:700; color:#e9d5ff; letter-spacing:.06em; }
@@ -2776,7 +2777,7 @@ tr:nth-child(even) { background:#faf5ff; }
 <div class="push"></div>
 <div class="page">
   <div class="hdr">
-    <div>
+    <div class="hdr-logo-wrap">
       <img src="${logoSrc}" onerror="this.style.display='none';document.getElementById('lfb').style.display='block'">
       <div class="hdr-fb" id="lfb" style="display:none">KUZIINI</div>
     </div>
@@ -3026,7 +3027,8 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f3ff; min-heig
   padding: 28px 40px 22px;
   display: flex; justify-content: space-between; align-items: center;
 }
-.hdr-logo { height: 60px; max-width: 220px; object-fit: contain; filter: brightness(0) invert(1); }
+.hdr-logo-wrap { background:#fff; border-radius:10px; padding:5px 14px; display:inline-flex; align-items:center; }
+.hdr-logo { height: 44px; max-width: 160px; object-fit: contain; display:block; }
 .hdr-logo-fallback { font-size: 28px; font-weight: 900; color: #fff; letter-spacing: 2px; }
 .offer-meta { text-align: right; }
 .offer-title { font-size: 17px; font-weight: 700; letter-spacing: .06em; color: #e9d5ff; }
@@ -3177,7 +3179,7 @@ thead th.right { text-align: right; }
 <div class="page">
 
   <div class="offer-header">
-    <div>
+    <div class="hdr-logo-wrap">
       <img class="hdr-logo" src="${logoSrc}"
            onerror="this.style.display='none';document.getElementById('logo-fb').style.display='block'">
       <div class="hdr-logo-fallback" id="logo-fb" style="display:none">KUZIINI</div>
