@@ -1834,8 +1834,22 @@ def _extract_altex_cpd_urls(soup, html_text, code):
                     decoded = urllib.parse.unquote(m.group(1))
                     if 'altex.ro' in decoded.lower():
                         altex_urls.append(decoded)
+            # Google wraps: /url?q=https://altex.ro/...&sa=U&...
+            elif '/url?q=' in href or '/url?sa=' in href:
+                m = re.search(r'[?&]q=([^&]+)', href)
+                if m:
+                    decoded = urllib.parse.unquote(m.group(1))
+                    if 'altex.ro' in decoded.lower():
+                        altex_urls.append(decoded)
             elif 'altex.ro' in href.lower():
                 altex_urls.append(href)
+    # Cauta URL-uri Altex /cpd/ direct in textul HTML (ex: in scripturi, date JSON)
+    if html_text:
+        for m in re.finditer(
+            r'https?://(?:www\.)?altex\.ro/[^\s"\'<>]*?/cpd/[^\s"\'<>]+', html_text
+        ):
+            url = m.group(0).rstrip('.,;)')
+            altex_urls.append(url)
     # Prioritate: URL-uri /cpd/
     for url in altex_urls:
         if '/cpd/' in url.lower() and code_lower in url.lower():
@@ -1872,7 +1886,7 @@ def _altex_search_duckduckgo(code):
 
         # Fallback: Bing
         bing_url = f'https://www.bing.com/search?q={q_enc}&count=10'
-        text2, soup2 = get_page_curl(bing_url, timeout=10, referer='https://www.bing.com/')
+        text2, soup2 = get_page_curl(bing_url, timeout=12, referer='https://www.bing.com/')
         if text2 and len(text2) > 20000:
             log(f"  Bing search: {len(text2):,}b")
             url = _extract_altex_cpd_urls(soup2, text2, code)
@@ -1880,6 +1894,22 @@ def _altex_search_duckduckgo(code):
                 log(f"  Bing Altex URL: {url}")
                 return url
             log(f"  Bing: fara URL-uri Altex")
+        else:
+            log(f"  Bing blocat ({len(text2) if text2 else 0}b), incerc Google...")
+
+        # Fallback: Google
+        google_url = f'https://www.google.com/search?q={q_enc}&num=10'
+        text3, soup3 = get_page_curl(
+            google_url, timeout=12, referer='https://www.google.com/')
+        if text3 and len(text3) > 20000:
+            log(f"  Google search: {len(text3):,}b")
+            url = _extract_altex_cpd_urls(soup3, text3, code)
+            if url:
+                log(f"  Google Altex URL: {url}")
+                return url
+            log(f"  Google: fara URL-uri Altex")
+        else:
+            log(f"  Google blocat ({len(text3) if text3 else 0}b)")
 
     return None
 
