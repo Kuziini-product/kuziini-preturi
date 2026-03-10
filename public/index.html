@@ -2205,9 +2205,13 @@
       document.getElementById('product-count').textContent =
         `${filtered.length} produse${hasFilter ? ' (filtrate)' : ''}`;
 
+      // Daca filtrul a selectat exact 1 produs, cauta-l automat
       if (filtered.length === 1) {
         dropdown.value = filtered[0].code;
+        document.getElementById('code-input').value = filtered[0].code;
+        doSearch();
       }
+
     }
 
     function selectProduct() {
@@ -2476,16 +2480,20 @@
         let alertTag = '';
         let sellingPrice = item.kuziini_price; // pretul de vanzare
 
+        let subtotalPrice = item.kuziini_price;
+
         if (item.cheapest_price) {
           cheapStr = formatPrice(item.cheapest_price) + ' (' + item.cheapest_vendor + ')';
           const diff = item.cheapest_price - item.kuziini_price;
           if (diff > 0) {
-            // Kuziini e mai ieftin - pretul ramane kuziini_price
+            // Kuziini e mai ieftin - subtotalul = pretul cel mai ieftin vendor
             diffStr = '+' + formatPrice(diff);
             diffClass = 'positive';
+            subtotalPrice = item.cheapest_price;
           } else if (diff < 0) {
             // Kuziini e mai scump - pretul devine Kuziini + 5%
             sellingPrice = item.kuziini_price * 1.05;
+            subtotalPrice = sellingPrice;
             diffStr = formatPrice(diff);
             diffClass = 'negative';
             alertTag = '<span class="cart-alert">+5%</span>';
@@ -2494,7 +2502,7 @@
           }
         }
 
-        const subtotal = sellingPrice * qty;
+        const subtotal = subtotalPrice * qty;
         totalSubtotal += subtotal;
 
         // Afiseaza pretul de vanzare (diferit de kuziini daca e ajustat)
@@ -2541,7 +2549,14 @@
         if (item.cheapest_price && item.kuziini_price > item.cheapest_price) {
           sellingPrice = item.kuziini_price * 1.05;
         }
-        const subtotal = sellingPrice * qty;
+        // Subtotal: daca Kuziini e mai ieftin, subtotal = kuziini + diferenta
+        let subtotalPrice = item.kuziini_price;
+        if (diff !== '' && diff > 0) {
+          subtotalPrice = item.kuziini_price + diff;
+        } else if (diff !== '' && diff < 0) {
+          subtotalPrice = sellingPrice;
+        }
+        const subtotal = subtotalPrice * qty;
         totalKz += subtotal;
         const p = item.all_prices || {};
         html += `<tr>
