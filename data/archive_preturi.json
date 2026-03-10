@@ -7,13 +7,13 @@
     "kuziini_price": 443.0657,
     "prices": {
       "samsung": 614.91,
-      "emag": null,
+      "emag": 847.0,
       "flanco": null,
       "altex": null
     },
     "urls": {
       "samsung": "https://www.samsung.com/ro/search/?searchvalue=HW-B400F/EN",
-      "emag": null,
+      "emag": "https://www.emag.ro/soundbar-samsung-hw-b400f-2-0-bluetooth-wi-fi-dolby-hdmi-earc-negru-titan-hw-b400f-en/pd/D129BN3BM/",
       "flanco": null,
       "altex": null
     },
@@ -192,13 +192,13 @@
     "kuziini_price": 601.5998999999999,
     "prices": {
       "samsung": 629.0,
-      "emag": null,
+      "emag": 629.99,
       "flanco": null,
       "altex": null
     },
     "urls": {
       "samsung": "https://www.samsung.com/ro/search/?searchvalue=HW-B450F/EN",
-      "emag": null,
+      "emag": "https://www.emag.ro/soundbar-samsung-hw-b450f-2-1-300w-bluetooth-subwoofer-wireless-dolby-audio-hdmi-earc-negru-titan-hw-b450f-en/pd/DL29BN3BM/",
       "flanco": null,
       "altex": null
     },
@@ -410,13 +410,13 @@
     "kuziini_price": 945.5302999999999,
     "prices": {
       "samsung": 989.0,
-      "emag": null,
+      "emag": 989.99,
       "flanco": null,
       "altex": null
     },
     "urls": {
       "samsung": "https://www.samsung.com/ro/search/?searchvalue=HW-B650F/EN",
-      "emag": null,
+      "emag": "https://www.emag.ro/soundbar-samsung-hw-b650f-3-1-370w-bluetooth-subwoofer-wireless-dolby-audio-hdmi-earc-negru-hw-b650f-en/pd/DR29BN3BM/",
       "flanco": null,
       "altex": null
     },
@@ -649,13 +649,13 @@
     "kuziini_price": 1043.3951,
     "prices": {
       "samsung": 1169.0,
-      "emag": null,
+      "emag": 1169.99,
       "flanco": null,
       "altex": null
     },
     "urls": {
       "samsung": "https://www.samsung.com/ro/search/?searchvalue=HW-B750F/EN",
-      "emag": null,
+      "emag": "https://www.emag.ro/soundbar-samsung-hw-b750f-5-1-400w-bluetooth-wi-fi-subwoofer-wireless-dolby-audio-hdmi-earc-negru-hw-b750f-en/pd/DQ29BN3BM/",
       "flanco": null,
       "altex": null
     },
@@ -884,13 +884,13 @@
     "kuziini_price": 1160.8498,
     "prices": {
       "samsung": null,
-      "emag": null,
+      "emag": 952.91,
       "flanco": 1099.99,
       "altex": null
     },
     "urls": {
       "samsung": null,
-      "emag": null,
+      "emag": "https://www.emag.ro/boxa-wi-fi-music-frame-hw-ls60d-2-0-120w-bluetooth-negru-hw-ls60d-en/pd/D1099XYBM/",
       "flanco": "https://www.flanco.ro/boxa-wi-fi-samsung-music-frame-120w-bluetooth-dolby-atmos-negru.html",
       "altex": null
     },
@@ -1123,13 +1123,13 @@
     "kuziini_price": 1162.7979,
     "prices": {
       "samsung": 1099.0,
-      "emag": null,
+      "emag": 1099.99,
       "flanco": null,
       "altex": null
     },
     "urls": {
       "samsung": "https://www.samsung.com/ro/search/?searchvalue=HW-Q600F/EN",
-      "emag": null,
+      "emag": "https://www.emag.ro/soundbar-samsung-hw-q600f-3-1-2-380w-bluetooth-wi-fi-subwoofer-wireless-dolby-atmos-hdmi-earc-negru-titan-hw-q600f-en/pd/D629BN3BM/",
       "flanco": null,
       "altex": null
     },
@@ -1383,13 +1383,13 @@
     "kuziini_price": 1906.2340000000002,
     "prices": {
       "samsung": 1829.0,
-      "emag": null,
+      "emag": 1829.99,
       "flanco": null,
       "altex": null
     },
     "urls": {
       "samsung": "https://www.samsung.com/ro/search/?searchvalue=HW-Q800F/EN",
-      "emag": null,
+      "emag": "https://www.emag.ro/soundbar-samsung-hw-q800f-5-1-2-400w-bluetooth-wi-fi-subwoofer-wireless-wireless-dolby-atmos-hdmi-earc-negru-hw-q800f-en/pd/D829BN3BM/",
       "flanco": null,
       "altex": null
     },
@@ -1696,13 +1696,13 @@
     "kuziini_price": 2487.1187000000004,
     "prices": {
       "samsung": null,
-      "emag": null,
+      "emag": 2599.99,
       "flanco": null,
       "altex": null
     },
     "urls": {
       "samsung": null,
-      "emag": null,
+      "emag": "https://www.emag.ro/soundbar-samsung-hw-q930f-9-1-4-580w-bluetooth-wi-fi-subwoofer-kit-wireless-wireless-dolby-atmos-hdmi-earc-negru-titan-hw-q930f-en/pd/DG29BN3BM/",
       "flanco": null,
       "altex": null
     },
@@ -2037,13 +2037,13 @@
     "kuziini_price": 3439.0499,
     "prices": {
       "samsung": null,
-      "emag": null,
+      "emag": 3499.99,
       "flanco": null,
       "altex": null
     },
     "urls": {
       "samsung": null,
-      "emag": null,
+      "emag": "https://www.emag.ro/soundbar-samsung-hw-q990f-11-1-4-756w-bluetooth-wi-fi-subwoofer-kit-wireless-wireless-dolby-atmos-hdmi-2-1-earc-negru-titan-hw-q990f-en/pd/DW29BN3BM/",
       "flanco": null,
       "altex": null
     },
@@ -2378,13 +2378,13 @@
     "kuziini_price": 1529.1133,
     "prices": {
       "samsung": 1549.0,
-      "emag": null,
+      "emag": 1529.99,
       "flanco": null,
       "altex": null
     },
     "urls": {
       "samsung": "https://www.samsung.com/ro/search/?searchvalue=HW-QS700F/EN",
-      "emag": null,
+      "emag": "https://www.emag.ro/soundbar-samsung-hw-qs700f-3-1-2-345w-bluetooth-wi-fi-subwoofer-wireless-wireless-dolby-atmos-hdmi-earc-negru-titan-hw-qs700f-en/pd/DB79BN3BM/",
       "flanco": null,
       "altex": null
     },
@@ -2943,13 +2943,13 @@
     "kuziini_price": 955.4885999999999,
     "prices": {
       "samsung": null,
-      "emag": null,
+      "emag": 1446.58,
       "flanco": null,
       "altex": null
     },
     "urls": {
       "samsung": null,
-      "emag": null,
+      "emag": "https://www.emag.ro/soundbar-hw-s61d-5-0-200w-bluetooth-wi-fi-dolby-atmos-alb-hw-s61d-en/pd/D4099XYBM/",
       "flanco": null,
       "altex": null
     },
@@ -3207,13 +3207,13 @@
     "kuziini_price": 1312.5475,
     "prices": {
       "samsung": 1299.0,
-      "emag": null,
+      "emag": 1512.34,
       "flanco": null,
       "altex": null
     },
     "urls": {
       "samsung": "https://www.samsung.com/ro/search/?searchvalue=HW-S700D/EN",
-      "emag": null,
+      "emag": "https://www.emag.ro/soundbar-samsung-hw-s700d-3-1-250w-bluetooth-wi-fi-subwoofer-wireless-dolby-atmos-negru-titan-hw-s700d-en/pd/DS099XYBM/",
       "flanco": null,
       "altex": null
     },
@@ -3474,13 +3474,13 @@
     "kuziini_price": 1312.5475,
     "prices": {
       "samsung": null,
-      "emag": null,
+      "emag": 1451.12,
       "flanco": null,
       "altex": null
     },
     "urls": {
       "samsung": null,
-      "emag": null,
+      "emag": "https://www.emag.ro/soundbar-samsung-hw-s701d-3-1-250w-bluetooth-wi-fi-subwoofer-wireless-dolby-atmos-alb-hw-s701d-en/pd/DV099XYBM/",
       "flanco": null,
       "altex": null
     },
@@ -3741,13 +3741,13 @@
     "kuziini_price": 1584.8943,
     "prices": {
       "samsung": null,
-      "emag": null,
+      "emag": 2599.08,
       "flanco": null,
       "altex": null
     },
     "urls": {
       "samsung": null,
-      "emag": null,
+      "emag": "https://www.emag.ro/soundbar-samsung-hw-s800d-3-1-2-330w-bluetooth-wi-fi-subwoofer-wireless-dolby-atmos-negru-titan-hw-s800d-en/pd/DJ099XYBM/",
       "flanco": null,
       "altex": null
     },
@@ -4025,13 +4025,13 @@
     "kuziini_price": 1584.8943,
     "prices": {
       "samsung": null,
-      "emag": null,
+      "emag": 2312.29,
       "flanco": null,
       "altex": null
     },
     "urls": {
       "samsung": null,
-      "emag": null,
+      "emag": "https://www.emag.ro/soundbar-samsung-hw-s801d-3-1-2-330w-bluetooth-wi-fi-subwoofer-wireless-dolby-atmos-alb-hw-s801d-en/pd/DF099XYBM/",
       "flanco": null,
       "altex": null
     },
@@ -4309,15 +4309,15 @@
     "kuziini_price": 1344.1406,
     "prices": {
       "samsung": null,
-      "emag": null,
+      "emag": 2813.0,
       "flanco": null,
-      "altex": null
+      "altex": 1399.0
     },
     "urls": {
       "samsung": null,
-      "emag": null,
+      "emag": "https://www.emag.ro/sistem-audio-samsung-mx-t70-1500w-dynamic-bass-bi-directional-sound-bluetooth-multi-play-karaoke-mode-dj-effects-usb-party-lights-negru-mx-t70-en/pd/DB4ZNMMBM/",
       "flanco": null,
-      "altex": null
+      "altex": "https://altex.ro/sistem-audio-samsung-mx-t70-1500w-bluetooth-usb-karaoke-dj-effect-iluminare-led-negru/cpd/MINMXT70/"
     },
     "specs": {
       "sections": [

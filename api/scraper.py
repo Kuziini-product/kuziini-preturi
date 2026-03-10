@@ -176,14 +176,24 @@ def get_search_variants(code):
     """
     Genereaza variante ale codului pentru cautare pe diferite site-uri.
     Ex: QE55QN90FATXXH -> [QE55QN90FATXXH, QE55QN90F, QE55QN90]
+    Ex: HW-B400F/EN -> [HW-B400F/EN, HW-B400F, HW-B400]
     """
     variants = [code]
     code_up = code.upper()
 
+    # Elimina sufixul /EN, /ZA, /XD etc. (soundbars, audio)
+    if '/' in code_up:
+        base_no_slash = code_up.split('/')[0]
+        if base_no_slash not in variants:
+            variants.append(base_no_slash)
+        code_up = base_no_slash  # continua cu baza fara sufix
+
     # Elimina sufixul de regiune (TXXH, AUXXH, etc.)
     base = code_up
-    for pat in [r'(TXXH|BTXXH|ATXXH|CTXXH|DTXXH|ETXXH|FTXXH)$',
+    for pat in [r'(FKXXH)$',
+                r'(TXXH|BTXXH|ATXXH|CTXXH|DTXXH|ETXXH|FTXXH)$',
                 r'(AUXXH|BUXXH|CUXXH)$',
+                r'(AXXXH|BXXXH|CXXXH)$',
                 r'(EXXN|BXXN|CXXN)$',
                 r'(XXH|XXN|XXU)$']:
         m = re.search(pat, base)
@@ -683,15 +693,29 @@ def _emag_best_pd_link(soup, code_lower):
     if not pd_links:
         return None
 
-    # Prioritate: URL care contine codul produsului
+    # Cauta variante ale codului in URL-uri
+    code_parts = code_lower.replace('/', '').replace('-', '')
+    variants = [code_lower, code_lower.replace('/', ''), code_parts]
+    if '/' in code_lower:
+        variants.append(code_lower.split('/')[0])
+
+    # Prioritate 1: URL care contine codul produsului exact
     for href in pd_links:
-        if code_lower in href.lower():
-            log(f"  eMAG: /pd/ link cu cod exact: {href[:80]}")
+        hl = href.lower()
+        for v in variants:
+            if v in hl:
+                log(f"  eMAG: /pd/ link cu cod exact: {href[:80]}")
+                return href
+
+    # Prioritate 2: URL cu 'samsung' (evita produse nerelevante)
+    for href in pd_links:
+        if 'samsung' in href.lower():
+            log(f"  eMAG: /pd/ link Samsung: {href[:80]}")
             return href
 
-    # Fallback: primul link /pd/ (cel mai relevant din search)
-    log(f"  eMAG: /pd/ link fallback: {pd_links[0][:80]}")
-    return pd_links[0]
+    # NU returnam primul link aleator - cauzeaza false positives
+    log(f"  eMAG: {len(pd_links)} /pd/ links, niciunul nu corespunde codului")
+    return None
 
 
 def _emag_extract_price_from_product_page(soup, product_url):
@@ -1011,9 +1035,12 @@ def scrape_emag(code):
             log(f"  eMAG canonical URL: {canonical}")
             if canonical and '/pd/' in canonical:
                 log(f"  eMAG: redirect la pagina produs detectat")
-                p, url = _emag_extract_price_from_product_page(cs, canonical)
-                if p:
-                    return (p, url)
+                if product_matches_code(cs, code):
+                    p, url = _emag_extract_price_from_product_page(cs, canonical)
+                    if p:
+                        return (p, url)
+                else:
+                    log(f"  eMAG: redirect produs nu corespunde codului {code}, skip")
 
             # Pasul B: cauta URL /pd/ cu codul produsului in script-urile inline
             # (eMAG React embedeaza uneori date in window.__INITIAL_DATA__ etc.)
@@ -1040,27 +1067,34 @@ def scrape_emag(code):
             if product_url:
                 _, pp = get_page_curl(product_url, timeout=12, referer=search_url)
                 if pp:
-                    p, url = _emag_extract_price_from_product_page(pp, product_url)
-                    if p:
-                        return (p, url)
+                    if not product_matches_code(pp, code):
+                        log(f"  eMAG Pasul C: produsul NU corespunde codului {code}, skip")
+                    else:
+                        p, url = _emag_extract_price_from_product_page(pp, product_url)
+                        if p:
+                            return (p, url)
 
         # ── METODA 4: Python requests fallback (acelasi flux, fara search prices) ──
         _, search_soup = get_page(search_url, referer='https://www.emag.ro/')
         if search_soup:
             canonical = _emag_canonical_url(search_soup)
             if canonical and '/pd/' in canonical:
-                p, url = _emag_extract_price_from_product_page(search_soup, canonical)
-                if p:
-                    log(f"  eMAG PRET GASIT (requests redirect produs): {p}")
-                    return (p, url)
+                if product_matches_code(search_soup, code):
+                    p, url = _emag_extract_price_from_product_page(search_soup, canonical)
+                    if p:
+                        log(f"  eMAG PRET GASIT (requests redirect produs): {p}")
+                        return (p, url)
             product_url = _emag_best_pd_link(search_soup, code_lower)
             if product_url:
                 _, pp = get_page(product_url, referer=search_url)
                 if pp:
-                    p, url = _emag_extract_price_from_product_page(pp, product_url)
-                    if p:
-                        log(f"  eMAG PRET GASIT (requests produs): {p}")
-                        return (p, url)
+                    if not product_matches_code(pp, code):
+                        log(f"  eMAG M4: produsul NU corespunde codului {code}, skip")
+                    else:
+                        p, url = _emag_extract_price_from_product_page(pp, product_url)
+                        if p:
+                            log(f"  eMAG PRET GASIT (requests produs): {p}")
+                            return (p, url)
             # NOTA: find_prices_in_soup pe pagina de search NU se mai face niciodata
             # (returna 499.55 — cel mai ieftin produs de pe pagina, nu TV-ul nostru)
 
