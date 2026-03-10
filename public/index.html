@@ -1577,9 +1577,126 @@
       font-weight: 800;
       color: #1e1b4b;
     }
+  /* ── Login Overlay ── */
+  .login-overlay {
+    position: fixed; inset: 0; background: rgba(30,27,75,0.88);
+    backdrop-filter: blur(8px); z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .login-card {
+    background: #fff; border-radius: 24px; padding: 40px 36px;
+    max-width: 380px; width: 90%;
+    box-shadow: 0 12px 60px rgba(124,58,237,0.3);
+  }
+  .login-logo { height: 52px; object-fit: contain; display: block; margin: 0 auto 6px; }
+  .login-subtitle { text-align: center; font-size: 12px; color: #7c6fa8; font-weight: 500; margin-bottom: 24px; }
+  .login-field { margin-bottom: 14px; }
+  .login-field label { display: block; font-size: 10px; font-weight: 800; color: #7c6fa8;
+    text-transform: uppercase; letter-spacing: .1em; margin-bottom: 5px; }
+  .login-input { width: 100%; padding: 12px 16px; border: 2px solid #e0d8f8; border-radius: 10px;
+    font-size: 14px; font-family: 'Inter',sans-serif; color: #1e1b4b; outline: none;
+    transition: border-color .15s; box-sizing: border-box; }
+  .login-input:focus { border-color: #7c3aed; }
+  .login-btn { width: 100%; padding: 14px; background: linear-gradient(135deg,#7c3aed,#5b21b6);
+    color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: 'Inter',sans-serif; margin-top: 6px; transition: opacity .15s; }
+  .login-btn:disabled { opacity: .6; cursor: wait; }
+  .login-err { display: none; background: #fee2e2; color: #dc2626;
+    padding: 8px 14px; border-radius: 8px; font-size: 12px; margin-bottom: 14px; }
+
+  /* ── User Badge ── */
+  .user-badge {
+    display: none; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 7px 16px; background: #f5f3ff; border-radius: 20px;
+    border: 1px solid #ede9fe; margin-top: 10px;
+  }
+  .user-badge-name { font-size: 12px; font-weight: 700; color: #4c1d95; }
+  .user-badge-role { font-size: 10px; background: #ede9fe; color: #7c3aed;
+    padding: 2px 8px; border-radius: 6px; font-weight: 700; text-transform: uppercase; }
+  .user-badge-btn { font-size: 11px; border: none; border-radius: 8px;
+    padding: 4px 12px; cursor: pointer; font-weight: 600; font-family: 'Inter',sans-serif; }
+  .ubtn-admin  { background: #7c3aed; color: #fff; }
+  .ubtn-logout { background: #fee2e2; color: #dc2626; margin-left: 4px; }
+
+  /* ── Admin Modal ── */
+  .admin-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(30,27,75,0.7);
+    backdrop-filter: blur(4px); z-index: 8888;
+    align-items: center; justify-content: center;
+  }
+  .admin-overlay.open { display: flex; }
+  .admin-modal {
+    background: #fff; border-radius: 20px; padding: 28px 28px 24px;
+    max-width: 560px; width: 92%; max-height: 82vh; overflow-y: auto;
+    box-shadow: 0 8px 40px rgba(124,58,237,0.22);
+  }
+  .admin-modal-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .admin-modal-title { font-size: 15px; font-weight: 800; color: #1e1b4b; }
+  .admin-close { background: none; border: none; font-size: 22px; color: #9ca3af; cursor: pointer; line-height: 1; }
+  .admin-create { background: #f5f3ff; border-radius: 12px; padding: 14px 16px;
+    margin-bottom: 18px; border: 1px solid #ede9fe; }
+  .admin-create-title { font-size: 10px; font-weight: 800; color: #7c3aed;
+    text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; }
+  .admin-form-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .admin-input { flex: 1; min-width: 110px; padding: 8px 12px; border: 1.5px solid #e0d8f8;
+    border-radius: 8px; font-size: 12px; font-family: 'Inter',sans-serif; color: #1e1b4b; outline: none; }
+  .admin-input:focus { border-color: #7c3aed; }
+  .admin-select { padding: 8px 10px; border: 1.5px solid #e0d8f8; border-radius: 8px;
+    font-size: 12px; font-family: 'Inter',sans-serif; color: #1e1b4b; outline: none; background: #fff; }
+  .admin-add-btn { padding: 8px 18px; background: #7c3aed; color: #fff; border: none;
+    border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .admin-msg { font-size: 11px; margin-top: 8px; display: none; }
+  .admin-del-btn { font-size: 11px; background: #fee2e2; color: #dc2626; border: none;
+    border-radius: 6px; padding: 3px 10px; cursor: pointer; font-weight: 600; }
+
   </style>
 </head>
 <body>
+  <!-- Login Overlay -->
+  <div class="login-overlay" id="login-overlay" style="display:none">
+    <div class="login-card">
+      <img class="login-logo" src="Kuziini logo-01.jpg" alt="Kuziini">
+      <div class="login-subtitle">Autentificare necesara</div>
+      <div class="login-err" id="login-err"></div>
+      <div class="login-field">
+        <label>Utilizator</label>
+        <input id="login-username" class="login-input" type="text" autocomplete="username"
+               placeholder="username" onkeydown="if(event.key==='Enter')document.getElementById('login-password').focus()">
+      </div>
+      <div class="login-field">
+        <label>Parola</label>
+        <input id="login-password" class="login-input" type="password" autocomplete="current-password"
+               placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button id="login-btn" class="login-btn" onclick="doLogin()">Autentificare</button>
+    </div>
+  </div>
+
+  <!-- Admin Modal -->
+  <div class="admin-overlay" id="admin-overlay">
+    <div class="admin-modal">
+      <div class="admin-modal-hdr">
+        <span class="admin-modal-title">Administrare Utilizatori</span>
+        <button class="admin-close" onclick="closeAdminModal()">&#x2715;</button>
+      </div>
+      <div class="admin-create">
+        <div class="admin-create-title">Utilizator nou</div>
+        <div class="admin-form-row">
+          <input id="nu-username" class="admin-input" placeholder="username" />
+          <input id="nu-name"     class="admin-input" placeholder="Nume afisat" />
+          <input id="nu-password" class="admin-input" type="password" placeholder="Parola" />
+          <select id="nu-role" class="admin-select">
+            <option value="user">user</option>
+            <option value="admin">admin</option>
+          </select>
+          <button class="admin-add-btn" onclick="adminCreateUser()">Adauga</button>
+        </div>
+        <div class="admin-msg" id="admin-msg"></div>
+      </div>
+      <div id="admin-users-list"></div>
+    </div>
+  </div>
+
   <!-- Loading Overlay -->
   <div class="loading-overlay" id="loading-overlay">
     <div class="loading-card">
@@ -1618,6 +1735,12 @@
         </div>
       </div>
       <div class="app-subtitle">× Samsung — Comparare Diferențe de Preț pe Piață</div>
+      <div class="user-badge" id="user-badge">
+        <span class="user-badge-name" id="user-badge-name"></span>
+        <span class="user-badge-role" id="user-badge-role"></span>
+        <button class="user-badge-btn ubtn-admin" id="admin-btn" onclick="openAdminModal()" style="display:none">Utilizatori</button>
+        <button class="user-badge-btn ubtn-logout" onclick="doLogout()">Deconectare</button>
+      </div>
     </div>
 
     <!-- ── Last Update Info ── -->
@@ -3348,8 +3471,22 @@ function _getState() {
   };
 }
 
-function _saveToStorage() {
+async function _saveToStorage() {
   const state = _getState();
+  const token = localStorage.getItem('kuziini_auth');
+  let authToken = null;
+  try { authToken = JSON.parse(token || 'null')?.token; } catch(e) {}
+  if (authToken) {
+    try {
+      const r = await fetch('/api/offers/save', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken},
+        body: JSON.stringify(state),
+      });
+      return r.ok;
+    } catch(e) {}
+  }
+  // Fallback: localStorage
   try {
     const all = JSON.parse(localStorage.getItem('kuziini_offers') || '[]');
     const idx = all.findIndex(o => o.id === state.id);
@@ -3359,7 +3496,7 @@ function _saveToStorage() {
   } catch(e) { return false; }
 }
 
-function saveAndToast() {
+async function saveAndToast() {
   const client = (document.getElementById('field-client') || {}).value || '';
   const phone  = (document.getElementById('field-phone')  || {}).value || '';
   if (!client.trim() && !phone.trim()) {
@@ -3367,21 +3504,21 @@ function saveAndToast() {
     document.getElementById('field-client').focus();
     return;
   }
-  if (_saveToStorage()) {
+  if (await _saveToStorage()) {
     const t = document.getElementById('saved-toast');
     t.style.display = 'block';
     setTimeout(() => t.style.display = 'none', 2200);
   }
 }
 
-function doPrint() { _saveToStorage(); window.print(); }
+async function doPrint() { await _saveToStorage(); window.print(); }
 
-function closeOffer() {
+async function closeOffer() {
   const client = (document.getElementById('field-client') || {}).value || '';
   const phone  = (document.getElementById('field-phone')  || {}).value || '';
   const hasClient = client.trim() || phone.trim();
   if (hasClient && confirm('Salvezi aceasta oferta in lista "Ofertele mele"?')) {
-    _saveToStorage();
+    await _saveToStorage();
   }
   window.close();
 }
@@ -3500,68 +3637,156 @@ else { setTimeout(_renderTotals, 100); }
       _openOfferWindow(offerData, savedState || null);
     }
 
-    // ── Offer management ─────────────────────────────────────────────────
+    // ── Auth ──────────────────────────────────────────────────────────────
+
+    const _AUTH_KEY = 'kuziini_auth';
+    let _serverOffers = [];
+
+    function authLoad()         { try { return JSON.parse(localStorage.getItem(_AUTH_KEY) || 'null'); } catch(e) { return null; } }
+    function authSave(d)        { localStorage.setItem(_AUTH_KEY, JSON.stringify(d)); }
+    function authClear()        { localStorage.removeItem(_AUTH_KEY); }
+    function authHeaders()      { const a = authLoad(); return a ? {'Authorization': 'Bearer ' + a.token} : {}; }
+    function isAdmin()          { const a = authLoad(); return a && a.role === 'admin'; }
+    function currentUsername()  { const a = authLoad(); return a ? a.username : null; }
+
+    async function doLogin() {
+      const username = (document.getElementById('login-username').value || '').trim();
+      const password = document.getElementById('login-password').value || '';
+      const errEl = document.getElementById('login-err');
+      const btn   = document.getElementById('login-btn');
+      errEl.style.display = 'none';
+      if (!username || !password) { errEl.textContent = 'Completati utilizatorul si parola.'; errEl.style.display = 'block'; return; }
+      btn.disabled = true; btn.textContent = 'Se conecteaza...';
+      try {
+        const r = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({username, password}),
+        });
+        const d = await r.json();
+        if (!r.ok) { errEl.textContent = d.error || 'Eroare la autentificare.'; errEl.style.display = 'block'; btn.disabled = false; btn.textContent = 'Autentificare'; return; }
+        authSave({token: d.token, username: d.username, name: d.name, role: d.role});
+        document.getElementById('login-overlay').style.display = 'none';
+        updateUserBadge();
+        await _migrateLocalOffers();
+        await loadOffersFromServer();
+      } catch(e) {
+        errEl.textContent = 'Eroare de retea.'; errEl.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Autentificare';
+      }
+    }
+
+    async function doLogout() {
+      const a = authLoad();
+      if (a) { try { await fetch('/api/auth/logout', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'}); } catch(e) {} }
+      authClear();
+      _serverOffers = [];
+      updateOffersBadge();
+      document.getElementById('login-overlay').style.display = 'flex';
+      document.getElementById('user-badge').style.display = 'none';
+      document.getElementById('offers-section').classList.remove('visible');
+    }
+
+    function updateUserBadge() {
+      const a = authLoad();
+      const badge = document.getElementById('user-badge');
+      if (!a) { badge.style.display = 'none'; return; }
+      badge.style.display = 'flex';
+      document.getElementById('user-badge-name').textContent = a.name || a.username;
+      document.getElementById('user-badge-role').textContent = a.role;
+      document.getElementById('admin-btn').style.display = a.role === 'admin' ? '' : 'none';
+    }
+
+    function initAuth() {
+      const a = authLoad();
+      if (!a || !a.token) {
+        document.getElementById('login-overlay').style.display = 'flex';
+      } else {
+        updateUserBadge();
+        loadOffersFromServer();
+      }
+    }
+
+    // Migrate old localStorage offers to server on first login
+    async function _migrateLocalOffers() {
+      try {
+        const local = JSON.parse(localStorage.getItem('kuziini_offers') || '[]');
+        if (local.length === 0) return;
+        for (const o of local) {
+          await fetch('/api/offers/save', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify(o)});
+        }
+        localStorage.removeItem('kuziini_offers');
+      } catch(e) {}
+    }
+
+    // ── Offer management (API-based) ──────────────────────────────────────
+
+    async function loadOffersFromServer() {
+      try {
+        const r = await fetch('/api/offers/list', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
+        if (r.status === 401) { doLogout(); return; }
+        if (!r.ok) return;
+        const d = await r.json();
+        _serverOffers = d.offers || [];
+        updateOffersBadge();
+        const section = document.getElementById('offers-section');
+        if (section.classList.contains('visible')) renderOffersList(document.getElementById('offers-search').value || '');
+      } catch(e) {}
+    }
 
     function updateOffersBadge() {
-      try {
-        const all = JSON.parse(localStorage.getItem('kuziini_offers') || '[]');
-        const el  = document.getElementById('offers-count');
-        if (el) el.textContent = all.length;
-      } catch(e) {}
+      const el = document.getElementById('offers-count');
+      if (el) el.textContent = _serverOffers.length;
     }
 
     function loadOffersSection() {
       const section = document.getElementById('offers-section');
-      if (section.classList.contains('visible')) {
-        section.classList.remove('visible');
-        return;
-      }
+      if (section.classList.contains('visible')) { section.classList.remove('visible'); return; }
       section.classList.add('visible');
       renderOffersList('');
+      loadOffersFromServer();
     }
 
     function renderOffersList(filter) {
       const body = document.getElementById('offers-body');
-      let all = [];
-      try { all = JSON.parse(localStorage.getItem('kuziini_offers') || '[]'); } catch(e) {}
-
       const q = (filter || '').toLowerCase();
+      const me = currentUsername();
       const items = q
-        ? all.filter(o =>
+        ? _serverOffers.filter(o =>
             (o.client || '').toLowerCase().includes(q) ||
             (o.phone  || '').toLowerCase().includes(q) ||
             (o.num    || '').toLowerCase().includes(q) ||
-            (o.products || []).some(p => (p.code || '').toLowerCase().includes(q)))
-        : all;
-
-      updateOffersBadge();
+            (o.product_codes || []).some(c => c.toLowerCase().includes(q)))
+        : _serverOffers;
 
       if (items.length === 0) {
         body.innerHTML = `<div style="text-align:center;padding:28px;color:#9ca3af;font-size:13px;">
-          ${q ? 'Nicio oferta gasita pentru "' + filter + '".' : 'Nu ai salvat inca nicio oferta. Genereaza o oferta din sectiunea Cos.'}
+          ${q ? 'Nicio oferta gasita pentru &quot;' + filter + '&quot;.' : 'Nu ai salvat inca nicio oferta.'}
         </div>`;
         return;
       }
 
       let html = '<table class="report-table"><thead><tr>'
         + '<th>Nr. Oferta</th><th>Data</th><th>Client</th><th>Telefon/Email</th>'
-        + '<th style="text-align:center">Produse</th>'
+        + '<th style="text-align:center">Buc.</th>'
         + '<th style="text-align:right">Total</th><th></th>'
         + '</tr></thead><tbody>';
 
       items.forEach(o => {
-        const totalBuc = (o.products || []).reduce((s, p) => s + (p.qty || 1), 0);
-        const discTxt  = o.discount > 0 ? `<br><span style="font-size:10px;color:#7c3aed">Discount: ${o.discount}%</span>` : '';
+        const isOwn = isAdmin() || o.owner_id === me;
+        const discTxt = o.discount > 0 ? `<br><span style="font-size:10px;color:#7c3aed">-${o.discount}%</span>` : '';
+        const sharedTag = !isOwn ? `<span style="font-size:9px;background:#ede9fe;color:#7c3aed;padding:1px 6px;border-radius:4px;margin-left:4px">partajata</span>` : '';
         html += `<tr>
-          <td><span class="cart-code">${o.num}</span>${discTxt}</td>
+          <td><span class="cart-code">${o.num}</span>${discTxt}${sharedTag}</td>
           <td style="font-size:11px;color:#6b7280;white-space:nowrap">${o.date || ''}</td>
           <td style="font-size:12px;font-weight:600">${o.client || '—'}</td>
           <td style="font-size:11px;color:#6b7280">${o.phone || '—'}</td>
-          <td style="text-align:center;font-size:12px">${totalBuc}</td>
+          <td style="text-align:center;font-size:12px">${o.products_qty || o.products_count || 0}</td>
           <td style="text-align:right;font-weight:700;white-space:nowrap">${o.total ? formatPrice(o.total) : '—'}</td>
-          <td style="white-space:nowrap">
+          <td style="white-space:nowrap;display:flex;gap:4px;align-items:center">
             <button class="offer-open-btn" onclick="openSavedOffer('${o.id}')">Deschide</button>
-            <button class="offer-del-btn"  onclick="deleteOffer('${o.id}')">✕</button>
+            ${isOwn ? `<button class="offer-open-btn" style="background:#e0f2fe;color:#0369a1" onclick="shareOfferPrompt('${o.id}')">Partajeaza</button>` : ''}
+            ${isOwn ? `<button class="offer-del-btn" onclick="deleteOffer('${o.id}')">&#x2715;</button>` : ''}
           </td>
         </tr>`;
       });
@@ -3570,38 +3795,94 @@ else { setTimeout(_renderTotals, 100); }
       body.innerHTML = html;
     }
 
-    function deleteOffer(id) {
+    async function deleteOffer(id) {
       if (!confirm('Stergi oferta ' + id + '?')) return;
       try {
-        const all = JSON.parse(localStorage.getItem('kuziini_offers') || '[]');
-        localStorage.setItem('kuziini_offers', JSON.stringify(all.filter(o => o.id !== id)));
+        const r = await fetch('/api/offers/delete', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({offer_id: id})});
+        if (r.status === 401) { doLogout(); return; }
       } catch(e) {}
-      renderOffersList(document.getElementById('offers-search').value || '');
-      updateOffersBadge();
+      await loadOffersFromServer();
     }
 
-    function openSavedOffer(id) {
-      let all = [];
-      try { all = JSON.parse(localStorage.getItem('kuziini_offers') || '[]'); } catch(e) {}
-      const saved = all.find(o => o.id === id);
-      if (!saved || !saved.products) return;
-
-      // Rebuild offerData + savedState from stored offer
-      const offerData = {
-        num: saved.num, date: saved.date, ts: saved.ts,
-        products: saved.products,
-      };
-      const savedState = {
-        client: saved.client || '', phone: saved.phone || '',
-        notes: saved.notes || '', discount: saved.discount || 0,
-        num: saved.num, date: saved.date, ts: saved.ts,
-      };
-      _openOfferWindow(offerData, savedState);
+    async function shareOfferPrompt(id) {
+      const target = prompt('Username-ul utilizatorului cu care doriti sa partajati oferta:');
+      if (!target) return;
+      const r = await fetch('/api/offers/share', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({offer_id: id, target_username: target.trim()})});
+      const d = await r.json();
+      if (r.ok) alert('Oferta partajata cu succes cu "' + target + '".');
+      else alert('Eroare: ' + (d.error || 'necunoscut'));
     }
 
-    // Render cart on page load (from localStorage)
+    async function openSavedOffer(id) {
+      try {
+        const r = await fetch('/api/offers/get', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({offer_id: id})});
+        if (r.status === 401) { doLogout(); return; }
+        if (!r.ok) { alert('Eroare la deschiderea ofertei.'); return; }
+        const d = await r.json();
+        const saved = d.offer;
+        if (!saved || !saved.products) return;
+        const offerData = {num: saved.num, date: saved.date, ts: saved.ts, products: saved.products};
+        const savedState = {client: saved.client||'', phone: saved.phone||'', notes: saved.notes||'', discount: saved.discount||0, num: saved.num, date: saved.date, ts: saved.ts};
+        _openOfferWindow(offerData, savedState);
+      } catch(e) { alert('Eroare la deschiderea ofertei.'); }
+    }
+
+    // ── Admin modal ────────────────────────────────────────────────────────
+
+    async function openAdminModal() {
+      document.getElementById('admin-overlay').classList.add('open');
+      await refreshAdminUsers();
+    }
+    function closeAdminModal() {
+      document.getElementById('admin-overlay').classList.remove('open');
+    }
+
+    async function refreshAdminUsers() {
+      const r = await fetch('/api/users/list', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
+      if (!r.ok) return;
+      const d = await r.json();
+      const el = document.getElementById('admin-users-list');
+      if (!d.users || d.users.length === 0) { el.innerHTML = '<p style="color:#9ca3af;font-size:13px;padding:8px 0">Niciun utilizator.</p>'; return; }
+      let html = '<table class="report-table"><thead><tr><th>Username</th><th>Nume</th><th>Rol</th><th>Creat</th><th></th></tr></thead><tbody>';
+      d.users.forEach(u => {
+        const isSelf = u.username === currentUsername();
+        const del = isSelf ? '<span style="font-size:10px;color:#9ca3af">(tu)</span>'
+          : `<button class="admin-del-btn" onclick="adminDeleteUser('${u.username}')">Sterge</button>`;
+        const dt = u.created_at ? new Date(u.created_at * 1000).toLocaleDateString('ro-RO') : '—';
+        html += `<tr><td style="font-weight:700">${u.username}</td><td>${u.name||u.username}</td><td>${u.role}</td><td style="font-size:11px;color:#6b7280">${dt}</td><td>${del}</td></tr>`;
+      });
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    }
+
+    async function adminCreateUser() {
+      const username = (document.getElementById('nu-username').value || '').trim();
+      const name     = (document.getElementById('nu-name').value     || '').trim();
+      const password = document.getElementById('nu-password').value  || '';
+      const role     = document.getElementById('nu-role').value;
+      const msg = document.getElementById('admin-msg');
+      if (!username || !password) { msg.textContent = 'Completati username si parola.'; msg.style.color='#dc2626'; msg.style.display='block'; return; }
+      const r = await fetch('/api/users/create', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({username, name, password, role})});
+      const d = await r.json();
+      if (r.ok) {
+        msg.textContent = 'Utilizator creat cu succes.'; msg.style.color='#16a34a'; msg.style.display='block';
+        document.getElementById('nu-username').value = '';
+        document.getElementById('nu-name').value = '';
+        document.getElementById('nu-password').value = '';
+        await refreshAdminUsers();
+      } else { msg.textContent = d.error || 'Eroare.'; msg.style.color='#dc2626'; msg.style.display='block'; }
+    }
+
+    async function adminDeleteUser(username) {
+      if (!confirm('Stergi utilizatorul "' + username + '"?')) return;
+      const r = await fetch('/api/users/delete', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({username})});
+      if (r.ok) await refreshAdminUsers();
+      else { const d = await r.json(); alert(d.error || 'Eroare.'); }
+    }
+
+    // Render cart on page load
     renderCart();
-    updateOffersBadge();
+    initAuth();
 
     // ── Rapoarte preturi ──────────────────────────────────────────────────
     let reportsData = null;

@@ -13,6 +13,7 @@ import os
 sys.path.insert(0, os.path.dirname(__file__))
 from scraper import search_product, search_single_vendor, load_products, APP_VERSION, warmup_session, get_samsung_specs
 from cache import get_cached_price, get_cache_status, is_configured as cache_configured, test_connection as cache_test, get_price_history, get_all_history_codes, get_cron_events
+import auth_utils
 
 # Warmup on cold start
 warmup_session()
@@ -249,11 +250,211 @@ class handler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
         self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Headers', 'Authorization, Content-Type')
         self.end_headers()
         self.wfile.write(body)
+
+    def _read_body(self):
+        length = int(self.headers.get('Content-Length', 0))
+        if length == 0:
+            return {}
+        try:
+            return json.loads(self.rfile.read(length).decode('utf-8'))
+        except Exception:
+            return {}
+
+    def _require_auth(self, require_admin=False):
+        token = auth_utils.extract_token(self.headers.get('Authorization', ''))
+        session = auth_utils.validate_session(token)
+        if not session:
+            self._json({'error': 'Autentificare necesara.'}, 401)
+            return None
+        if require_admin and session.get('role') != 'admin':
+            self._json({'error': 'Acces interzis. Necesita rol admin.'}, 403)
+            return None
+        return session
 
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Authorization, Content-Type')
         self.end_headers()
+
+    def do_POST(self):
+        parsed = urllib.parse.urlparse(self.path)
+        path = parsed.path
+        body = self._read_body()
+
+        # ── Auth ──────────────────────────────────────────────────────────
+
+        if path == '/api/auth/login':
+            username = (body.get('username') or '').strip()
+            password = body.get('password') or ''
+            if not username or not password:
+                self._json({'error': 'Username si parola sunt obligatorii.'}, 400)
+                return
+            user, token, err = auth_utils.do_login(username, password)
+            if err:
+                self._json({'error': err}, 401)
+                return
+            self._json({'token': token, 'username': user['username'],
+                        'name': user['name'], 'role': user['role']})
+
+        elif path == '/api/auth/logout':
+            token = auth_utils.extract_token(self.headers.get('Authorization', ''))
+            if token:
+                auth_utils.destroy_session(token)
+            self._json({'ok': True})
+
+        elif path == '/api/auth/me':
+            session = self._require_auth()
+            if not session:
+                return
+            self._json({'username': session['username'], 'role': session['role']})
+
+        # ── Offers ────────────────────────────────────────────────────────
+
+        elif path == '/api/offers/save':
+            session = self._require_auth()
+            if not session:
+                return
+            oid, err = auth_utils.save_offer(body, session['username'])
+            if err:
+                self._json({'error': err}, 403)
+                return
+            self._json({'ok': True, 'offer_id': oid})
+
+        elif path == '/api/offers/list':
+            session = self._require_auth()
+            if not session:
+                return
+            offers = auth_utils.list_offers(session['username'], session['role'])
+            self._json({'offers': offers})
+
+        elif path == '/api/offers/get':
+            session = self._require_auth()
+            if not session:
+                return
+            oid = body.get('offer_id') or ''
+            offer, err = auth_utils.get_offer_full(oid, session['username'], session['role'])
+            if err:
+                self._json({'error': err}, 403)
+                return
+            self._json({'offer': offer})
+
+        elif path == '/api/offers/share':
+            session = self._require_auth()
+            if not session:
+                return
+            oid = body.get('offer_id') or ''
+            target = (body.get('target_username') or '').strip()
+            if not oid or not target:
+                self._json({'error': 'offer_id si target_username sunt obligatorii.'}, 400)
+                return
+            err = auth_utils.share_offer(oid, session['username'], session['role'], target)
+            if err:
+                self._json({'error': err}, 400)
+                return
+            self._json({'ok': True})
+
+        elif path == '/api/offers/delete':
+            session = self._require_auth()
+            if not session:
+                return
+            oid = body.get('offer_id') or ''
+            if not oid:
+                self._json({'error': 'offer_id obligatoriu.'}, 400)
+                return
+            err = auth_utils.delete_offer(oid, session['username'], session['role'])
+            if err:
+                self._json({'error': err}, 403)
+                return
+            self._json({'ok': True})
+
+        # ── Users (admin) ─────────────────────────────────────────────────
+
+        elif path == '/api/users/list':
+            session = self._require_auth(require_admin=True)
+            if not session:
+                return
+            self._json({'users': auth_utils.list_users()})
+
+        elif path == '/api/users/create':
+            session = self._require_auth(require_admin=True)
+            if not session:
+                return
+            username = (body.get('username') or '').strip()
+            password = body.get('password') or ''
+            role     = body.get('role') or 'user'
+            name     = (body.get('name') or '').strip() or username
+            if not username or not password:
+                self._json({'error': 'Username si parola sunt obligatorii.'}, 400)
+                return
+            if role not in ('admin', 'user'):
+                role = 'user'
+            user, err = auth_utils.create_user(username, password, role, name)
+            if err:
+                self._json({'error': err}, 400)
+                return
+            self._json({'ok': True, 'user': user})
+
+        elif path == '/api/users/update':
+            session = self._require_auth(require_admin=True)
+            if not session:
+                return
+            username = (body.get('username') or '').strip()
+            if not username:
+                self._json({'error': 'username obligatoriu.'}, 400)
+                return
+            user, err = auth_utils.update_user(
+                username,
+                name=body.get('name'),
+                role=body.get('role'),
+                password=body.get('password'),
+            )
+            if err:
+                self._json({'error': err}, 400)
+                return
+            self._json({'ok': True, 'user': user})
+
+        elif path == '/api/users/delete':
+            session = self._require_auth(require_admin=True)
+            if not session:
+                return
+            username = (body.get('username') or '').strip()
+            if username == session['username']:
+                self._json({'error': 'Nu te poti sterge pe tine insuti.'}, 400)
+                return
+            err = auth_utils.delete_user(username)
+            if err:
+                self._json({'error': err}, 400)
+                return
+            self._json({'ok': True})
+
+        elif path == '/api/users/change_password':
+            session = self._require_auth()
+            if not session:
+                return
+            # Admin can reset any user; regular user must confirm old password
+            target_user = (body.get('username') or session['username']).strip()
+            new_pwd = body.get('new_password') or ''
+            if not new_pwd:
+                self._json({'error': 'Parola noua obligatorie.'}, 400)
+                return
+            if session['role'] != 'admin' or target_user == session['username']:
+                # Must verify old password
+                old_pwd = body.get('old_password') or ''
+                u = auth_utils.get_user(session['username'])
+                if not u or not auth_utils._verify_password(old_pwd, u['password_hash'], u['salt']):
+                    self._json({'error': 'Parola curenta incorecta.'}, 401)
+                    return
+                target_user = session['username']
+            _, err = auth_utils.update_user(target_user, password=new_pwd)
+            if err:
+                self._json({'error': err}, 400)
+                return
+            self._json({'ok': True})
+
+        else:
+            self._json({'error': 'Not found'}, 404)
