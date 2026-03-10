@@ -97,6 +97,22 @@ class handler(BaseHTTPRequestHandler):
                 'codes_sample': list(products.keys())[:5],
             })
 
+        elif path == '/api/products':
+            import re
+            products = load_products()
+            product_list = []
+            for code, info in products.items():
+                inches_match = re.search(r'QE(\d{2})', code)
+                inches = int(inches_match.group(1)) if inches_match else None
+                product_list.append({
+                    'code': code,
+                    'category': info.get('category', ''),
+                    'price': round(info.get('price', 0), 2),
+                    'inches': inches,
+                })
+            product_list.sort(key=lambda x: (x['category'], x.get('inches') or 0, x['code']))
+            self._json({'products': product_list, 'count': len(product_list)})
+
         elif path == '/api/cache_status':
             status = get_cache_status()
             last = status.get('last_update')
