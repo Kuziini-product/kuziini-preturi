@@ -2442,17 +2442,150 @@ def get_samsung_specs(code):
     return {'sections': sections}
 
 
+# ─── Functii noi Altex: API intern + Sitemap ─────────────────────────────────
+# Descoperite prin reverse engineering JavaScript Altex (webpack bundle).
+# Nu modifica nicio functie existenta.
+
+# Cache global sitemap Altex (incarcat o singura data per instanta)
+_altex_sitemap_cache = {}
+
+def _altex_scrape_via_api(code):
+    """
+    NOUA: Cauta pretul Altex prin API-ul intern descoperit din bundle-ul JS.
+    Endpoint: https://lcdn.altex.ro/api/v2/catalog/search/{term}?size=48
+    Returneaza (price, url) sau (None, None).
+    """
+    code_lower = code.lower()
+    for variant in get_search_variants(code)[:3]:
+        v_enc = urllib.parse.quote(variant)
+        api_url = f'https://lcdn.altex.ro/api/v2/catalog/search/{v_enc}?size=48'
+        referer = f'https://altex.ro/cauta/?q={v_enc}'
+        log(f"  Altex API intern: {api_url}")
+
+        # Incearca cu headers identice cu cele din browser
+        cookie_file = _get_altex_cookie_file()
+        cmd = [
+            _get_curl_bin(), '-s', '-L', '-m', '12', '--compressed',
+            '-b', cookie_file,
+            '-H', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                  'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+            '-H', 'Accept: application/json, text/plain, */*',
+            '-H', 'Accept-Language: ro-RO,ro;q=0.9',
+            '-H', f'Referer: {referer}',
+            '-H', 'Origin: https://altex.ro',
+            '-H', 'X-Requested-With: XMLHttpRequest',
+            api_url,
+        ]
+        try:
+            run_kwargs = {'capture_output': True, 'timeout': 17}
+            if IS_WINDOWS:
+                run_kwargs['creationflags'] = 0x08000000
+            result = subprocess.run(cmd, **run_kwargs)
+            if result.returncode == 0 and result.stdout:
+                text = result.stdout.decode('utf-8', errors='replace').strip()
+                log(f"  Altex API intern: {len(text)}b | {text[:100]}")
+                if text and text not in ('[]', '{}', ''):
+                    try:
+                        data = json.loads(text)
+                        prod_url = _altex_find_product_url_in_json(data, code_lower)
+                        p = find_price_in_json(data)
+                        if p:
+                            log(f"  Altex API intern PRET: {p}")
+                            return (p, prod_url or api_url)
+                        if prod_url and '/cpd/' in prod_url:
+                            full_url = prod_url if prod_url.startswith('http') else 'https://altex.ro' + prod_url
+                            _, pp = _curl_with_cookies(full_url, timeout=15, referer=api_url)
+                            if pp:
+                                price = _altex_extract_price_from_product_page(pp, full_url)
+                                if price:
+                                    return (price, full_url)
+                    except (json.JSONDecodeError, Exception) as e:
+                        log(f"  Altex API intern parse eroare: {e}")
+        except Exception as e:
+            log(f"  Altex API intern exceptie: {e}")
+
+    return (None, None)
+
+
+def _altex_scrape_via_sitemap(code):
+    """
+    NOUA: Cauta URL-ul produsului in sitemap-ul TV Altex, apoi scrapeaza pretul.
+    Sitemap: altex.ro/sitemaps/products/altex_tv_audio_video_foto_sitemap.xml
+    Accesibil deoarece robots.txt e public si sitemaps sunt indexate de Google.
+    Returneaza (price, url) sau (None, None).
+    """
+    global _altex_sitemap_cache
+    code_lower = code.lower()
+
+    sitemap_urls = [
+        'https://altex.ro/sitemaps/products/altex_tv_audio_video_foto_sitemap.xml',
+        'https://altex.ro/sitemaps/search/altex_ugs.xml',
+    ]
+
+    for sm_url in sitemap_urls:
+        # Foloseste cache daca sitemap-ul a fost deja incarcat
+        if sm_url not in _altex_sitemap_cache:
+            log(f"  Altex sitemap: descarcare {sm_url}")
+            sm_text, _ = get_page_curl(sm_url, timeout=25)
+            if sm_text and len(sm_text) > 1000:
+                _altex_sitemap_cache[sm_url] = sm_text
+                log(f"  Altex sitemap: {len(sm_text):,}b incarcat")
+            else:
+                _altex_sitemap_cache[sm_url] = ''
+                log(f"  Altex sitemap: inaccesibil ({len(sm_text) if sm_text else 0}b)")
+                continue
+        else:
+            sm_text = _altex_sitemap_cache[sm_url]
+
+        if not sm_text:
+            continue
+
+        # Cauta URL-uri /cpd/ care contin codul produsului
+        for variant in get_search_variants(code):
+            v_lower = variant.lower()
+            for m in re.finditer(
+                r'<loc>(https://altex\.ro[^<]+/cpd/[^<]+)</loc>', sm_text, re.IGNORECASE
+            ):
+                url = m.group(1)
+                if v_lower in url.lower():
+                    log(f"  Altex sitemap URL gasit: {url}")
+                    _, prod_soup = _curl_with_cookies(url, timeout=15, referer=sm_url)
+                    if prod_soup:
+                        if product_matches_code(prod_soup, code):
+                            price = _altex_extract_price_from_product_page(prod_soup, url)
+                            if price:
+                                log(f"  Altex sitemap PRET: {price}")
+                                return (price, url)
+                        else:
+                            log(f"  Altex sitemap: cod nu corespunde, skip")
+
+    return (None, None)
+
+
 # ─── Functie suplimentara noua: agregatori romani de preturi ─────────────────
 # Apelata DUPA ce scraperul principal a esuat (price=None).
 # Nu modifica nicio functie existenta.
 
 def scrape_vendor_supplementary(code, vendor):
     """
-    Cauta pretul unui vendor prin site-uri agregatoare romane de preturi.
-    Incercate: preturi.ro, shopmania.ro, compari.ro (extins).
+    Cauta pretul unui vendor prin:
+    - Pentru Altex: API intern lcdn + Sitemap TV (metode noi)
+    - Toti vendorii: agregatori romani (preturi.ro, shopmania.ro, compari.ro)
     Returneaza (price, url) sau (None, None).
     """
     log(f"\n--- Supplementary ({vendor}/{code}) ---")
+
+    # ── Altex: API intern + Sitemap (metode noi, specifice Altex) ────────────
+    if vendor == 'altex':
+        # Incearca API-ul intern Altex (lcdn.altex.ro/api/v2/catalog/search/)
+        price, url = _altex_scrape_via_api(code)
+        if price:
+            return (price, url)
+
+        # Incearca sitemap-ul TV Altex (lista completa produse cu URL /cpd/)
+        price, url = _altex_scrape_via_sitemap(code)
+        if price:
+            return (price, url)
 
     for variant in get_search_variants(code)[:2]:
         v_enc = urllib.parse.quote(variant)
