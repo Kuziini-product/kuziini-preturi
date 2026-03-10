@@ -1820,23 +1820,12 @@ def _altex_extract_price_from_product_page(soup, product_url):
     return None
 
 
-def _altex_search_duckduckgo(code):
-    """
-    Cauta pe DuckDuckGo HTML URL-ul produsului Altex.
-    DuckDuckGo HTML nu necesita JavaScript si e mai putin protejat decat Google.
-    """
-    for variant in get_search_variants(code)[:2]:
-        query = f'site:altex.ro televizor samsung {variant}'
-        q_enc = urllib.parse.quote(query)
-        ddg_url = f'https://html.duckduckgo.com/html/?q={q_enc}'
-        text, soup = get_page_curl(ddg_url, timeout=10, referer='https://duckduckgo.com/')
-        if not text:
-            continue
-        log(f"  DDG search: {len(text):,}b")
-
-        # Extrage URL-uri Altex din rezultatele DDG
-        altex_urls = []
-        for a in (soup.find_all('a', href=True) if soup else []):
+def _extract_altex_cpd_urls(soup, html_text, code):
+    """Extrage URL-uri /cpd/ din soup sau HTML, prioritizand codul cautat."""
+    code_lower = code.lower()
+    altex_urls = []
+    if soup:
+        for a in soup.find_all('a', href=True):
             href = a['href']
             # DDG wraps URLs: //duckduckgo.com/l/?uddg=https%3A%2F%2Faltex.ro%2F...
             if 'uddg=' in href:
@@ -1847,20 +1836,50 @@ def _altex_search_duckduckgo(code):
                         altex_urls.append(decoded)
             elif 'altex.ro' in href.lower():
                 altex_urls.append(href)
+    # Prioritate: URL-uri /cpd/
+    for url in altex_urls:
+        if '/cpd/' in url.lower() and code_lower in url.lower():
+            return url
+    for url in altex_urls:
+        if '/cpd/' in url.lower() and 'televizor' in url.lower():
+            return url
+    for url in altex_urls:
+        if '/cpd/' in url.lower():
+            return url
+    return None
 
-        log(f"  DDG Altex URLs: {altex_urls[:5]}")
 
-        # Prioritate: URL-uri /cpd/ (pagini de produs)
-        code_lower = code.lower()
-        for url in altex_urls:
-            if '/cpd/' in url.lower() and code_lower in url.lower():
+def _altex_search_duckduckgo(code):
+    """
+    Cauta pe DuckDuckGo si Bing URL-ul produsului Altex.
+    """
+    for variant in get_search_variants(code)[:2]:
+        query = f'site:altex.ro televizor samsung {variant}'
+        q_enc = urllib.parse.quote(query)
+
+        # Incearca DuckDuckGo
+        ddg_url = f'https://html.duckduckgo.com/html/?q={q_enc}'
+        text, soup = get_page_curl(ddg_url, timeout=10, referer='https://duckduckgo.com/')
+        if text and len(text) > 20000:  # >20KB = raspuns real (nu pagina anti-bot)
+            log(f"  DDG search: {len(text):,}b")
+            url = _extract_altex_cpd_urls(soup, text, code)
+            if url:
+                log(f"  DDG Altex URL: {url}")
                 return url
-        for url in altex_urls:
-            if '/cpd/' in url.lower() and 'televizor' in url.lower():
+            log(f"  DDG: fara URL-uri Altex")
+        else:
+            log(f"  DDG blocat ({len(text) if text else 0}b), incerc Bing...")
+
+        # Fallback: Bing
+        bing_url = f'https://www.bing.com/search?q={q_enc}&count=10'
+        text2, soup2 = get_page_curl(bing_url, timeout=10, referer='https://www.bing.com/')
+        if text2 and len(text2) > 20000:
+            log(f"  Bing search: {len(text2):,}b")
+            url = _extract_altex_cpd_urls(soup2, text2, code)
+            if url:
+                log(f"  Bing Altex URL: {url}")
                 return url
-        for url in altex_urls:
-            if '/cpd/' in url.lower():
-                return url
+            log(f"  Bing: fara URL-uri Altex")
 
     return None
 
@@ -2003,7 +2022,31 @@ def scrape_altex(code):
                                 return (price, prod_url)
 
         if skip_to_ddg:
-            break  # skip steps 2-5, go to DuckDuckGo
+            # ready=null: skip STEP 2 (Next.js data route) dar incearca STEP 3 (API direct)
+            # STEP 3: API interne Altex - nu depind de ready state
+            for api_url in [
+                f'https://altex.ro/api/v2/catalog/products?q={v_enc}&size=10',
+                f'https://altex.ro/api/v2/search?q={v_enc}&size=10',
+                f'https://altex.ro/api/2.0/product/search/?q={v_enc}&size=10',
+                f'https://altex.ro/api/1.0/catalog/search?q={v_enc}&size=10',
+            ]:
+                api_data = _curl_json_with_cookies(
+                    api_url, timeout=12, referer=search_url)
+                if api_data:
+                    log(f"  Altex API (skip_to_ddg) JSON OK: {str(api_data)[:300]}")
+                    prod_url = _altex_find_product_url_in_json(api_data, code_lower)
+                    p = find_price_in_json(api_data)
+                    if p:
+                        log(f"  Altex PRET GASIT (API skip_to_ddg): {p}")
+                        return (p, prod_url or search_url)
+                    if prod_url and '/cpd/' in prod_url:
+                        full_url = prod_url if prod_url.startswith('http') else 'https://altex.ro' + prod_url
+                        _, pp = _curl_with_cookies(full_url, timeout=15, referer=search_url)
+                        if pp:
+                            price = _altex_extract_price_from_product_page(pp, full_url)
+                            if price:
+                                return (price, full_url)
+            break  # goto DuckDuckGo
 
         # ── STEP 2: Next.js data route CU cookies ────────────────────────────
         # Cu cookies din step 1, data route ar trebui sa returneze JSON
