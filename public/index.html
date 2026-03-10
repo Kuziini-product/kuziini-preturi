@@ -736,6 +736,167 @@
 
     .tag-min { background: #dcfce7; color: #15803d; }
     .tag-max { background: #fee2e2; color: #dc2626; }
+
+    /* ── Add to Cart Button ── */
+    .add-cart-btn {
+      display: none;
+      width: 100%;
+      padding: 14px;
+      margin-top: 16px;
+      background: linear-gradient(135deg, #7c3aed, #5b21b6);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.3px;
+    }
+    .add-cart-btn:hover {
+      background: linear-gradient(135deg, #6d28d9, #4c1d95);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35);
+    }
+    .add-cart-btn.added {
+      background: #22c55e;
+      cursor: default;
+    }
+    .add-cart-btn.visible { display: block; }
+
+    /* ── Cart Section ── */
+    .cart-section {
+      display: none;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 24px 28px;
+      margin-top: 24px;
+      box-shadow: 0 4px 24px rgba(100, 80, 200, 0.08);
+      border: 1px solid rgba(200, 190, 240, 0.3);
+    }
+    .cart-section.visible { display: block; }
+
+    .cart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .cart-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e1b4b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cart-badge {
+      background: #7c3aed;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .cart-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .cart-action-btn {
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+    .btn-export {
+      background: #22c55e;
+      color: #fff;
+    }
+    .btn-export:hover { background: #16a34a; }
+    .btn-clear {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    .btn-clear:hover { background: #fca5a5; }
+
+    /* Cart Table */
+    .cart-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13px;
+    }
+    .cart-table th {
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #7c6fa8;
+      background: #f8f6ff;
+      border-bottom: 2px solid #e0d8f8;
+    }
+    .cart-table th:first-child { border-radius: 10px 0 0 0; }
+    .cart-table th:last-child { border-radius: 0 10px 0 0; }
+    .cart-table td {
+      padding: 12px;
+      border-bottom: 1px solid #f0ecf8;
+      vertical-align: middle;
+    }
+    .cart-table tr:last-child td { border-bottom: none; }
+    .cart-code { font-weight: 700; color: #1e1b4b; }
+    .cart-cat { font-size: 11px; color: #a09bc0; }
+    .cart-price { font-weight: 600; text-align: right; white-space: nowrap; }
+    .cart-diff { font-weight: 700; text-align: right; white-space: nowrap; }
+    .cart-diff.positive { color: #22c55e; }
+    .cart-diff.negative { color: #dc2626; }
+    .cart-alert {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
+    }
+    .cart-remove {
+      background: none;
+      border: none;
+      color: #d1d5db;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+    .cart-remove:hover { color: #dc2626; }
+
+    .cart-total-row {
+      background: #f8f6ff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cart-total-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #7c6fa8;
+    }
+    .cart-total-value {
+      font-size: 18px;
+      font-weight: 800;
+      color: #1e1b4b;
+    }
   </style>
 </head>
 <body>
@@ -915,7 +1076,42 @@
         </div>
       </div>
 
+      <!-- Add to Cart -->
+      <button class="add-cart-btn" id="add-cart-btn" onclick="addToCart()">
+        Adauga in cos
+      </button>
+
     </div><!-- /results-section -->
+
+    <!-- ── Cart Section ── -->
+    <div class="cart-section" id="cart-section">
+      <div class="cart-header">
+        <div class="cart-title">
+          Cos produse <span class="cart-badge" id="cart-count">0</span>
+        </div>
+        <div class="cart-actions">
+          <button class="cart-action-btn btn-export" onclick="exportCart()">Descarca Excel</button>
+          <button class="cart-action-btn btn-clear" onclick="clearCart()">Goleste</button>
+        </div>
+      </div>
+      <table class="cart-table">
+        <thead>
+          <tr>
+            <th>Produs</th>
+            <th style="text-align:right">Pret Kuziini</th>
+            <th style="text-align:right">Cel mai ieftin</th>
+            <th style="text-align:right">Diferenta</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="cart-body"></tbody>
+      </table>
+      <div class="cart-total-row">
+        <span class="cart-total-label">Total Kuziini (cu TVA)</span>
+        <span class="cart-total-value" id="cart-total">0,00 Lei</span>
+      </div>
+    </div>
+
   </div><!-- /app-container -->
 
   <script>
@@ -1333,6 +1529,205 @@
 
     // Load products on page init
     loadProducts();
+
+    // ── Cart ─────────────────────────────────────────────────────────────
+    let cart = JSON.parse(localStorage.getItem('kuziini_cart') || '[]');
+    let lastSearchResult = null;
+
+    function saveCart() {
+      localStorage.setItem('kuziini_cart', JSON.stringify(cart));
+    }
+
+    // Override displayResults to track last result and show add-to-cart button
+    const _origDisplayResults = displayResults;
+    displayResults = function(data) {
+      _origDisplayResults(data);
+      lastSearchResult = data;
+      const btn = document.getElementById('add-cart-btn');
+      // Show add button only if we have Kuziini price
+      if (data.kuziini_price) {
+        btn.classList.add('visible');
+        const inCart = cart.some(item => item.code === data.code);
+        if (inCart) {
+          btn.textContent = 'Deja in cos';
+          btn.classList.add('added');
+        } else {
+          btn.textContent = 'Adauga in cos';
+          btn.classList.remove('added');
+        }
+      } else {
+        btn.classList.remove('visible');
+      }
+    };
+
+    function addToCart() {
+      if (!lastSearchResult || !lastSearchResult.kuziini_price) return;
+      const data = lastSearchResult;
+
+      // Check if already in cart
+      if (cart.some(item => item.code === data.code)) return;
+
+      // Find cheapest vendor
+      const vendorPrices = data.prices || {};
+      const validPrices = Object.entries(vendorPrices)
+        .filter(([k, v]) => v !== null && v !== undefined && v > 0);
+      let cheapestVendor = null;
+      let cheapestPrice = null;
+      if (validPrices.length > 0) {
+        validPrices.sort((a, b) => a[1] - b[1]);
+        cheapestVendor = validPrices[0][0];
+        cheapestPrice = validPrices[0][1];
+      }
+
+      const item = {
+        code: data.code,
+        category: data.category || '',
+        kuziini_price: data.kuziini_price,
+        cheapest_vendor: cheapestVendor,
+        cheapest_price: cheapestPrice,
+        all_prices: vendorPrices,
+        image_url: data.image_url,
+      };
+
+      // Alert if Kuziini is more expensive
+      if (cheapestPrice && data.kuziini_price > cheapestPrice) {
+        const diff = data.kuziini_price - cheapestPrice;
+        if (!confirm(
+          `Atentie! Pretul Kuziini (${formatPrice(data.kuziini_price)}) este mai mare decat ${cheapestVendor} (${formatPrice(cheapestPrice)}).\n\nDiferenta: +${formatPrice(diff)}\n\nAdaugi in cos?`
+        )) return;
+      }
+
+      cart.push(item);
+      saveCart();
+      renderCart();
+
+      // Update button
+      const btn = document.getElementById('add-cart-btn');
+      btn.textContent = 'Deja in cos';
+      btn.classList.add('added');
+    }
+
+    function removeFromCart(code) {
+      cart = cart.filter(item => item.code !== code);
+      saveCart();
+      renderCart();
+      // Update add button if current search is the removed item
+      if (lastSearchResult && lastSearchResult.code === code) {
+        const btn = document.getElementById('add-cart-btn');
+        btn.textContent = 'Adauga in cos';
+        btn.classList.remove('added');
+      }
+    }
+
+    function clearCart() {
+      if (cart.length === 0) return;
+      if (!confirm('Golesti cosul? (' + cart.length + ' produse)')) return;
+      cart = [];
+      saveCart();
+      renderCart();
+      const btn = document.getElementById('add-cart-btn');
+      btn.textContent = 'Adauga in cos';
+      btn.classList.remove('added');
+    }
+
+    function renderCart() {
+      const section = document.getElementById('cart-section');
+      const body = document.getElementById('cart-body');
+      const countBadge = document.getElementById('cart-count');
+      const totalEl = document.getElementById('cart-total');
+
+      if (cart.length === 0) {
+        section.classList.remove('visible');
+        return;
+      }
+
+      section.classList.add('visible');
+      countBadge.textContent = cart.length;
+
+      let totalKuziini = 0;
+      let html = '';
+
+      cart.forEach(item => {
+        totalKuziini += item.kuziini_price;
+        const kzStr = formatPrice(item.kuziini_price);
+        let cheapStr = 'N/A';
+        let diffStr = '—';
+        let diffClass = '';
+        let alertTag = '';
+
+        if (item.cheapest_price) {
+          cheapStr = formatPrice(item.cheapest_price) + ' (' + item.cheapest_vendor + ')';
+          const diff = item.cheapest_price - item.kuziini_price;
+          if (diff > 0) {
+            // Kuziini is cheaper (good)
+            diffStr = '+' + formatPrice(diff);
+            diffClass = 'positive';
+          } else if (diff < 0) {
+            // Kuziini is more expensive
+            diffStr = formatPrice(diff);
+            diffClass = 'negative';
+            alertTag = '<span class="cart-alert">SCUMP</span>';
+          } else {
+            diffStr = '0,00 Lei';
+          }
+        }
+
+        html += `<tr>
+          <td><span class="cart-code">${item.code}</span><br><span class="cart-cat">${item.category}</span></td>
+          <td class="cart-price">${kzStr}</td>
+          <td class="cart-price">${cheapStr}</td>
+          <td class="cart-diff ${diffClass}">${diffStr}${alertTag}</td>
+          <td><button class="cart-remove" onclick="removeFromCart('${item.code}')" title="Sterge">&times;</button></td>
+        </tr>`;
+      });
+
+      body.innerHTML = html;
+      totalEl.textContent = formatPrice(totalKuziini);
+    }
+
+    function exportCart() {
+      if (cart.length === 0) return;
+
+      // Generate Excel-compatible HTML table
+      let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Cos Kuziini</x:Name></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table border="1">';
+      html += '<tr><th>Cod Produs</th><th>Categorie</th><th>Pret Kuziini (Lei)</th><th>Cel mai ieftin vendor</th><th>Pret vendor (Lei)</th><th>Diferenta (Lei)</th><th>Samsung (Lei)</th><th>eMAG (Lei)</th><th>Flanco (Lei)</th><th>Altex (Lei)</th></tr>';
+
+      let totalKz = 0;
+      cart.forEach(item => {
+        totalKz += item.kuziini_price;
+        const cheapV = item.cheapest_vendor || 'N/A';
+        const cheapP = item.cheapest_price || '';
+        const diff = item.cheapest_price ? (item.cheapest_price - item.kuziini_price) : '';
+        const p = item.all_prices || {};
+        html += `<tr>
+          <td>${item.code}</td>
+          <td>${item.category}</td>
+          <td>${item.kuziini_price.toFixed(2)}</td>
+          <td>${cheapV}</td>
+          <td>${cheapP ? cheapP.toFixed(2) : ''}</td>
+          <td>${diff !== '' ? diff.toFixed(2) : ''}</td>
+          <td>${p.samsung ? p.samsung.toFixed(2) : ''}</td>
+          <td>${p.emag ? p.emag.toFixed(2) : ''}</td>
+          <td>${p.flanco ? p.flanco.toFixed(2) : ''}</td>
+          <td>${p.altex ? p.altex.toFixed(2) : ''}</td>
+        </tr>`;
+      });
+
+      html += `<tr><td colspan="2"><b>TOTAL</b></td><td><b>${totalKz.toFixed(2)}</b></td><td colspan="7"></td></tr>`;
+      html += '</table></body></html>';
+
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const date = new Date().toISOString().slice(0, 10);
+      a.download = `Kuziini_Cos_${date}.xls`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Render cart on page load (from localStorage)
+    renderCart();
 
     // Live reload disabled on Vercel (serverless)
   </script>
