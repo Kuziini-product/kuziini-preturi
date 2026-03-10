@@ -1754,6 +1754,18 @@
       }
     }
 
+    function showCartImage(code) {
+      const item = cart.find(i => i.code === code);
+      if (!item || !item.image_url) return;
+      const img = document.getElementById('product-image');
+      img.src = item.image_url;
+      img.style.display = 'block';
+      const placeholder = img.previousElementSibling;
+      if (placeholder) placeholder.style.display = 'none';
+      // Scroll sus la imagine
+      img.closest('.product-image-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
     function removeFromCart(code) {
       cart = cart.filter(item => item.code !== code);
       saveCart();
@@ -1830,7 +1842,7 @@
           ? `<span class="cart-adjusted">${formatPrice(sellingPrice)}</span>`
           : '';
 
-        html += `<tr>
+        html += `<tr onclick="showCartImage('${item.code}')" style="cursor:pointer">
           <td><span class="cart-code">${item.code}</span><br><span class="cart-cat">${item.category}</span></td>
           <td class="cart-price">${kzStr}</td>
           <td class="cart-price">${cheapStr}</td>
