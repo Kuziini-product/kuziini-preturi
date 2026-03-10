@@ -1995,6 +1995,125 @@ def get_product_image(code):
     return placeholder
 
 
+# ─── Specificatii Samsung ─────────────────────────────────────────────────────
+
+def get_samsung_specs(code):
+    """
+    Extrage specificatiile tehnice de pe pagina Samsung.com/ro.
+    Returneaza dict cu sectiuni si items, sau None daca nu gaseste.
+    Format: {'sections': [{'name': 'Ecran', 'items': [{'title': 'Rezolutie', 'value': '4K'}]}]}
+    """
+    log(f"\n--- Samsung Specs ({code}) ---")
+    code_lower = code.lower()
+
+    # Pas 1: Gaseste URL-ul paginii produsului din Samsung search
+    product_url = None
+    for variant in get_search_variants(code)[:2]:
+        v_enc = urllib.parse.quote(variant)
+        search_url = f'https://www.samsung.com/ro/search/?searchvalue={v_enc}'
+        _, cs = get_page_curl(search_url, timeout=12, referer='https://www.samsung.com/ro/')
+        if not cs:
+            continue
+
+        all_ro = [a['href'] for a in cs.find_all('a', href=True) if '/ro/' in a.get('href', '')]
+        variant_lower = variant.lower()
+        for href in all_ro:
+            hl = href.rstrip('/').lower()
+            if hl.endswith(code_lower) or hl.endswith(variant_lower):
+                if '?' not in href:
+                    product_url = href if href.startswith('http') else 'https://www.samsung.com' + href
+                    break
+        if not product_url:
+            for href in all_ro:
+                if (code_lower in href.lower() or variant_lower in href.lower()) and '?' not in href and '/all-' not in href:
+                    product_url = href if href.startswith('http') else 'https://www.samsung.com' + href
+                    break
+        if product_url:
+            break
+
+    if not product_url:
+        log("  Specs: pagina produsului negasita")
+        return None
+
+    log(f"  Specs: pagina gasita: {product_url[:80]}")
+
+    # Pas 2: Descarca pagina si extrage specificatiile
+    _, soup = get_page_curl(product_url, timeout=15, referer='https://www.samsung.com/ro/')
+    if not soup:
+        return None
+
+    html = str(soup)
+
+    # Extrage sectiunile (accordion headers)
+    section_names = re.findall(r'an-la="accordion:([^"]+)"', html)
+    if not section_names:
+        log("  Specs: nu am gasit sectiuni accordion")
+        return None
+
+    # Extrage toate item-urile spec (title + value)
+    spec_pattern = re.compile(
+        r'<p\s+class="pdd32-product-spec__content-item-title">\s*([^<]+?)\s*</p>'
+        r'\s*(?:<p\s+class="pdd32-product-spec__content-item-desc">\s*([^<]*?)\s*</p>)?',
+        re.S
+    )
+    all_items = spec_pattern.findall(html)
+
+    if not all_items:
+        log("  Specs: nu am gasit items")
+        return None
+
+    # Grupeaza items pe sectiuni
+    # Samsung pune spec items in ordine, grupate pe sectiuni
+    # Extragem sectiunile si item-urile in ordine din HTML
+    sections = []
+    seen_sections = set()
+    for name in section_names:
+        clean_name = name.replace('&amp;', '&').strip()
+        if clean_name not in seen_sections:
+            seen_sections.add(clean_name)
+            sections.append({'name': clean_name, 'items': []})
+
+    # Assign items to sections based on position in HTML
+    # Find each section's start position and assign items between them
+    section_positions = []
+    for name in sections:
+        raw_name = name['name'].replace('&', '&amp;')
+        pos = html.find(f'accordion:{raw_name}"')
+        if pos < 0:
+            pos = html.find(f'accordion:{name["name"]}"')
+        section_positions.append(pos if pos >= 0 else 999999999)
+
+    # Find each spec item's position
+    item_positions = []
+    search_start = 0
+    for title, value in all_items:
+        pos = html.find(title.strip(), search_start)
+        item_positions.append(pos)
+        if pos >= 0:
+            search_start = pos + 1
+
+    # Assign items to their section
+    for idx, (title, value) in enumerate(all_items):
+        item_pos = item_positions[idx]
+        # Find which section this item belongs to
+        assigned = len(sections) - 1  # default last
+        for si in range(len(sections)):
+            next_pos = section_positions[si + 1] if si + 1 < len(sections) else 999999999
+            if section_positions[si] <= item_pos < next_pos:
+                assigned = si
+                break
+        title_clean = title.strip()
+        value_clean = value.strip().replace('&quot;', '"').replace('&amp;', '&') if value else ''
+        if title_clean:
+            sections[assigned]['items'].append({'title': title_clean, 'value': value_clean})
+
+    # Filtreaza sectiuni goale
+    sections = [s for s in sections if s['items']]
+
+    log(f"  Specs: {len(sections)} sectiuni, {sum(len(s['items']) for s in sections)} items total")
+    return {'sections': sections}
+
+
 # ─── Cautare per vendor (rapid, sub 10s) ─────────────────────────────────────
 
 def search_single_vendor(code, vendor):

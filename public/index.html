@@ -839,6 +839,28 @@
       .results-section {
         border-radius: 14px;
       }
+      /* Specs responsive */
+      .specs-section {
+        padding: 14px 12px;
+        border-radius: 14px;
+        margin-top: 12px;
+      }
+      .spec-group-header {
+        padding: 10px 12px;
+        font-size: 12px;
+      }
+      .spec-item {
+        flex-direction: column;
+        gap: 2px;
+        padding: 6px 12px;
+      }
+      .spec-item-title {
+        flex: none;
+        font-size: 11px;
+      }
+      .spec-item-value {
+        font-size: 12px;
+      }
     }
 
     @media (max-width: 400px) {
@@ -921,6 +943,112 @@
       cursor: default;
     }
     .add-cart-btn.visible { display: block; }
+
+    /* ── Specs Section ── */
+    .specs-btn {
+      display: none;
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      background: linear-gradient(135deg, #1e3a5f, #2563eb);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.3px;
+    }
+    .specs-btn:hover {
+      background: linear-gradient(135deg, #1e3a5f, #1d4ed8);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+    }
+    .specs-btn.visible { display: block; }
+    .specs-btn.loading { opacity: 0.7; cursor: wait; }
+
+    .specs-section {
+      display: none;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 20px 24px;
+      margin-top: 16px;
+      box-shadow: 0 4px 24px rgba(100, 80, 200, 0.08);
+      border: 1px solid rgba(200, 190, 240, 0.3);
+    }
+    .specs-section.visible { display: block; }
+
+    .specs-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e1b4b;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .specs-title-badge {
+      font-size: 10px;
+      font-weight: 600;
+      background: #dbeafe;
+      color: #2563eb;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .spec-group {
+      border: 1px solid #f0ecf8;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .spec-group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: #f8f6ff;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e1b4b;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .spec-group-header:hover { background: #ede9fe; }
+    .spec-group-header .chevron {
+      transition: transform 0.2s;
+      font-size: 11px;
+      color: #7c6fa8;
+    }
+    .spec-group.open .chevron { transform: rotate(180deg); }
+    .spec-group-body {
+      display: none;
+      padding: 0;
+    }
+    .spec-group.open .spec-group-body { display: block; }
+
+    .spec-item {
+      display: flex;
+      padding: 8px 16px;
+      border-bottom: 1px solid #f8f6ff;
+      font-size: 12px;
+    }
+    .spec-item:last-child { border-bottom: none; }
+    .spec-item-title {
+      flex: 0 0 45%;
+      color: #7c6fa8;
+      font-weight: 500;
+    }
+    .spec-item-value {
+      flex: 1;
+      color: #1e1b4b;
+      font-weight: 600;
+    }
 
     /* ── Cart Section ── */
     .cart-section {
@@ -1281,7 +1409,20 @@
         Adauga in cos
       </button>
 
+      <!-- Specs Button -->
+      <button class="specs-btn" id="specs-btn" onclick="loadSpecs()">
+        Specificatii tehnice
+      </button>
+
     </div><!-- /results-section -->
+
+    <!-- ── Specs Section ── -->
+    <div class="specs-section" id="specs-section">
+      <div class="specs-title">
+        Specificatii <span class="specs-title-badge" id="specs-code"></span>
+      </div>
+      <div id="specs-body"></div>
+    </div>
 
     <!-- ── Cart Section ── -->
     <div class="cart-section" id="cart-section">
@@ -1836,12 +1977,26 @@
       _origDisplayResults(data);
       lastSearchResult = data;
       const btn = document.getElementById('add-cart-btn');
+      const specsBtn = document.getElementById('specs-btn');
+      const specsSection = document.getElementById('specs-section');
       // Show add button only if we have Kuziini price
       if (data.kuziini_price) {
         btn.classList.add('visible');
         updateCartButton(data.code);
       } else {
         btn.classList.remove('visible');
+      }
+      // Show specs button for any product
+      if (data.code) {
+        specsBtn.classList.add('visible');
+        specsBtn.textContent = 'Specificatii tehnice';
+        specsBtn.classList.remove('loading');
+        // Hide specs if different product
+        if (currentSpecsCode !== data.code) {
+          specsSection.classList.remove('visible');
+        }
+      } else {
+        specsBtn.classList.remove('visible');
       }
     };
 
@@ -1922,6 +2077,81 @@
       if (lastSearchResult && lastSearchResult.code === code) {
         updateCartButton(code);
       }
+    }
+
+    // ── Specificatii Samsung ──
+    let specsCache = {};
+    let currentSpecsCode = '';
+
+    function loadSpecs() {
+      if (!lastSearchResult) return;
+      const code = lastSearchResult.code;
+      const btn = document.getElementById('specs-btn');
+      const section = document.getElementById('specs-section');
+
+      // Toggle - daca e deja deschis pentru acelasi cod, inchide
+      if (section.classList.contains('visible') && currentSpecsCode === code) {
+        section.classList.remove('visible');
+        return;
+      }
+
+      // Daca e in cache local
+      if (specsCache[code]) {
+        renderSpecs(code, specsCache[code]);
+        return;
+      }
+
+      // Fetch de pe server
+      btn.classList.add('loading');
+      btn.textContent = 'Se incarca specificatiile...';
+
+      fetch(`/api/specs?code=${encodeURIComponent(code)}`)
+        .then(r => r.json())
+        .then(data => {
+          btn.classList.remove('loading');
+          btn.textContent = 'Specificatii tehnice';
+          if (data.specs && data.specs.sections) {
+            specsCache[code] = data.specs;
+            renderSpecs(code, data.specs);
+          } else {
+            btn.textContent = 'Specificatii indisponibile';
+            setTimeout(() => { btn.textContent = 'Specificatii tehnice'; }, 2000);
+          }
+        })
+        .catch(() => {
+          btn.classList.remove('loading');
+          btn.textContent = 'Eroare la incarcare';
+          setTimeout(() => { btn.textContent = 'Specificatii tehnice'; }, 2000);
+        });
+    }
+
+    function renderSpecs(code, specs) {
+      currentSpecsCode = code;
+      const section = document.getElementById('specs-section');
+      const body = document.getElementById('specs-body');
+      document.getElementById('specs-code').textContent = code;
+
+      let html = '';
+      specs.sections.forEach((sec, idx) => {
+        const openClass = idx === 0 ? ' open' : '';
+        html += `<div class="spec-group${openClass}">
+          <div class="spec-group-header" onclick="this.parentElement.classList.toggle('open')">
+            <span>${sec.name}</span>
+            <span class="chevron">&#9660;</span>
+          </div>
+          <div class="spec-group-body">`;
+        sec.items.forEach(item => {
+          html += `<div class="spec-item">
+            <div class="spec-item-title">${item.title}</div>
+            <div class="spec-item-value">${item.value || 'Da'}</div>
+          </div>`;
+        });
+        html += `</div></div>`;
+      });
+
+      body.innerHTML = html;
+      section.classList.add('visible');
+      section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     function showCartImage(code) {

@@ -11,7 +11,7 @@ import os
 
 # Add parent dir to path so we can import scraper
 sys.path.insert(0, os.path.dirname(__file__))
-from scraper import search_product, search_single_vendor, load_products, APP_VERSION, warmup_session
+from scraper import search_product, search_single_vendor, load_products, APP_VERSION, warmup_session, get_samsung_specs
 from cache import get_cached_price, get_cache_status, is_configured as cache_configured, test_connection as cache_test
 
 # Warmup on cold start
@@ -125,6 +125,36 @@ class handler(BaseHTTPRequestHandler):
                 'batch_index': status.get('batch_index', 0),
                 'cache_backend': 'redis' if cache_configured() else 'none',
             })
+
+        elif path == '/api/specs':
+            code = params.get('code', [''])[0].strip().upper()
+            if not code:
+                self._json({'error': 'Codul produsului este gol.'}, 400)
+                return
+
+            # Verifica cache Redis
+            if cache_configured():
+                from cache import _redis_cmd
+                raw = _redis_cmd('GET', f'specs:{code}')
+                if raw:
+                    try:
+                        cached_specs = json.loads(raw)
+                        self._json({'code': code, 'specs': cached_specs, 'cached': True})
+                        return
+                    except (json.JSONDecodeError, TypeError):
+                        pass
+
+            # Scrape live
+            specs = get_samsung_specs(code)
+            if specs:
+                # Cache in Redis (7 zile TTL)
+                if cache_configured():
+                    from cache import _redis_cmd
+                    payload = json.dumps(specs, ensure_ascii=False)
+                    _redis_cmd('SET', f'specs:{code}', payload, 'EX', 604800)
+                self._json({'code': code, 'specs': specs})
+            else:
+                self._json({'code': code, 'specs': None, 'message': 'Specificatii indisponibile'})
 
         else:
             self._json({'error': 'Not found'}, 404)
