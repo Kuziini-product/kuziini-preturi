@@ -1380,6 +1380,14 @@
         card.onclick = () => window.open(url, '_blank');
         card.title = `Deschide ${sitenames[vendor]} ↗`;
       }
+
+      // Actualizeaza lastSearchResult cu pretul nou (pentru cos)
+      if (lastSearchResult) {
+        if (!lastSearchResult.prices) lastSearchResult.prices = {};
+        lastSearchResult.prices[vendor] = price;
+        if (!lastSearchResult.urls) lastSearchResult.urls = {};
+        if (url) lastSearchResult.urls[vendor] = url;
+      }
     }
 
     // ── Keyboard shortcut (Enter to search) ─────────────────────────────
@@ -1537,10 +1545,13 @@
     }
 
     function selectProduct() {
-      const code = document.getElementById('product-dropdown').value;
+      const dropdown = document.getElementById('product-dropdown');
+      const code = dropdown.value;
       if (!code) return;
       document.getElementById('code-input').value = code;
       doSearch();
+      // Reset dropdown sa poata selecta urmatorul produs imediat
+      setTimeout(() => { dropdown.value = ''; }, 100);
     }
 
     // Load products on page init
