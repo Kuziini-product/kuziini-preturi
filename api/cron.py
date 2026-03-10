@@ -17,7 +17,8 @@ from scraper import search_product, load_products, log, set_cron_timeouts
 # Cron are 60s budget, mareste timeout-urile
 set_cron_timeouts()
 from cache import (
-    set_cached_price, get_cache_status, set_cache_status, is_configured
+    set_cached_price, get_cache_status, set_cache_status, is_configured,
+    save_price_history
 )
 
 BATCH_SIZE = 1  # 1 produs per invocatie (scraping dureaza ~30-50s per produs)
@@ -94,6 +95,9 @@ class handler(BaseHTTPRequestHandler):
                 result = search_product(code, cron_mode=True)
                 # Salveaza in Redis
                 set_cached_price(code, result)
+                # Salveaza istoricul preturilor (snapshot zilnic)
+                if result.get('prices'):
+                    save_price_history(code, result['prices'])
                 processed += 1
                 log(f"  CRON: {code} OK")
             except Exception as e:

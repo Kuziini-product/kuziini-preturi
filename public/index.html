@@ -861,6 +861,27 @@
       .spec-item-value {
         font-size: 12px;
       }
+
+      /* Reports responsive */
+      .reports-section {
+        padding: 14px 10px;
+        border-radius: 14px;
+        margin-top: 12px;
+      }
+      .reports-btn {
+        width: 100%;
+        font-size: 13px;
+        padding: 10px;
+      }
+      .report-table {
+        font-size: 10px;
+        min-width: 480px;
+      }
+      .report-table th { font-size: 9px; padding: 6px 4px; }
+      .report-table td { padding: 6px 4px; }
+      .report-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .reports-tabs { gap: 4px; }
+      .reports-tab { font-size: 11px; padding: 5px 10px; }
     }
 
     @media (max-width: 400px) {
@@ -1048,6 +1069,151 @@
       flex: 1;
       color: #1e1b4b;
       font-weight: 600;
+    }
+
+    /* ── Reports Button ── */
+    .reports-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      margin-top: 12px;
+      background: linear-gradient(135deg, #0f766e, #14b8a6);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.3px;
+    }
+    .reports-btn:hover {
+      background: linear-gradient(135deg, #0d6b63, #0f9a8d);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(20, 184, 166, 0.3);
+    }
+    .reports-btn.loading { opacity: 0.7; cursor: wait; }
+
+    /* ── Reports Section ── */
+    .reports-section {
+      display: none;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 20px 24px;
+      margin-top: 16px;
+      box-shadow: 0 4px 24px rgba(100, 80, 200, 0.08);
+      border: 1px solid rgba(200, 190, 240, 0.3);
+    }
+    .reports-section.visible { display: block; }
+
+    .reports-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e1b4b;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .reports-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .reports-tab {
+      padding: 6px 14px;
+      border: 1.5px solid #e0dced;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #fff;
+      color: #5b5280;
+      transition: all 0.15s;
+    }
+    .reports-tab:hover { border-color: #14b8a6; color: #0f766e; }
+    .reports-tab.active {
+      background: #0f766e;
+      color: #fff;
+      border-color: #0f766e;
+    }
+
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .report-table th {
+      text-align: left;
+      padding: 10px 8px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #7c6fa8;
+      border-bottom: 2px solid #f0ecf8;
+      font-weight: 700;
+    }
+    .report-table td {
+      padding: 8px;
+      border-bottom: 1px solid #f8f6ff;
+      vertical-align: middle;
+    }
+    .report-table tr:hover { background: #faf8ff; }
+
+    .price-up { color: #dc2626; font-weight: 700; }
+    .price-down { color: #16a34a; font-weight: 700; }
+    .price-same { color: #9ca3af; }
+
+    .report-detail-chart {
+      margin-top: 16px;
+      padding: 16px;
+      background: #f8f6ff;
+      border-radius: 12px;
+    }
+    .chart-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 11px;
+    }
+    .chart-date { width: 70px; color: #7c6fa8; font-weight: 500; flex-shrink: 0; }
+    .chart-bars { flex: 1; display: flex; gap: 2px; align-items: center; }
+    .chart-bar {
+      height: 16px;
+      border-radius: 3px;
+      min-width: 2px;
+      position: relative;
+    }
+    .chart-bar.samsung { background: #1428a0; }
+    .chart-bar.emag { background: #f5a623; }
+    .chart-bar.flanco { background: #e11d48; }
+    .chart-bar.altex { background: #7c3aed; }
+    .chart-legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .chart-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: #5b5280;
+      font-weight: 500;
+    }
+    .chart-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+    }
+
+    .report-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     /* ── Cart Section ── */
@@ -1455,6 +1621,27 @@
         <span class="cart-total-label">Total Kuziini (cu TVA)</span>
         <span class="cart-total-value" id="cart-total">0,00 Lei</span>
       </div>
+    </div>
+
+    <!-- ── Reports Button ── -->
+    <button class="reports-btn" onclick="loadReports()">
+      Rapoarte preturi
+    </button>
+
+    <!-- ── Reports Section ── -->
+    <div class="reports-section" id="reports-section">
+      <div class="reports-title">
+        Rapoarte miscare preturi
+      </div>
+      <div class="reports-tabs" id="reports-tabs">
+        <div class="reports-tab active" onclick="switchReportTab('summary')">Sumar</div>
+        <div class="reports-tab" onclick="switchReportTab('increases')">Scumpiri</div>
+        <div class="reports-tab" onclick="switchReportTab('decreases')">Ieftiniri</div>
+      </div>
+      <div class="report-wrap">
+        <div id="reports-body"></div>
+      </div>
+      <div id="report-detail"></div>
     </div>
 
   </div><!-- /app-container -->
@@ -2360,6 +2547,194 @@
 
     // Render cart on page load (from localStorage)
     renderCart();
+
+    // ── Rapoarte preturi ──────────────────────────────────────────────────
+    let reportsData = null;
+    let currentReportTab = 'summary';
+
+    function loadReports() {
+      const section = document.getElementById('reports-section');
+      const btn = document.querySelector('.reports-btn');
+
+      // Toggle visibility
+      if (section.classList.contains('visible') && reportsData) {
+        section.classList.remove('visible');
+        return;
+      }
+
+      btn.classList.add('loading');
+      btn.textContent = 'Se incarca...';
+
+      fetch('/api/reports')
+        .then(r => r.json())
+        .then(data => {
+          reportsData = data;
+          btn.classList.remove('loading');
+          btn.textContent = 'Rapoarte preturi';
+          section.classList.add('visible');
+          renderReport();
+        })
+        .catch(() => {
+          btn.classList.remove('loading');
+          btn.textContent = 'Rapoarte preturi';
+        });
+    }
+
+    function switchReportTab(tab) {
+      currentReportTab = tab;
+      document.querySelectorAll('.reports-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      renderReport();
+    }
+
+    function renderReport() {
+      if (!reportsData || !reportsData.products) return;
+      const body = document.getElementById('reports-body');
+      const detail = document.getElementById('report-detail');
+      detail.innerHTML = '';
+
+      let items = reportsData.products;
+
+      if (currentReportTab === 'increases') {
+        // Filtrare produse cu scumpiri la orice vendor
+        items = items.filter(p => {
+          return Object.values(p.changes || {}).some(v => v > 0);
+        });
+        items.sort((a, b) => {
+          const maxA = Math.max(...Object.values(a.changes || {0: 0}).filter(v => v > 0), 0);
+          const maxB = Math.max(...Object.values(b.changes || {0: 0}).filter(v => v > 0), 0);
+          return maxB - maxA;
+        });
+      } else if (currentReportTab === 'decreases') {
+        // Filtrare produse cu ieftiniri
+        items = items.filter(p => {
+          return Object.values(p.changes || {}).some(v => v < 0);
+        });
+        items.sort((a, b) => {
+          const minA = Math.min(...Object.values(a.changes || {0: 0}).filter(v => v < 0), 0);
+          const minB = Math.min(...Object.values(b.changes || {0: 0}).filter(v => v < 0), 0);
+          return minA - minB;
+        });
+      }
+
+      if (items.length === 0) {
+        body.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:24px;font-size:13px;">Inca nu exista date suficiente. Rapoartele se populeaza automat de la fiecare cron nocturn (ora 2:00).</div>';
+        return;
+      }
+
+      let html = '<table class="report-table"><thead><tr>';
+      html += '<th>Produs</th><th>Kuziini</th>';
+      html += '<th style="text-align:right">Samsung</th>';
+      html += '<th style="text-align:right">eMAG</th>';
+      html += '<th style="text-align:right">Altex</th>';
+      html += '<th>Perioada</th>';
+      html += '</tr></thead><tbody>';
+
+      items.forEach(p => {
+        const latest = p.latest || {};
+        const changes = p.changes || {};
+
+        function priceCell(vendor) {
+          const cur = latest[vendor];
+          const ch = changes[vendor];
+          if (cur === null || cur === undefined) return '<td style="text-align:right;color:#d1d5db">—</td>';
+          let changeHtml = '';
+          if (ch && ch > 0) changeHtml = `<br><span class="price-up">+${formatPrice(ch)}</span>`;
+          else if (ch && ch < 0) changeHtml = `<br><span class="price-down">${formatPrice(ch)}</span>`;
+          return `<td style="text-align:right">${formatPrice(cur)}${changeHtml}</td>`;
+        }
+
+        html += `<tr style="cursor:pointer" onclick="loadProductHistory('${p.code}')">`;
+        html += `<td><span class="cart-code">${p.code}</span><br><span class="cart-cat">${p.category}</span></td>`;
+        html += `<td style="font-weight:600">${p.kuziini_price ? formatPrice(p.kuziini_price) : '—'}</td>`;
+        html += priceCell('samsung');
+        html += priceCell('emag');
+        html += priceCell('altex');
+        html += `<td style="font-size:10px;color:#9ca3af">${p.first_date || ''}<br>${p.latest_date || ''}<br>(${p.days_tracked} zile)</td>`;
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+      body.innerHTML = html;
+    }
+
+    function loadProductHistory(code) {
+      const detail = document.getElementById('report-detail');
+      detail.innerHTML = '<div style="text-align:center;padding:12px;color:#7c6fa8;font-size:13px;">Se incarca istoricul...</div>';
+
+      fetch(`/api/reports?code=${encodeURIComponent(code)}`)
+        .then(r => r.json())
+        .then(data => {
+          renderProductChart(code, data);
+        })
+        .catch(() => {
+          detail.innerHTML = '<div style="color:#dc2626;padding:12px;font-size:13px;">Eroare la incarcarea istoricului.</div>';
+        });
+    }
+
+    function renderProductChart(code, data) {
+      const detail = document.getElementById('report-detail');
+      const history = data.history || {};
+      const dates = Object.keys(history).sort();
+
+      if (dates.length === 0) {
+        detail.innerHTML = '<div style="text-align:center;padding:12px;color:#9ca3af;font-size:13px;">Fara istoric disponibil.</div>';
+        return;
+      }
+
+      // Gaseste max price pentru scala
+      let maxPrice = 0;
+      dates.forEach(d => {
+        const day = history[d];
+        ['samsung', 'emag', 'flanco', 'altex'].forEach(v => {
+          if (day[v] && day[v] > maxPrice) maxPrice = day[v];
+        });
+      });
+      if (data.kuziini_price && data.kuziini_price > maxPrice) maxPrice = data.kuziini_price;
+
+      let html = `<div class="report-detail-chart">`;
+      html += `<div style="font-weight:700;font-size:14px;margin-bottom:12px;color:#1e1b4b">${code}`;
+      if (data.kuziini_price) html += ` <span style="color:#7c6fa8;font-weight:500;font-size:12px">Kuziini: ${formatPrice(data.kuziini_price)}</span>`;
+      html += `</div>`;
+
+      // Show last 30 days max
+      const showDates = dates.slice(-30);
+
+      showDates.forEach(d => {
+        const day = history[d];
+        const dateStr = d.slice(5); // MM-DD
+        html += `<div class="chart-bar-row">`;
+        html += `<span class="chart-date">${dateStr}</span>`;
+        html += `<div class="chart-bars">`;
+
+        ['samsung', 'emag', 'flanco', 'altex'].forEach(v => {
+          const val = day[v];
+          if (val && maxPrice > 0) {
+            const width = Math.max(2, Math.round((val / maxPrice) * 200));
+            html += `<div class="chart-bar ${v}" style="width:${width}px" title="${v}: ${formatPrice(val)}"></div>`;
+          }
+        });
+
+        // Show prices inline
+        const prices = ['samsung', 'emag', 'flanco', 'altex']
+          .filter(v => day[v])
+          .map(v => `<span style="color:${v === 'samsung' ? '#1428a0' : v === 'emag' ? '#f5a623' : v === 'flanco' ? '#e11d48' : '#7c3aed'};font-size:10px">${formatPrice(day[v])}</span>`)
+          .join(' ');
+        html += `<span style="margin-left:8px">${prices}</span>`;
+
+        html += `</div></div>`;
+      });
+
+      html += `<div class="chart-legend">`;
+      html += `<div class="chart-legend-item"><div class="chart-legend-dot" style="background:#1428a0"></div>Samsung</div>`;
+      html += `<div class="chart-legend-item"><div class="chart-legend-dot" style="background:#f5a623"></div>eMAG</div>`;
+      html += `<div class="chart-legend-item"><div class="chart-legend-dot" style="background:#e11d48"></div>Flanco</div>`;
+      html += `<div class="chart-legend-item"><div class="chart-legend-dot" style="background:#7c3aed"></div>Altex</div>`;
+      html += `</div></div>`;
+
+      detail.innerHTML = html;
+      detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 
     // Live reload disabled on Vercel (serverless)
   </script>

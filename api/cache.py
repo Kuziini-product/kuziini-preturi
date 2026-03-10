@@ -16,7 +16,7 @@ import urllib.error
 REDIS_URL = os.environ.get('UPSTASH_REDIS_REST_URL', '')
 REDIS_TOKEN = os.environ.get('UPSTASH_REDIS_REST_TOKEN', '')
 
-CACHE_MAX_AGE = 24 * 3600  # 24 ore
+CACHE_MAX_AGE = 48 * 3600  # 48 ore - persista pana la urmatorul cron
 
 
 def _redis_cmd(*args):
@@ -79,8 +79,8 @@ def set_cached_price(code, data):
         'cached_at': time.time(),
     }
     payload = json.dumps(entry, ensure_ascii=False)
-    # SET with 25h TTL (auto-expire)
-    _redis_cmd('SET', f'price:{code}', payload, 'EX', 90000)
+    # SET with 49h TTL (auto-expire, covers gap between 2 cron runs)
+    _redis_cmd('SET', f'price:{code}', payload, 'EX', 176400)
 
 
 def get_cache_status():
@@ -98,6 +98,57 @@ def set_cache_status(status):
     """Update cache metadata."""
     payload = json.dumps(status, ensure_ascii=False)
     _redis_cmd('SET', 'cache:status', payload)
+
+
+def save_price_history(code, prices):
+    """Save daily price snapshot for a product. Key: history:{code}, stores last 90 days."""
+    code = code.upper()
+    today = time.strftime('%Y-%m-%d', time.gmtime())
+
+    # Get existing history
+    raw = _redis_cmd('GET', f'history:{code}')
+    history = {}
+    if raw:
+        try:
+            history = json.loads(raw)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    # Add today's snapshot (overwrite if already exists for today)
+    history[today] = {
+        'samsung': prices.get('samsung'),
+        'emag': prices.get('emag'),
+        'flanco': prices.get('flanco'),
+        'altex': prices.get('altex'),
+    }
+
+    # Keep only last 90 days
+    sorted_dates = sorted(history.keys(), reverse=True)[:90]
+    history = {d: history[d] for d in sorted_dates}
+
+    payload = json.dumps(history, ensure_ascii=False)
+    # 91 days TTL
+    _redis_cmd('SET', f'history:{code}', payload, 'EX', 7862400)
+
+
+def get_price_history(code):
+    """Get price history for a product. Returns dict {date: {vendor: price}}."""
+    code = code.upper()
+    raw = _redis_cmd('GET', f'history:{code}')
+    if raw:
+        try:
+            return json.loads(raw)
+        except (json.JSONDecodeError, TypeError):
+            pass
+    return {}
+
+
+def get_all_history_codes():
+    """Get all product codes that have history data. Uses KEYS command."""
+    result = _redis_cmd('KEYS', 'history:*')
+    if result and isinstance(result, list):
+        return [k.replace('history:', '') for k in result]
+    return []
 
 
 def is_configured():

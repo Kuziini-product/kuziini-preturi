@@ -12,7 +12,7 @@ import os
 # Add parent dir to path so we can import scraper
 sys.path.insert(0, os.path.dirname(__file__))
 from scraper import search_product, search_single_vendor, load_products, APP_VERSION, warmup_session, get_samsung_specs
-from cache import get_cached_price, get_cache_status, is_configured as cache_configured, test_connection as cache_test
+from cache import get_cached_price, get_cache_status, is_configured as cache_configured, test_connection as cache_test, get_price_history, get_all_history_codes
 
 # Warmup on cold start
 warmup_session()
@@ -155,6 +155,66 @@ class handler(BaseHTTPRequestHandler):
                 self._json({'code': code, 'specs': specs})
             else:
                 self._json({'code': code, 'specs': None, 'message': 'Specificatii indisponibile'})
+
+        elif path == '/api/reports':
+            # Rapoarte miscare preturi
+            code = params.get('code', [''])[0].strip().upper()
+
+            if code:
+                # Istoric pret pentru un singur produs
+                history = get_price_history(code)
+                # Adauga pretul Kuziini din Excel
+                products = load_products()
+                kuziini_price = None
+                if code in products:
+                    kuziini_price = round(products[code]['price'], 2)
+                self._json({
+                    'code': code,
+                    'kuziini_price': kuziini_price,
+                    'history': history,
+                    'days': len(history),
+                })
+            else:
+                # Sumar: toate produsele cu istoric
+                codes = get_all_history_codes()
+                products = load_products()
+                summary = []
+                for c in codes:
+                    hist = get_price_history(c)
+                    if not hist:
+                        continue
+                    dates = sorted(hist.keys())
+                    latest_date = dates[-1]
+                    latest = hist[latest_date]
+                    # Calculeaza schimbare fata de prima zi disponibila
+                    first_date = dates[0]
+                    first = hist[first_date]
+                    changes = {}
+                    for v in ['samsung', 'emag', 'flanco', 'altex']:
+                        cur = latest.get(v)
+                        prev = first.get(v)
+                        if cur is not None and prev is not None and prev > 0:
+                            changes[v] = round(cur - prev, 2)
+                    kz = None
+                    cat = ''
+                    if c in products:
+                        kz = round(products[c]['price'], 2)
+                        cat = products[c].get('category', '')
+                    summary.append({
+                        'code': c,
+                        'category': cat,
+                        'kuziini_price': kz,
+                        'latest': latest,
+                        'latest_date': latest_date,
+                        'first_date': first_date,
+                        'changes': changes,
+                        'days_tracked': len(dates),
+                    })
+                summary.sort(key=lambda x: x['code'])
+                self._json({
+                    'products': summary,
+                    'count': len(summary),
+                })
 
         else:
             self._json({'error': 'Not found'}, 404)
