@@ -907,6 +907,13 @@
       color: #1e1b4b;
     }
     .cart-subtotal { font-weight: 800; text-align: right; white-space: nowrap; color: #7c3aed; }
+    .cart-adjusted {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      color: #dc2626;
+      margin-top: 2px;
+    }
 
     .cart-total-row {
       background: #f8f6ff;
@@ -1795,34 +1802,39 @@
         let diffStr = '—';
         let diffClass = '';
         let alertTag = '';
-        let diffPerUnit = 0;
+        let sellingPrice = item.kuziini_price; // pretul de vanzare
 
         if (item.cheapest_price) {
           cheapStr = formatPrice(item.cheapest_price) + ' (' + item.cheapest_vendor + ')';
           const diff = item.cheapest_price - item.kuziini_price;
-          diffPerUnit = item.kuziini_price - item.cheapest_price;
           if (diff > 0) {
+            // Kuziini e mai ieftin - pretul ramane kuziini_price
             diffStr = '+' + formatPrice(diff);
             diffClass = 'positive';
           } else if (diff < 0) {
+            // Kuziini e mai scump - pretul devine vendor + 5%
+            sellingPrice = item.cheapest_price * 1.05;
             diffStr = formatPrice(diff);
             diffClass = 'negative';
-            alertTag = '<span class="cart-alert">SCUMP</span>';
+            alertTag = '<span class="cart-alert">+5%</span>';
           } else {
             diffStr = '0,00 Lei';
           }
         }
 
-        // Subtotal = (kuziini_price + diferenta pozitiva daca e mai scump) * qty
-        // Adica subtotal = kuziini_price * qty (pretul pe care il platesti)
-        const subtotal = item.kuziini_price * qty;
+        const subtotal = sellingPrice * qty;
         totalSubtotal += subtotal;
+
+        // Afiseaza pretul de vanzare (diferit de kuziini daca e ajustat)
+        const sellingStr = sellingPrice !== item.kuziini_price
+          ? `<span class="cart-adjusted">${formatPrice(sellingPrice)}</span>`
+          : '';
 
         html += `<tr>
           <td><span class="cart-code">${item.code}</span><br><span class="cart-cat">${item.category}</span></td>
           <td class="cart-price">${kzStr}</td>
           <td class="cart-price">${cheapStr}</td>
-          <td class="cart-diff ${diffClass}">${diffStr}${alertTag}</td>
+          <td class="cart-diff ${diffClass}">${diffStr}${alertTag}${sellingStr}</td>
           <td>
             <div class="cart-qty">
               <button onclick="changeQty('${item.code}', -1)">−</button>
@@ -1844,16 +1856,21 @@
 
       // Generate Excel-compatible HTML table
       let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Cos Kuziini</x:Name></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table border="1">';
-      html += '<tr><th>Cod Produs</th><th>Categorie</th><th>Cant.</th><th>Pret Kuziini (Lei)</th><th>Cel mai ieftin vendor</th><th>Pret vendor (Lei)</th><th>Diferenta (Lei)</th><th>Subtotal (Lei)</th><th>Samsung (Lei)</th><th>eMAG (Lei)</th><th>Flanco (Lei)</th><th>Altex (Lei)</th></tr>';
+      html += '<tr><th>Cod Produs</th><th>Categorie</th><th>Cant.</th><th>Pret Kuziini (Lei)</th><th>Cel mai ieftin vendor</th><th>Pret vendor (Lei)</th><th>Diferenta (Lei)</th><th>Pret vanzare (Lei)</th><th>Subtotal (Lei)</th><th>Samsung (Lei)</th><th>eMAG (Lei)</th><th>Flanco (Lei)</th><th>Altex (Lei)</th></tr>';
 
       let totalKz = 0;
       cart.forEach(item => {
         const qty = item.qty || 1;
-        const subtotal = item.kuziini_price * qty;
-        totalKz += subtotal;
         const cheapV = item.cheapest_vendor || 'N/A';
         const cheapP = item.cheapest_price || '';
         const diff = item.cheapest_price ? (item.cheapest_price - item.kuziini_price) : '';
+        // Daca Kuziini e mai scump, pretul de vanzare = vendor + 5%
+        let sellingPrice = item.kuziini_price;
+        if (item.cheapest_price && item.kuziini_price > item.cheapest_price) {
+          sellingPrice = item.cheapest_price * 1.05;
+        }
+        const subtotal = sellingPrice * qty;
+        totalKz += subtotal;
         const p = item.all_prices || {};
         html += `<tr>
           <td>${item.code}</td>
@@ -1863,6 +1880,7 @@
           <td>${cheapV}</td>
           <td>${cheapP ? cheapP.toFixed(2) : ''}</td>
           <td>${diff !== '' ? diff.toFixed(2) : ''}</td>
+          <td>${sellingPrice.toFixed(2)}</td>
           <td>${subtotal.toFixed(2)}</td>
           <td>${p.samsung ? p.samsung.toFixed(2) : ''}</td>
           <td>${p.emag ? p.emag.toFixed(2) : ''}</td>
@@ -1871,7 +1889,7 @@
         </tr>`;
       });
 
-      html += `<tr><td colspan="2"><b>TOTAL</b></td><td><b>${cart.reduce((s,i) => s + (i.qty||1), 0)}</b></td><td colspan="4"></td><td><b>${totalKz.toFixed(2)}</b></td><td colspan="4"></td></tr>`;
+      html += `<tr><td colspan="2"><b>TOTAL</b></td><td><b>${cart.reduce((s,i) => s + (i.qty||1), 0)}</b></td><td colspan="5"></td><td><b>${totalKz.toFixed(2)}</b></td><td colspan="4"></td></tr>`;
       html += '</table></body></html>';
 
       const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
