@@ -2,13 +2,27 @@
 Auth & Offer storage utilities for Kuziini.
 Uses only stdlib + _redis_cmd from cache.py (no pip packages).
 
+Permissions model stored per user:
+  {
+    "offers":  "own" | "global",
+    "reports": ["prices", "history", "stats", "events"],
+    "exports": ["excel", "pdf_offer", "pdf_specs"]
+  }
+
+Role presets (convenience templates):
+  admin   → global offers + all reports + all exports
+  manager → global offers + prices/history/stats + excel/pdf_offer
+  agent   → own offers + stats + excel/pdf_offer
+  viewer  → own offers + stats + no exports
+  custom  → manually configured
+
 Redis key schema:
   users              → Hash  {username → JSON user_obj}
-  session:{token}    → String user_id, TTL 30 days
+  session:{token}    → String JSON session, TTL 30 days
   offer:{id}         → String JSON offer obj
   offers:own:{user}  → String JSON list of offer IDs (owned)
-  offers:shared:{u}  → String JSON list of offer IDs (shared with)
-  offers:all         → String JSON list of ALL offer IDs (admin)
+  offers:shared:{u}  → String JSON list of offer IDs (shared)
+  offers:all         → String JSON list of ALL offer IDs
 """
 import hashlib
 import secrets
@@ -17,8 +31,39 @@ import os
 import time
 
 
-# Optional pepper from env for extra hash security
 _PEPPER = os.environ.get('KUZIINI_PEPPER', 'kuziini_kz_pepper')
+
+# ── Role presets ──────────────────────────────────────────────────────────
+
+ROLE_PRESETS = {
+    'admin': {
+        'offers':  'global',
+        'reports': ['prices', 'history', 'stats', 'events'],
+        'exports': ['excel', 'pdf_offer', 'pdf_specs'],
+    },
+    'manager': {
+        'offers':  'global',
+        'reports': ['prices', 'history', 'stats'],
+        'exports': ['excel', 'pdf_offer'],
+    },
+    'agent': {
+        'offers':  'own',
+        'reports': ['stats'],
+        'exports': ['excel', 'pdf_offer'],
+    },
+    'viewer': {
+        'offers':  'own',
+        'reports': ['stats'],
+        'exports': [],
+    },
+}
+
+ALL_REPORTS = ['prices', 'history', 'stats', 'events']
+ALL_EXPORTS = ['excel', 'pdf_offer', 'pdf_specs']
+
+
+def default_permissions(role):
+    return dict(ROLE_PRESETS.get(role, ROLE_PRESETS['viewer']))
 
 
 # ── Redis helpers ─────────────────────────────────────────────────────────
@@ -68,7 +113,6 @@ def _verify_password(password, stored_hash, salt):
 # ── Users ─────────────────────────────────────────────────────────────────
 
 def get_user(username):
-    """Return full user dict or None."""
     raw = _rc('HGET', 'users', username.lower().strip())
     if not raw:
         return None
@@ -78,11 +122,12 @@ def get_user(username):
         return None
 
 def _safe(u):
-    """Strip sensitive fields."""
+    """Public-safe user dict (no password fields)."""
     return {
         'username': u['username'],
         'name': u.get('name', u['username']),
         'role': u['role'],
+        'permissions': u.get('permissions', default_permissions(u['role'])),
         'created_at': u.get('created_at'),
     }
 
@@ -90,7 +135,6 @@ def list_users():
     raw = _rc('HGETALL', 'users')
     if not raw:
         return []
-    # HGETALL returns [key, val, key, val, ...] from Upstash
     result = []
     if isinstance(raw, list):
         it = iter(raw)
@@ -103,10 +147,14 @@ def list_users():
                     pass
     return result
 
-def create_user(username, password, role='user', name=None):
+def create_user(username, password, role='agent', name=None, permissions=None):
     uname = username.lower().strip()
     if _rc('HEXISTS', 'users', uname):
         return None, 'Username deja existent'
+    if role == 'admin':
+        perms = dict(ROLE_PRESETS['admin'])
+    else:
+        perms = permissions if permissions else default_permissions(role)
     pwd_hash, salt = _hash_password(password)
     user = {
         'username': uname,
@@ -114,12 +162,13 @@ def create_user(username, password, role='user', name=None):
         'password_hash': pwd_hash,
         'salt': salt,
         'role': role,
+        'permissions': perms,
         'created_at': time.time(),
     }
     _rc('HSET', 'users', uname, json.dumps(user, ensure_ascii=False))
     return _safe(user), None
 
-def update_user(username, name=None, role=None, password=None):
+def update_user(username, name=None, role=None, password=None, permissions=None):
     u = get_user(username)
     if not u:
         return None, 'User inexistent'
@@ -127,6 +176,15 @@ def update_user(username, name=None, role=None, password=None):
         u['name'] = name
     if role is not None:
         u['role'] = role
+        # If role changed and no explicit permissions given, reset to preset
+        if permissions is None and role in ROLE_PRESETS:
+            u['permissions'] = dict(ROLE_PRESETS[role])
+    if permissions is not None:
+        # admin always keeps full permissions
+        if u['role'] == 'admin':
+            u['permissions'] = dict(ROLE_PRESETS['admin'])
+        else:
+            u['permissions'] = permissions
     if password:
         u['password_hash'], u['salt'] = _hash_password(password)
     _rc('HSET', 'users', username.lower(), json.dumps(u, ensure_ascii=False))
@@ -140,7 +198,6 @@ def delete_user(username):
     return None
 
 def ensure_admin_exists():
-    """Auto-create admin/admin123 if no users exist at all."""
     count = _rc('HLEN', 'users')
     if count in (None, 0, '0', b'0'):
         create_user('admin', 'admin123', 'admin', 'Administrator')
@@ -148,10 +205,15 @@ def ensure_admin_exists():
 
 # ── Sessions ──────────────────────────────────────────────────────────────
 
-def create_session(username, role):
+def create_session(username, role, permissions):
     token = secrets.token_hex(32)
-    payload = json.dumps({'username': username, 'role': role, 'created_at': time.time()})
-    _rc('SET', f'session:{token}', payload, 'EX', 2592000)  # 30 days
+    payload = json.dumps({
+        'username': username,
+        'role': role,
+        'permissions': permissions,
+        'created_at': time.time(),
+    })
+    _rc('SET', f'session:{token}', payload, 'EX', 2592000)
     return token
 
 def validate_session(token):
@@ -181,8 +243,32 @@ def do_login(username, password):
         return None, None, 'Username sau parola incorecte'
     if not _verify_password(password, u['password_hash'], u['salt']):
         return None, None, 'Username sau parola incorecte'
-    token = create_session(u['username'], u['role'])
+    # admin always gets full permissions regardless of stored value
+    perms = dict(ROLE_PRESETS['admin']) if u['role'] == 'admin' else u.get('permissions', default_permissions(u['role']))
+    token = create_session(u['username'], u['role'], perms)
     return _safe(u), token, None
+
+def has_permission(session, category, value=None):
+    """
+    Check session permission.
+    category='offers'  → value='global'|'own' (checks if offers==value, or just has access)
+    category='reports' → value='prices'|'history'|'stats'|'events'
+    category='exports' → value='excel'|'pdf_offer'|'pdf_specs'
+    Admin always passes.
+    """
+    if session.get('role') == 'admin':
+        return True
+    perms = session.get('permissions') or {}
+    if category == 'offers':
+        offers_perm = perms.get('offers', 'own')
+        if value is None:
+            return True  # has some offers access
+        return offers_perm == value or (value == 'own' and offers_perm == 'global')
+    elif category == 'reports':
+        return value in (perms.get('reports') or [])
+    elif category == 'exports':
+        return value in (perms.get('exports') or [])
+    return False
 
 
 # ── Offers ────────────────────────────────────────────────────────────────
@@ -202,19 +288,18 @@ def save_offer(offer_data, owner_username):
     offer = dict(offer_data)
     offer['owner_id'] = owner_username
     offer['shared_with'] = shared_with
-    # Remove sensitive user display name from stored/printed data — only ID
-    offer.pop('owner_name', None)
+    offer.pop('owner_name', None)  # never store display name
 
     _jset(f'offer:{oid}', offer)
     _list_prepend(f'offers:own:{owner_username}', oid)
     _list_prepend('offers:all', oid)
     return oid, None
 
-def get_offer_full(oid, username, role):
+def get_offer_full(oid, username, session):
     o = _jget(f'offer:{oid}')
     if not o:
         return None, 'Oferta inexistenta'
-    if role == 'admin':
+    if has_permission(session, 'offers', 'global'):
         return o, None
     if o.get('owner_id') == username or username in o.get('shared_with', []):
         return o, None
@@ -223,25 +308,25 @@ def get_offer_full(oid, username, role):
 def _offer_summary(o):
     prods = o.get('products', [])
     return {
-        'id': o.get('num') or o.get('id'),
-        'num': o.get('num'),
-        'date': o.get('date', ''),
-        'client': o.get('client', ''),
-        'phone': o.get('phone', ''),
-        'total': o.get('total'),
-        'discount': o.get('discount', 0),
-        'owner_id': o.get('owner_id', ''),
-        'shared_with': o.get('shared_with', []),
+        'id':             o.get('num') or o.get('id'),
+        'num':            o.get('num'),
+        'date':           o.get('date', ''),
+        'client':         o.get('client', ''),
+        'phone':          o.get('phone', ''),
+        'total':          o.get('total'),
+        'discount':       o.get('discount', 0),
+        'owner_id':       o.get('owner_id', ''),
+        'shared_with':    o.get('shared_with', []),
         'products_count': len(prods),
-        'products_qty': sum(p.get('qty', 1) for p in prods),
-        'product_codes': [p.get('code', '') for p in prods],
+        'products_qty':   sum(p.get('qty', 1) for p in prods),
+        'product_codes':  [p.get('code', '') for p in prods],
     }
 
-def list_offers(username, role):
-    if role == 'admin':
+def list_offers(username, session):
+    if has_permission(session, 'offers', 'global'):
         ids = _jget('offers:all') or []
     else:
-        own = _jget(f'offers:own:{username}') or []
+        own    = _jget(f'offers:own:{username}') or []
         shared = _jget(f'offers:shared:{username}') or []
         seen = set()
         ids = []
@@ -257,18 +342,17 @@ def list_offers(username, role):
             offers.append(_offer_summary(o))
     return offers
 
-def share_offer(oid, requester, requester_role, target_username):
+def share_offer(oid, requester, session, target_username):
     o = _jget(f'offer:{oid}')
     if not o:
         return 'Oferta inexistenta'
-    if requester_role != 'admin' and o.get('owner_id') != requester:
+    if not has_permission(session, 'offers', 'global') and o.get('owner_id') != requester:
         return 'Acces interzis'
     target = get_user(target_username)
     if not target:
         return f'Userul "{target_username}" nu exista'
     if target['username'] == requester:
         return 'Nu poti partaja cu tine insuti'
-
     shared = o.get('shared_with', [])
     if target['username'] not in shared:
         shared.append(target['username'])
@@ -277,11 +361,11 @@ def share_offer(oid, requester, requester_role, target_username):
     _list_prepend(f'offers:shared:{target["username"]}', oid)
     return None
 
-def delete_offer(oid, username, role):
+def delete_offer(oid, username, session):
     o = _jget(f'offer:{oid}')
     if not o:
         return 'Oferta inexistenta'
-    if role != 'admin' and o.get('owner_id') != username:
+    if not has_permission(session, 'offers', 'global') and o.get('owner_id') != username:
         return 'Acces interzis'
     owner = o.get('owner_id', username)
     _rc('DEL', f'offer:{oid}')

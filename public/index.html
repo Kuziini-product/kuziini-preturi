@@ -1679,21 +1679,92 @@
         <span class="admin-modal-title">Administrare Utilizatori</span>
         <button class="admin-close" onclick="closeAdminModal()">&#x2715;</button>
       </div>
+
+      <!-- Create user form -->
       <div class="admin-create">
         <div class="admin-create-title">Utilizator nou</div>
-        <div class="admin-form-row">
+        <div class="admin-form-row" style="margin-bottom:8px">
           <input id="nu-username" class="admin-input" placeholder="username" />
           <input id="nu-name"     class="admin-input" placeholder="Nume afisat" />
           <input id="nu-password" class="admin-input" type="password" placeholder="Parola" />
-          <select id="nu-role" class="admin-select">
-            <option value="user">user</option>
-            <option value="admin">admin</option>
+        </div>
+        <div class="admin-form-row" style="align-items:center;margin-bottom:8px">
+          <label style="font-size:11px;font-weight:700;color:#7c6fa8;white-space:nowrap">Preset rol:</label>
+          <select id="nu-role" class="admin-select" onchange="applyRolePreset('nu')">
+            <option value="agent">Agent vanzari</option>
+            <option value="manager">Manager</option>
+            <option value="viewer">Vizualizare</option>
+            <option value="admin">Administrator</option>
+            <option value="custom">Personalizat</option>
           </select>
-          <button class="admin-add-btn" onclick="adminCreateUser()">Adauga</button>
+          <button class="admin-add-btn" onclick="adminCreateUser()">Adauga utilizator</button>
+        </div>
+        <!-- Permission checkboxes -->
+        <div id="nu-perms" style="background:#fff;border-radius:8px;padding:10px 14px;border:1px solid #e0d8f8;font-size:12px">
+          <div style="display:flex;gap:24px;flex-wrap:wrap">
+            <div>
+              <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Oferte</div>
+              <label style="display:flex;align-items:center;gap:5px;margin-bottom:3px">
+                <input type="radio" name="nu-offers" value="own" checked> Proprii
+              </label>
+              <label style="display:flex;align-items:center;gap:5px">
+                <input type="radio" name="nu-offers" value="global"> Globale (toate)
+              </label>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Rapoarte</div>
+              <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="nu-rep" value="prices"> Preturi &amp; miscari</label>
+              <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="nu-rep" value="history"> Istoric produse</label>
+              <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="nu-rep" value="stats"> Statistici</label>
+              <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="nu-rep" value="events"> Evenimente cron</label>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Exporturi</div>
+              <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="nu-exp" value="excel"> Excel</label>
+              <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="nu-exp" value="pdf_offer"> PDF Oferta</label>
+              <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="nu-exp" value="pdf_specs"> PDF Specificatii</label>
+            </div>
+          </div>
         </div>
         <div class="admin-msg" id="admin-msg"></div>
       </div>
+
+      <!-- User list -->
       <div id="admin-users-list"></div>
+
+      <!-- Inline edit panel (hidden by default) -->
+      <div id="admin-edit-panel" style="display:none;background:#f5f3ff;border-radius:12px;padding:14px 16px;margin-top:14px;border:1px solid #ede9fe">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <span style="font-size:11px;font-weight:800;color:#7c3aed;text-transform:uppercase">Editeaza permisiuni: <span id="edit-username-lbl"></span></span>
+          <button onclick="closeEditPanel()" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:18px">&#x2715;</button>
+        </div>
+        <input type="hidden" id="edit-username-val">
+        <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:12px">
+          <div>
+            <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Oferte</div>
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:3px"><input type="radio" name="edit-offers" value="own"> Proprii</label>
+            <label style="display:flex;align-items:center;gap:5px"><input type="radio" name="edit-offers" value="global"> Globale</label>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Rapoarte</div>
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="edit-rep" value="prices"> Preturi &amp; miscari</label>
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="edit-rep" value="history"> Istoric produse</label>
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="edit-rep" value="stats"> Statistici</label>
+            <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="edit-rep" value="events"> Evenimente cron</label>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Exporturi</div>
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="edit-exp" value="excel"> Excel</label>
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><input type="checkbox" class="edit-exp" value="pdf_offer"> PDF Oferta</label>
+            <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="edit-exp" value="pdf_specs"> PDF Specificatii</label>
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+          <button onclick="adminSavePermissions()" class="admin-add-btn">Salveaza permisiuni</button>
+          <input id="edit-newpass" class="admin-input" type="password" placeholder="Parola noua (optional)" style="max-width:200px">
+          <span id="edit-msg" style="font-size:11px;display:none"></span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1993,11 +2064,11 @@
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
         <div class="reports-tabs" id="reports-tabs" style="margin-bottom:0">
-          <div class="reports-tab active" onclick="switchReportTab('summary')">Sumar</div>
-          <div class="reports-tab" onclick="switchReportTab('increases')">Scumpiri</div>
-          <div class="reports-tab" onclick="switchReportTab('decreases')">Ieftiniri</div>
-          <div class="reports-tab" onclick="switchReportTab('events')">Evenimente</div>
-          <div class="reports-tab" onclick="switchReportTab('stats')">Statistici</div>
+          <div class="reports-tab active" data-report="prices"  onclick="switchReportTab('summary')">Sumar</div>
+          <div class="reports-tab"        data-report="prices"  onclick="switchReportTab('increases')">Scumpiri</div>
+          <div class="reports-tab"        data-report="prices"  onclick="switchReportTab('decreases')">Ieftiniri</div>
+          <div class="reports-tab"        data-report="events"  onclick="switchReportTab('events')">Evenimente</div>
+          <div class="reports-tab"        data-report="stats"   onclick="switchReportTab('stats')">Statistici</div>
         </div>
         <div class="report-actions">
           <button class="report-action-btn" onclick="exportReportExcel()">Excel</button>
@@ -3649,6 +3720,47 @@ else { setTimeout(_renderTotals, 100); }
     function isAdmin()          { const a = authLoad(); return a && a.role === 'admin'; }
     function currentUsername()  { const a = authLoad(); return a ? a.username : null; }
 
+    // ── Granular permission helpers ────────────────────────────────────────
+    // category: 'offers' | 'reports' | 'exports'
+    // value: e.g. 'global', 'stats', 'excel'
+    function hasPerm(category, value) {
+      const a = authLoad();
+      if (!a) return false;
+      if (a.role === 'admin') return true;
+      const p = a.permissions || {};
+      if (category === 'offers') {
+        const v = p.offers || 'own';
+        if (value === 'global') return v === 'global';
+        return true; // has 'own' at minimum
+      }
+      if (category === 'reports') return (p.reports || []).includes(value);
+      if (category === 'exports') return (p.exports || []).includes(value);
+      return false;
+    }
+
+    // Presets used in the admin panel (mirrors Python ROLE_PRESETS)
+    const ROLE_PRESETS = {
+      admin:   { offers:'global', reports:['prices','history','stats','events'], exports:['excel','pdf_offer','pdf_specs'] },
+      manager: { offers:'global', reports:['prices','history','stats'],          exports:['excel','pdf_offer'] },
+      agent:   { offers:'own',    reports:['stats'],                             exports:['excel','pdf_offer'] },
+      viewer:  { offers:'own',    reports:['stats'],                             exports:[] },
+    };
+
+    function applyPermGating() {
+      // Reports tabs — hide based on permissions
+      const tabMap = { 'summary':'prices', 'history':'history', 'stats':'stats', 'events':'events' };
+      document.querySelectorAll('.reports-tab[data-report]').forEach(tab => {
+        const key = tab.dataset.report;
+        tab.style.display = hasPerm('reports', key) ? '' : 'none';
+      });
+      // Export buttons in main UI
+      const excelBtn = document.querySelector('.btn-export');
+      if (excelBtn) excelBtn.style.display = hasPerm('exports', 'excel') ? '' : 'none';
+      // Offers section button
+      const offBtn = document.querySelector('.offers-btn');
+      if (offBtn) offBtn.style.display = '';  // always visible if logged in
+    }
+
     async function doLogin() {
       const username = (document.getElementById('login-username').value || '').trim();
       const password = document.getElementById('login-password').value || '';
@@ -3665,9 +3777,10 @@ else { setTimeout(_renderTotals, 100); }
         });
         const d = await r.json();
         if (!r.ok) { errEl.textContent = d.error || 'Eroare la autentificare.'; errEl.style.display = 'block'; btn.disabled = false; btn.textContent = 'Autentificare'; return; }
-        authSave({token: d.token, username: d.username, name: d.name, role: d.role});
+        authSave({token: d.token, username: d.username, name: d.name, role: d.role, permissions: d.permissions});
         document.getElementById('login-overlay').style.display = 'none';
         updateUserBadge();
+        applyPermGating();
         await _migrateLocalOffers();
         await loadOffersFromServer();
       } catch(e) {
@@ -3703,6 +3816,7 @@ else { setTimeout(_renderTotals, 100); }
         document.getElementById('login-overlay').style.display = 'flex';
       } else {
         updateUserBadge();
+        applyPermGating();
         loadOffersFromServer();
       }
     }
@@ -3829,12 +3943,49 @@ else { setTimeout(_renderTotals, 100); }
 
     // ── Admin modal ────────────────────────────────────────────────────────
 
+    function _readPerms(prefix) {
+      const offers   = document.querySelector(`input[name="${prefix}-offers"]:checked`)?.value || 'own';
+      const reports  = [...document.querySelectorAll(`.${prefix}-rep:checked`)].map(el => el.value);
+      const exports_ = [...document.querySelectorAll(`.${prefix}-exp:checked`)].map(el => el.value);
+      return { offers, reports, exports: exports_ };
+    }
+
+    function _writePerms(prefix, perms) {
+      const p = perms || {};
+      const offersVal = p.offers || 'own';
+      document.querySelectorAll(`input[name="${prefix}-offers"]`).forEach(r => { r.checked = r.value === offersVal; });
+      document.querySelectorAll(`.${prefix}-rep`).forEach(cb => { cb.checked = (p.reports || []).includes(cb.value); });
+      document.querySelectorAll(`.${prefix}-exp`).forEach(cb => { cb.checked = (p.exports || []).includes(cb.value); });
+    }
+
+    function applyRolePreset(prefix) {
+      const role = document.getElementById(`${prefix}-role`)?.value;
+      const preset = ROLE_PRESETS[role];
+      if (preset) _writePerms(prefix, preset);
+    }
+
     async function openAdminModal() {
       document.getElementById('admin-overlay').classList.add('open');
+      closeEditPanel();
+      applyRolePreset('nu');
       await refreshAdminUsers();
     }
+
     function closeAdminModal() {
       document.getElementById('admin-overlay').classList.remove('open');
+      closeEditPanel();
+    }
+
+    const _ROLE_LABELS = { admin:'Administrator', manager:'Manager', agent:'Agent vanzari', viewer:'Vizualizare', custom:'Personalizat' };
+    const _PERM_LABELS = { prices:'Preturi', history:'Istoric', stats:'Statistici', events:'Evenimente', excel:'Excel', pdf_offer:'PDF Oferta', pdf_specs:'PDF Specs' };
+
+    function _permSummary(perms) {
+      if (!perms) return '—';
+      const p = perms;
+      const offs = p.offers === 'global' ? '<span style="color:#16a34a;font-weight:700">Global</span>' : 'Proprii';
+      const reps = (p.reports || []).map(v => _PERM_LABELS[v] || v).join(', ') || '—';
+      const exps = (p.exports || []).map(v => _PERM_LABELS[v] || v).join(', ') || '—';
+      return `Oferte: ${offs} | Rapoarte: ${reps} | Export: ${exps}`;
     }
 
     async function refreshAdminUsers() {
@@ -3843,16 +3994,52 @@ else { setTimeout(_renderTotals, 100); }
       const d = await r.json();
       const el = document.getElementById('admin-users-list');
       if (!d.users || d.users.length === 0) { el.innerHTML = '<p style="color:#9ca3af;font-size:13px;padding:8px 0">Niciun utilizator.</p>'; return; }
-      let html = '<table class="report-table"><thead><tr><th>Username</th><th>Nume</th><th>Rol</th><th>Creat</th><th></th></tr></thead><tbody>';
+      let html = '<table class="report-table"><thead><tr><th>Username</th><th>Rol</th><th>Permisiuni</th><th></th></tr></thead><tbody>';
       d.users.forEach(u => {
         const isSelf = u.username === currentUsername();
-        const del = isSelf ? '<span style="font-size:10px;color:#9ca3af">(tu)</span>'
-          : `<button class="admin-del-btn" onclick="adminDeleteUser('${u.username}')">Sterge</button>`;
-        const dt = u.created_at ? new Date(u.created_at * 1000).toLocaleDateString('ro-RO') : '—';
-        html += `<tr><td style="font-weight:700">${u.username}</td><td>${u.name||u.username}</td><td>${u.role}</td><td style="font-size:11px;color:#6b7280">${dt}</td><td>${del}</td></tr>`;
+        const roleLabel = _ROLE_LABELS[u.role] || u.role;
+        const summary = _permSummary(u.permissions);
+        const actions = `<button class="offer-open-btn" style="font-size:11px" onclick="adminEditUser('${u.username}',${JSON.stringify(u).replace(/"/g,'&quot;')})">Editeaza</button>`
+          + (isSelf ? '' : ` <button class="admin-del-btn" onclick="adminDeleteUser('${u.username}')">Sterge</button>`);
+        html += `<tr>
+          <td style="font-weight:700">${u.username}${isSelf ? ' <span style="font-size:9px;color:#9ca3af">(tu)</span>' : ''}</td>
+          <td><span style="background:#ede9fe;color:#7c3aed;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700">${roleLabel}</span></td>
+          <td style="font-size:11px;color:#4b5563">${summary}</td>
+          <td style="white-space:nowrap">${actions}</td>
+        </tr>`;
       });
       html += '</tbody></table>';
       el.innerHTML = html;
+    }
+
+    function adminEditUser(username, userData) {
+      document.getElementById('edit-username-lbl').textContent = username;
+      document.getElementById('edit-username-val').value = username;
+      document.getElementById('edit-newpass').value = '';
+      document.getElementById('edit-msg').style.display = 'none';
+      _writePerms('edit', userData.permissions);
+      document.getElementById('admin-edit-panel').style.display = 'block';
+      document.getElementById('admin-edit-panel').scrollIntoView({behavior:'smooth', block:'nearest'});
+    }
+
+    function closeEditPanel() {
+      document.getElementById('admin-edit-panel').style.display = 'none';
+    }
+
+    async function adminSavePermissions() {
+      const username = document.getElementById('edit-username-val').value;
+      const permissions = _readPerms('edit');
+      const newpass = document.getElementById('edit-newpass').value || undefined;
+      const msg = document.getElementById('edit-msg');
+      const body = { username, permissions };
+      if (newpass) body.password = newpass;
+      const r = await fetch('/api/users/update', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify(body)});
+      const d = await r.json();
+      if (r.ok) {
+        msg.textContent = 'Salvat!'; msg.style.color='#16a34a'; msg.style.display='block';
+        await refreshAdminUsers();
+        setTimeout(() => { msg.style.display='none'; }, 2000);
+      } else { msg.textContent = d.error || 'Eroare.'; msg.style.color='#dc2626'; msg.style.display='block'; }
     }
 
     async function adminCreateUser() {
@@ -3860,9 +4047,10 @@ else { setTimeout(_renderTotals, 100); }
       const name     = (document.getElementById('nu-name').value     || '').trim();
       const password = document.getElementById('nu-password').value  || '';
       const role     = document.getElementById('nu-role').value;
+      const permissions = _readPerms('nu');
       const msg = document.getElementById('admin-msg');
       if (!username || !password) { msg.textContent = 'Completati username si parola.'; msg.style.color='#dc2626'; msg.style.display='block'; return; }
-      const r = await fetch('/api/users/create', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({username, name, password, role})});
+      const r = await fetch('/api/users/create', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({username, name, password, role, permissions})});
       const d = await r.json();
       if (r.ok) {
         msg.textContent = 'Utilizator creat cu succes.'; msg.style.color='#16a34a'; msg.style.display='block';
@@ -3874,9 +4062,9 @@ else { setTimeout(_renderTotals, 100); }
     }
 
     async function adminDeleteUser(username) {
-      if (!confirm('Stergi utilizatorul "' + username + '"?')) return;
+      if (!confirm('Stergi utilizatorul "' + username + '"? Ofertele sale raman in sistem.')) return;
       const r = await fetch('/api/users/delete', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({username})});
-      if (r.ok) await refreshAdminUsers();
+      if (r.ok) { closeEditPanel(); await refreshAdminUsers(); }
       else { const d = await r.json(); alert(d.error || 'Eroare.'); }
     }
 

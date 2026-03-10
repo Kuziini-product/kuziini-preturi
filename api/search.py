@@ -299,7 +299,8 @@ class handler(BaseHTTPRequestHandler):
                 self._json({'error': err}, 401)
                 return
             self._json({'token': token, 'username': user['username'],
-                        'name': user['name'], 'role': user['role']})
+                        'name': user['name'], 'role': user['role'],
+                        'permissions': user['permissions']})
 
         elif path == '/api/auth/logout':
             token = auth_utils.extract_token(self.headers.get('Authorization', ''))
@@ -311,7 +312,8 @@ class handler(BaseHTTPRequestHandler):
             session = self._require_auth()
             if not session:
                 return
-            self._json({'username': session['username'], 'role': session['role']})
+            self._json({'username': session['username'], 'role': session['role'],
+                        'permissions': session.get('permissions', {})})
 
         # ── Offers ────────────────────────────────────────────────────────
 
@@ -329,7 +331,7 @@ class handler(BaseHTTPRequestHandler):
             session = self._require_auth()
             if not session:
                 return
-            offers = auth_utils.list_offers(session['username'], session['role'])
+            offers = auth_utils.list_offers(session['username'], session)
             self._json({'offers': offers})
 
         elif path == '/api/offers/get':
@@ -337,7 +339,7 @@ class handler(BaseHTTPRequestHandler):
             if not session:
                 return
             oid = body.get('offer_id') or ''
-            offer, err = auth_utils.get_offer_full(oid, session['username'], session['role'])
+            offer, err = auth_utils.get_offer_full(oid, session['username'], session)
             if err:
                 self._json({'error': err}, 403)
                 return
@@ -352,7 +354,7 @@ class handler(BaseHTTPRequestHandler):
             if not oid or not target:
                 self._json({'error': 'offer_id si target_username sunt obligatorii.'}, 400)
                 return
-            err = auth_utils.share_offer(oid, session['username'], session['role'], target)
+            err = auth_utils.share_offer(oid, session['username'], session, target)
             if err:
                 self._json({'error': err}, 400)
                 return
@@ -366,7 +368,7 @@ class handler(BaseHTTPRequestHandler):
             if not oid:
                 self._json({'error': 'offer_id obligatoriu.'}, 400)
                 return
-            err = auth_utils.delete_offer(oid, session['username'], session['role'])
+            err = auth_utils.delete_offer(oid, session['username'], session)
             if err:
                 self._json({'error': err}, 403)
                 return
@@ -391,9 +393,11 @@ class handler(BaseHTTPRequestHandler):
             if not username or not password:
                 self._json({'error': 'Username si parola sunt obligatorii.'}, 400)
                 return
-            if role not in ('admin', 'user'):
-                role = 'user'
-            user, err = auth_utils.create_user(username, password, role, name)
+            valid_roles = ('admin', 'manager', 'agent', 'viewer', 'custom')
+            if role not in valid_roles:
+                role = 'agent'
+            permissions = body.get('permissions')  # may be None (use preset)
+            user, err = auth_utils.create_user(username, password, role, name, permissions)
             if err:
                 self._json({'error': err}, 400)
                 return
@@ -412,6 +416,7 @@ class handler(BaseHTTPRequestHandler):
                 name=body.get('name'),
                 role=body.get('role'),
                 password=body.get('password'),
+                permissions=body.get('permissions'),
             )
             if err:
                 self._json({'error': err}, 400)
