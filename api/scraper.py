@@ -2047,12 +2047,13 @@ def get_samsung_specs(code):
     code_lower = code.lower()
 
     # Pas 1: Gaseste URL-ul paginii produsului din Samsung search
+    # Samsung blocheaza curl dar accepta requests - folosim get_page()
     product_url = None
-    spec_timeout = max(CURL_TIMEOUT, 10)  # min 10s pentru specs
+    spec_timeout = max(REQ_TIMEOUT, 10)  # min 10s pentru specs
     for variant in get_search_variants(code)[:2]:
         v_enc = urllib.parse.quote(variant)
         search_url = f'https://www.samsung.com/ro/search/?searchvalue={v_enc}'
-        _, cs = get_page_curl(search_url, timeout=spec_timeout, referer='https://www.samsung.com/ro/')
+        _, cs = get_page(search_url, timeout=spec_timeout, referer='https://www.samsung.com/ro/')
         if not cs:
             continue
 
@@ -2079,7 +2080,7 @@ def get_samsung_specs(code):
     log(f"  Specs: pagina gasita: {product_url[:80]}")
 
     # Pas 2: Descarca pagina si extrage specificatiile
-    _, soup = get_page_curl(product_url, timeout=spec_timeout, referer='https://www.samsung.com/ro/')
+    _, soup = get_page(product_url, timeout=spec_timeout, referer='https://www.samsung.com/ro/')
     if not soup:
         return None
 
