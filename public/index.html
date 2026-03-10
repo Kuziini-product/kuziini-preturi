@@ -1898,16 +1898,85 @@
         }
         const data = await resp.json();
 
-        // Afiseaza datele din cache (preturi stocate de la cron-ul de dimineata)
-        // NU facem fetch live la vendori - totul vine din cache
+        // Afiseaza datele din cache
         hideLoading();
         displayResults(data);
+
+        // Pas 2: Daca nu e in cache, lanseaza scraping live pe fiecare vendor
+        if (data.not_cached) {
+          fetchLiveVendors(code, data);
+        }
 
       } catch (err) {
         hideLoading();
         showError('A apărut o eroare: ' + err.message + '. Verificați că serverul rulează.');
         console.error(err);
       }
+    }
+
+    // ── Live Vendor Fetch (pentru coduri noi, necacheate) ──────────────
+
+    async function fetchLiveVendors(code, baseData) {
+      const vendors = ['samsung', 'emag', 'flanco', 'altex'];
+      const liveResults = { ...baseData.prices };
+
+      // Arata indicator de scraping pe fiecare card
+      vendors.forEach(v => {
+        const priceEl = document.getElementById(`price-${v}`);
+        const sitenames = { samsung: 'samsung.ro', emag: 'emag.ro', flanco: 'flanco.ro', altex: 'altex.ro' };
+        if (priceEl && liveResults[v] === null) {
+          priceEl.className = 'vendor-price not-available';
+          priceEl.innerHTML = `
+            <span class="price-val" style="font-size:12px; color:#a78bfa;">Se caută...</span>
+            <span class="currency">${sitenames[v]}</span>
+          `;
+        }
+      });
+
+      // Lanseaza 4 request-uri paralele (fiecare vendor separat)
+      const promises = vendors.map(async (vendor) => {
+        try {
+          const resp = await fetch(`/api/search?code=${encodeURIComponent(code)}&vendor=${vendor}`);
+          if (!resp.ok) return;
+          const result = await resp.json();
+          const price = result.price || (result.prices && result.prices[vendor]) || null;
+          const url = result.url || (result.urls && result.urls[vendor]) || null;
+
+          if (price !== null) {
+            liveResults[vendor] = price;
+            updateVendorPrice(vendor, price, url);
+          } else {
+            // Vendor n-a gasit pretul
+            const sitenames = { samsung: 'samsung.ro', emag: 'emag.ro', flanco: 'flanco.ro', altex: 'altex.ro' };
+            const priceEl = document.getElementById(`price-${vendor}`);
+            if (priceEl) {
+              priceEl.className = 'vendor-price not-available';
+              priceEl.innerHTML = `
+                <span class="price-val">Indisponibil</span>
+                <span class="currency">${sitenames[vendor]}</span>
+              `;
+            }
+          }
+
+          // Update image daca vine de la Samsung
+          if (vendor === 'samsung' && result.image_url && result.image_url.startsWith('http')) {
+            const img = document.getElementById('product-image');
+            const placeholder = document.getElementById('image-placeholder');
+            if (img && !img.src.includes('samsung.com')) {
+              img.src = result.image_url;
+              img.style.display = 'block';
+              if (placeholder) placeholder.style.display = 'none';
+            }
+          }
+        } catch (e) {
+          console.warn(`Live fetch ${vendor} eroare:`, e);
+        }
+      });
+
+      await Promise.all(promises);
+
+      // Re-aplica color coding dupa ce toate rezultatele au venit
+      applyColorCoding(liveResults);
     }
 
     function updateVendorPrice(vendor, price, url) {
