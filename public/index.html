@@ -1166,6 +1166,27 @@
     .price-down { color: #16a34a; font-weight: 700; }
     .price-same { color: #9ca3af; }
 
+    .report-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .report-action-btn {
+      padding: 6px 14px;
+      border: 1.5px solid #14b8a6;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #fff;
+      color: #0f766e;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+    }
+    .report-action-btn:hover {
+      background: #0f766e;
+      color: #fff;
+    }
+
     .report-detail-chart {
       margin-top: 16px;
       padding: 16px;
@@ -1633,10 +1654,16 @@
       <div class="reports-title">
         Rapoarte miscare preturi
       </div>
-      <div class="reports-tabs" id="reports-tabs">
-        <div class="reports-tab active" onclick="switchReportTab('summary')">Sumar</div>
-        <div class="reports-tab" onclick="switchReportTab('increases')">Scumpiri</div>
-        <div class="reports-tab" onclick="switchReportTab('decreases')">Ieftiniri</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+        <div class="reports-tabs" id="reports-tabs" style="margin-bottom:0">
+          <div class="reports-tab active" onclick="switchReportTab('summary')">Sumar</div>
+          <div class="reports-tab" onclick="switchReportTab('increases')">Scumpiri</div>
+          <div class="reports-tab" onclick="switchReportTab('decreases')">Ieftiniri</div>
+        </div>
+        <div class="report-actions">
+          <button class="report-action-btn" onclick="exportReportExcel()">Excel</button>
+          <button class="report-action-btn" onclick="printReportPDF()">Print PDF</button>
+        </div>
       </div>
       <div class="report-wrap">
         <div id="reports-body"></div>
@@ -2734,6 +2761,121 @@
 
       detail.innerHTML = html;
       detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // ── Export Rapoarte ──────────────────────────────────────────────────
+    function getReportItems() {
+      if (!reportsData || !reportsData.products) return [];
+      let items = reportsData.products;
+      if (currentReportTab === 'increases') {
+        items = items.filter(p => Object.values(p.changes || {}).some(v => v > 0));
+      } else if (currentReportTab === 'decreases') {
+        items = items.filter(p => Object.values(p.changes || {}).some(v => v < 0));
+      }
+      return items;
+    }
+
+    function exportReportExcel() {
+      const items = getReportItems();
+      if (items.length === 0) return;
+
+      const tabName = currentReportTab === 'increases' ? 'Scumpiri' :
+                      currentReportTab === 'decreases' ? 'Ieftiniri' : 'Sumar Preturi';
+
+      let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>' + tabName + '</x:Name></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table border="1">';
+      html += '<tr><th>Cod Produs</th><th>Categorie</th><th>Pret Kuziini (Lei)</th>';
+      html += '<th>Samsung (Lei)</th><th>eMAG (Lei)</th><th>Flanco (Lei)</th><th>Altex (Lei)</th>';
+      html += '<th>Var. Samsung</th><th>Var. eMAG</th><th>Var. Flanco</th><th>Var. Altex</th>';
+      html += '<th>Prima zi</th><th>Ultima zi</th><th>Zile urmarite</th></tr>';
+
+      items.forEach(p => {
+        const l = p.latest || {};
+        const c = p.changes || {};
+        html += `<tr>
+          <td>${p.code}</td>
+          <td>${p.category}</td>
+          <td>${p.kuziini_price ? p.kuziini_price.toFixed(2) : ''}</td>
+          <td>${l.samsung ? l.samsung.toFixed(2) : ''}</td>
+          <td>${l.emag ? l.emag.toFixed(2) : ''}</td>
+          <td>${l.flanco ? l.flanco.toFixed(2) : ''}</td>
+          <td>${l.altex ? l.altex.toFixed(2) : ''}</td>
+          <td>${c.samsung ? c.samsung.toFixed(2) : ''}</td>
+          <td>${c.emag ? c.emag.toFixed(2) : ''}</td>
+          <td>${c.flanco ? c.flanco.toFixed(2) : ''}</td>
+          <td>${c.altex ? c.altex.toFixed(2) : ''}</td>
+          <td>${p.first_date || ''}</td>
+          <td>${p.latest_date || ''}</td>
+          <td>${p.days_tracked || ''}</td>
+        </tr>`;
+      });
+
+      html += '</table></body></html>';
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const date = new Date().toISOString().slice(0, 10);
+      a.download = `Kuziini_Raport_${tabName}_${date}.xls`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function printReportPDF() {
+      const items = getReportItems();
+      if (items.length === 0) return;
+
+      const tabName = currentReportTab === 'increases' ? 'Scumpiri' :
+                      currentReportTab === 'decreases' ? 'Ieftiniri' : 'Sumar Preturi';
+      const date = new Date().toLocaleDateString('ro-RO');
+
+      let printHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <title>Raport ${tabName} - ${date}</title>
+        <style>
+          body { font-family: Arial, sans-serif; font-size: 11px; margin: 20px; color: #333; }
+          h1 { font-size: 18px; color: #0f766e; margin-bottom: 4px; }
+          .subtitle { font-size: 12px; color: #666; margin-bottom: 16px; }
+          table { width: 100%; border-collapse: collapse; }
+          th { background: #0f766e; color: #fff; padding: 6px 8px; text-align: left; font-size: 10px; }
+          td { padding: 5px 8px; border-bottom: 1px solid #e5e7eb; }
+          tr:nth-child(even) { background: #f9fafb; }
+          .price-up { color: #dc2626; font-weight: bold; }
+          .price-down { color: #16a34a; font-weight: bold; }
+          @media print { body { margin: 10px; } }
+        </style></head><body>
+        <h1>Kuziini - Raport ${tabName}</h1>
+        <div class="subtitle">Generat: ${date} | Produse: ${items.length}</div>
+        <table>
+          <tr><th>Cod</th><th>Categorie</th><th>Kuziini</th><th>Samsung</th><th>eMAG</th><th>Altex</th><th>Var. Samsung</th><th>Var. eMAG</th><th>Var. Altex</th><th>Perioada</th></tr>`;
+
+      items.forEach(p => {
+        const l = p.latest || {};
+        const c = p.changes || {};
+        function fmtChange(v) {
+          if (!v) return '';
+          if (v > 0) return '<span class="price-up">+' + v.toFixed(2) + '</span>';
+          return '<span class="price-down">' + v.toFixed(2) + '</span>';
+        }
+        printHtml += `<tr>
+          <td>${p.code}</td>
+          <td>${p.category}</td>
+          <td>${p.kuziini_price ? p.kuziini_price.toFixed(2) : '-'}</td>
+          <td>${l.samsung ? l.samsung.toFixed(2) : '-'}</td>
+          <td>${l.emag ? l.emag.toFixed(2) : '-'}</td>
+          <td>${l.altex ? l.altex.toFixed(2) : '-'}</td>
+          <td>${fmtChange(c.samsung)}</td>
+          <td>${fmtChange(c.emag)}</td>
+          <td>${fmtChange(c.altex)}</td>
+          <td>${p.first_date || ''} - ${p.latest_date || ''}</td>
+        </tr>`;
+      });
+
+      printHtml += '</table></body></html>';
+
+      const printWin = window.open('', '_blank');
+      printWin.document.write(printHtml);
+      printWin.document.close();
+      printWin.focus();
+      setTimeout(() => { printWin.print(); }, 300);
     }
 
     // Live reload disabled on Vercel (serverless)
