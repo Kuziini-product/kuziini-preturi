@@ -1902,8 +1902,9 @@
         hideLoading();
         displayResults(data);
 
-        // Pas 2: Daca nu e in cache, lanseaza scraping live pe fiecare vendor
-        if (data.not_cached) {
+        // Pas 2: Daca nu e in cache SAU daca unii vendori au null, lanseaza scraping live
+        const hasNullPrices = data.prices && Object.values(data.prices).some(p => p === null || p === undefined);
+        if (data.not_cached || hasNullPrices) {
           fetchLiveVendors(code, data);
         }
 
@@ -1933,8 +1934,9 @@
         }
       });
 
-      // Lanseaza 4 request-uri paralele (fiecare vendor separat)
-      const promises = vendors.map(async (vendor) => {
+      // Lanseaza request-uri paralele doar pentru vendorii cu pret null
+      const vendorsToFetch = vendors.filter(v => liveResults[v] === null || liveResults[v] === undefined);
+      const promises = vendorsToFetch.map(async (vendor) => {
         try {
           const resp = await fetch(`/api/search?code=${encodeURIComponent(code)}&vendor=${vendor}`);
           if (!resp.ok) return;
