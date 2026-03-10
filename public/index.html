@@ -62,7 +62,8 @@
     }
 
     .logo-full-img {
-      height: 120px;
+      max-height: 120px;
+      max-width: 100%;
       width: auto;
       object-fit: contain;
     }
@@ -711,11 +712,157 @@
 
     /* ── Responsive ── */
     @media (max-width: 700px) {
-      .search-section { grid-template-columns: 1fr; }
-      .vendor-grid { grid-template-columns: repeat(2, 1fr); }
-      .kuziini-section { flex-direction: column; text-align: center; }
+      body {
+        padding: 8px 4px 32px;
+      }
+      .app-container {
+        padding: 12px 8px 24px;
+        border-radius: 18px;
+      }
+      .header {
+        padding: 16px 12px;
+        margin-bottom: 16px;
+        border-radius: 16px;
+      }
+      .logo-full-img {
+        max-height: 70px;
+      }
+      .app-subtitle {
+        font-size: 12px;
+        text-align: center;
+      }
+      .search-section {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .search-card {
+        padding: 16px;
+        border-radius: 14px;
+      }
+      .input-group {
+        flex-direction: column;
+      }
+      .search-btn {
+        width: 100%;
+        padding: 12px;
+      }
+      .image-card {
+        min-height: 140px;
+        padding: 12px;
+        border-radius: 14px;
+      }
+      .filters-section {
+        padding: 14px 12px;
+        border-radius: 14px;
+        margin-bottom: 12px;
+      }
+      .filters-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .filter-group {
+        min-width: unset;
+      }
+      .product-dropdown {
+        font-size: 12px;
+        padding: 10px 12px;
+      }
+      .vendor-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+      .kuziini-section {
+        flex-direction: column;
+        text-align: center;
+        padding: 16px 12px;
+        border-radius: 14px;
+      }
       .kuziini-divider { width: 80%; height: 1px; }
-      .filters-row { flex-direction: column; }
+
+      /* Cart responsive */
+      .cart-section {
+        border-radius: 14px;
+      }
+      .cart-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+        padding: 12px;
+      }
+      .cart-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .cart-actions .cart-action-btn {
+        flex: 1;
+        text-align: center;
+      }
+      .cart-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -4px;
+        padding: 0 4px;
+      }
+      .cart-table {
+        font-size: 11px;
+        min-width: 560px;
+      }
+      .cart-table th,
+      .cart-table td {
+        padding: 8px 6px;
+      }
+      .cart-table th {
+        font-size: 9px;
+      }
+      .cart-qty button {
+        width: 24px;
+        height: 24px;
+        font-size: 13px;
+      }
+      .cart-total-row {
+        padding: 10px 12px;
+        border-radius: 10px;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .cart-total-value {
+        font-size: 16px;
+      }
+      .add-cart-btn {
+        font-size: 14px;
+        padding: 12px;
+        border-radius: 12px;
+      }
+
+      /* Results responsive */
+      .results-section {
+        border-radius: 14px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      body {
+        padding: 4px 2px 24px;
+      }
+      .app-container {
+        padding: 8px 6px 20px;
+        border-radius: 14px;
+      }
+      .logo-full-img {
+        max-height: 56px;
+      }
+      .header {
+        padding: 12px 10px;
+        border-radius: 12px;
+      }
+      .app-subtitle {
+        font-size: 11px;
+      }
+      .vendor-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
     }
 
     /* ── Animations ── */
@@ -1147,20 +1294,22 @@
           <button class="cart-action-btn btn-clear" onclick="clearCart()">Goleste</button>
         </div>
       </div>
-      <table class="cart-table">
-        <thead>
-          <tr>
-            <th>Produs</th>
-            <th style="text-align:right">Pret Kuziini</th>
-            <th style="text-align:right">Cel mai ieftin</th>
-            <th style="text-align:right">Diferenta</th>
-            <th style="text-align:center">Cant.</th>
-            <th style="text-align:right">Subtotal</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="cart-body"></tbody>
-      </table>
+      <div class="cart-table-wrap">
+        <table class="cart-table">
+          <thead>
+            <tr>
+              <th>Produs</th>
+              <th style="text-align:right">Pret Kuziini</th>
+              <th style="text-align:right">Cel mai ieftin</th>
+              <th style="text-align:right">Diferenta</th>
+              <th style="text-align:center">Cant.</th>
+              <th style="text-align:right">Subtotal</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="cart-body"></tbody>
+        </table>
+      </div>
       <div class="cart-total-row">
         <span class="cart-total-label">Total Kuziini (cu TVA)</span>
         <span class="cart-total-value" id="cart-total">0,00 Lei</span>
