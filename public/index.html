@@ -1855,7 +1855,7 @@
         } else {
           priceEl.className = 'vendor-price not-available';
           priceEl.innerHTML = `
-            <span class="price-val">Indisponibil</span>
+            <span class="price-val" id="status-${v}">Se cauta...</span>
             <span class="currency">${sitenames[v]}</span>
           `;
         }
@@ -1934,9 +1934,16 @@
                       img.style.display = 'block';
                       document.getElementById('image-placeholder').style.display = 'none';
                     }
+                  } else {
+                    // Vendorul nu are produsul
+                    const st = document.getElementById(`status-${v}`);
+                    if (st) st.textContent = 'Indisponibil';
                   }
                 })
-                .catch(() => {});
+                .catch(() => {
+                  const st = document.getElementById(`status-${v}`);
+                  if (st) st.textContent = 'Indisponibil';
+                });
             }
           });
 
@@ -1956,16 +1963,21 @@
             .then(r => {
               if (r && r.price !== null && r.price !== undefined) {
                 updateVendorPrice(v, r.price, r.url);
-                // Update image daca Samsung
                 if (v === 'samsung' && r.image_url) {
                   const img = document.getElementById('product-image');
                   img.src = r.image_url;
                   img.style.display = 'block';
                   document.getElementById('image-placeholder').style.display = 'none';
                 }
+              } else {
+                const st = document.getElementById(`status-${v}`);
+                if (st) st.textContent = 'Indisponibil';
               }
             })
-            .catch(() => {});
+            .catch(() => {
+              const st = document.getElementById(`status-${v}`);
+              if (st) st.textContent = 'Indisponibil';
+            });
         }
 
         hideLoading();

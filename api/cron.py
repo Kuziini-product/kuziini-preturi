@@ -103,23 +103,27 @@ class handler(BaseHTTPRequestHandler):
                 missing = [v for v in ['emag', 'altex'] if not prices.get(v)]
                 if missing:
                     elapsed2 = time.time() - start
+                    log(f"  CRON: {code} missing={missing}, elapsed={round(elapsed2,1)}s, retrying...")
                     if elapsed2 < 45:
                         for v in missing:
                             try:
                                 vr = search_single_vendor(code, v)
-                                if vr.get('price'):
-                                    prices[v] = vr['price']
+                                vp = vr.get('price')
+                                log(f"  CRON: {code} {v} retry result: price={vp}")
+                                if vp:
+                                    prices[v] = vp
                                     result['prices'] = prices
                                     if vr.get('url'):
                                         result.setdefault('urls', {})[v] = vr['url']
-                                    log(f"  CRON: {code} {v} retry OK: {vr['price']}")
-                            except Exception:
-                                pass
+                            except Exception as ve:
+                                log(f"  CRON: {code} {v} retry EROARE: {ve}")
                         # Re-save cu preturile completate
                         if any(prices.get(v) for v in missing):
                             set_cached_price(code, result)
                             if result.get('prices'):
                                 save_price_history(code, result['prices'])
+                    else:
+                        log(f"  CRON: {code} skip retry (elapsed={round(elapsed2,1)}s > 45s)")
                 processed += 1
                 log(f"  CRON: {code} OK")
             except Exception as e:
