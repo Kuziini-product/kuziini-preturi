@@ -670,6 +670,11 @@
       <div class="app-subtitle">× Samsung — Comparare Diferențe de Preț pe Piață</div>
     </div>
 
+    <!-- ── Last Update Info ── -->
+    <div id="last-update" style="text-align:center; font-size:12px; color:#7c7a9c; margin-bottom:8px; display:none;">
+      Prețuri actualizate: <span id="last-update-time">—</span>
+    </div>
+
     <!-- ── Search Section ── -->
     <div class="search-section">
       <div class="search-card">
@@ -1058,6 +1063,24 @@
     document.getElementById('code-input').addEventListener('keydown', function(e) {
       if (e.key === 'Enter') doSearch();
     });
+
+    // ── Load cache status (last update time) ───────────────────────────
+    fetch('/api/cache_status')
+      .then(r => r.json())
+      .then(data => {
+        if (data.last_update_min_ago !== null && data.last_update_min_ago !== undefined) {
+          const el = document.getElementById('last-update');
+          const timeEl = document.getElementById('last-update-time');
+          const mins = data.last_update_min_ago;
+          let timeStr;
+          if (mins < 60) timeStr = `acum ${mins} minute`;
+          else if (mins < 1440) timeStr = `acum ${Math.round(mins/60)} ore`;
+          else timeStr = `acum ${Math.round(mins/1440)} zile`;
+          timeEl.textContent = `${timeStr} (${data.total_cached}/${data.total_products} produse)`;
+          el.style.display = 'block';
+        }
+      })
+      .catch(() => {});
 
     // Auto-uppercase input
     document.getElementById('code-input').addEventListener('input', function(e) {
