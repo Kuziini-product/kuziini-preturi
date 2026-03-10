@@ -12,37 +12,11 @@ import os
 # Add parent dir to path so we can import scraper
 sys.path.insert(0, os.path.dirname(__file__))
 from scraper import search_product, search_single_vendor, load_products, APP_VERSION, warmup_session
+from cache import get_cached_price, get_cache_status, is_configured as cache_configured
 
 # Warmup on cold start
 warmup_session()
 _start_time = time.time()
-
-CACHE_FILE = '/tmp/prices_cache.json'
-CACHE_MAX_AGE = 24 * 3600  # 24 ore
-
-
-def get_cached_result(code):
-    """Returneaza rezultatul din cache daca e valid (< 24h)."""
-    try:
-        with open(CACHE_FILE, 'r', encoding='utf-8') as f:
-            cache = json.load(f)
-        entry = cache.get('prices', {}).get(code.upper())
-        if entry and 'cached_at' in entry:
-            age = time.time() - entry['cached_at']
-            if age < CACHE_MAX_AGE and 'prices' in entry:
-                return {
-                    'code': code.upper(),
-                    'category': entry.get('category', ''),
-                    'kuziini_price': entry.get('kuziini_price'),
-                    'image_url': entry.get('image_url'),
-                    'prices': entry['prices'],
-                    'urls': entry.get('urls', {}),
-                    'cached': True,
-                    'cache_age_min': round(age / 60),
-                }
-    except Exception:
-        pass
-    return None
 
 
 class handler(BaseHTTPRequestHandler):
@@ -64,11 +38,12 @@ class handler(BaseHTTPRequestHandler):
                 self._json(result)
                 return
 
-            # Verifica cache-ul
-            cached = get_cached_result(code)
-            if cached:
-                self._json(cached)
-                return
+            # Verifica cache-ul Redis
+            if cache_configured():
+                cached = get_cached_price(code)
+                if cached:
+                    self._json(cached)
+                    return
 
             # Daca nu e in cache, returnam info din Excel + mesaj
             import time as _t; _ts = _t.time()
@@ -88,12 +63,16 @@ class handler(BaseHTTPRequestHandler):
                 'prices': {'samsung': None, 'emag': None, 'flanco': None, 'altex': None},
                 'urls': {},
                 'not_cached': True,
-                'message': 'Prețurile nu sunt încă disponibile. Se actualizează automat.',
+                'message': 'Preturile nu sunt inca disponibile. Se actualizeaza automat.',
                 'excel_load_ms': round(_elapsed * 1000),
             })
 
         elif path == '/api/version':
-            self._json({'version': _start_time, 'app_version': APP_VERSION})
+            self._json({
+                'version': _start_time,
+                'app_version': APP_VERSION,
+                'cache_configured': cache_configured(),
+            })
 
         elif path == '/api/reload_excel':
             import scraper as scraper_mod
@@ -116,19 +95,16 @@ class handler(BaseHTTPRequestHandler):
             })
 
         elif path == '/api/cache_status':
-            try:
-                with open(CACHE_FILE, 'r', encoding='utf-8') as f:
-                    cache = json.load(f)
-                last = cache.get('last_update')
-                age = round((time.time() - last) / 60) if last else None
-                self._json({
-                    'total_cached': cache.get('total_cached', 0),
-                    'total_products': cache.get('total_products', 0),
-                    'last_update_min_ago': age,
-                    'batch_index': cache.get('batch_index', 0),
-                })
-            except Exception:
-                self._json({'total_cached': 0, 'error': 'No cache file'})
+            status = get_cache_status()
+            last = status.get('last_update')
+            age = round((time.time() - last) / 60) if last else None
+            self._json({
+                'total_cached': status.get('total_cached', 0),
+                'total_products': status.get('total_products', 0),
+                'last_update_min_ago': age,
+                'batch_index': status.get('batch_index', 0),
+                'cache_backend': 'redis' if cache_configured() else 'none',
+            })
 
         else:
             self._json({'error': 'Not found'}, 404)

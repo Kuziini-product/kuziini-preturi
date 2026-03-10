@@ -1072,11 +1072,22 @@
           const el = document.getElementById('last-update');
           const timeEl = document.getElementById('last-update-time');
           const mins = data.last_update_min_ago;
-          let timeStr;
-          if (mins < 60) timeStr = `acum ${mins} minute`;
-          else if (mins < 1440) timeStr = `acum ${Math.round(mins/60)} ore`;
-          else timeStr = `acum ${Math.round(mins/1440)} zile`;
-          timeEl.textContent = `${timeStr} (${data.total_cached}/${data.total_products} produse)`;
+
+          // Calculeaza data/ora exacta
+          const updateDate = new Date(Date.now() - mins * 60 * 1000);
+          const dateStr = updateDate.toLocaleDateString('ro-RO', {
+            day: '2-digit', month: '2-digit', year: 'numeric'
+          });
+          const timeStrFmt = updateDate.toLocaleTimeString('ro-RO', {
+            hour: '2-digit', minute: '2-digit'
+          });
+
+          let agoStr;
+          if (mins < 60) agoStr = `acum ${mins} min`;
+          else if (mins < 1440) agoStr = `acum ${Math.round(mins/60)} ore`;
+          else agoStr = `acum ${Math.round(mins/1440)} zile`;
+
+          timeEl.textContent = `${dateStr} ${timeStrFmt} (${agoStr}) — ${data.total_cached}/${data.total_products} produse`;
           el.style.display = 'block';
         }
       })

@@ -13,22 +13,11 @@ import urllib.request
 
 sys.path.insert(0, os.path.dirname(__file__))
 from scraper import search_product, load_products, log
+from cache import (
+    set_cached_price, get_cache_status, set_cache_status, is_configured
+)
 
-CACHE_FILE = '/tmp/prices_cache.json'
 BATCH_SIZE = 1  # 1 produs per invocatie (scraping dureaza ~30-50s per produs)
-
-
-def load_cache():
-    try:
-        with open(CACHE_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception:
-        return {'prices': {}, 'last_update': None, 'batch_index': 0}
-
-
-def save_cache(cache):
-    with open(CACHE_FILE, 'w', encoding='utf-8') as f:
-        json.dump(cache, f, ensure_ascii=False)
 
 
 def trigger_next_batch(host):
@@ -39,11 +28,15 @@ def trigger_next_batch(host):
         req.add_header('User-Agent', 'Vercel-Cron-Chain')
         urllib.request.urlopen(req, timeout=5)
     except Exception:
-        pass  # fire-and-forget, nu conteaza daca esueaza
+        pass  # fire-and-forget
 
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
+        if not is_configured():
+            self._json({'error': 'Redis not configured. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.'}, 500)
+            return
+
         start = time.time()
         products = load_products()
         all_codes = sorted(products.keys())
@@ -53,8 +46,8 @@ class handler(BaseHTTPRequestHandler):
             self._json({'error': 'No products in Excel', 'count': 0})
             return
 
-        cache = load_cache()
-        batch_idx = cache.get('batch_index', 0)
+        status = get_cache_status()
+        batch_idx = status.get('batch_index', 0)
 
         # Parse query params
         parsed = __import__('urllib.parse', fromlist=['parse_qs']).parse_qs(
@@ -63,57 +56,54 @@ class handler(BaseHTTPRequestHandler):
         is_chain = parsed.get('chain', [''])[0] == '1'
         is_reset = parsed.get('reset', [''])[0] == '1'
 
-        # Reset: sterge cache si incepe de la 0
+        # Reset: incepe de la 0
         if is_reset:
             batch_idx = 0
-            cache = {'prices': {}, 'last_update': None, 'batch_index': 0}
+            set_cache_status({
+                'total_cached': 0,
+                'total_products': total,
+                'last_update': None,
+                'batch_index': 0,
+            })
 
-        # Daca am terminat toate produsele, stop (nu mai chaina)
+        # Daca am terminat toate produsele, stop
         if batch_idx >= total:
-            cache['batch_index'] = 0  # reset pentru urmatoarea noapte
-            cache['completed_at'] = time.time()
-            save_cache(cache)
+            status['batch_index'] = 0  # reset pentru urmatoarea noapte
+            status['completed_at'] = time.time()
+            set_cache_status(status)
             self._json({
                 'ok': True,
                 'status': 'COMPLETED',
-                'total_cached': cache.get('total_cached', 0),
+                'total_cached': status.get('total_cached', 0),
                 'total_products': total,
             })
             return
 
         # Proceseaza batch curent
         batch_codes = all_codes[batch_idx:batch_idx + BATCH_SIZE]
-        results = {}
+        processed = 0
         for code in batch_codes:
             elapsed = time.time() - start
             if elapsed > 50:  # safety margin (timeout=60s)
-                log(f"  CRON: timeout safety, oprit dupa {len(results)} produse")
+                log(f"  CRON: timeout safety, oprit dupa {processed} produse")
                 break
             try:
                 result = search_product(code)
-                results[code] = {
-                    'prices': result.get('prices', {}),
-                    'urls': result.get('urls', {}),
-                    'image_url': result.get('image_url'),
-                    'category': result.get('category', ''),
-                    'kuziini_price': result.get('kuziini_price'),
-                    'cached_at': time.time(),
-                }
+                # Salveaza in Redis
+                set_cached_price(code, result)
+                processed += 1
                 log(f"  CRON: {code} OK")
             except Exception as e:
                 log(f"  CRON: {code} EROARE: {e}")
-                results[code] = {'error': str(e), 'cached_at': time.time()}
+                processed += 1  # skip si treci mai departe
 
-        # Actualizeaza cache
-        if 'prices' not in cache:
-            cache['prices'] = {}
-        cache['prices'].update(results)
-        new_batch_idx = batch_idx + len(results)
-        cache['batch_index'] = new_batch_idx
-        cache['last_update'] = time.time()
-        cache['total_products'] = total
-        cache['total_cached'] = len(cache['prices'])
-        save_cache(cache)
+        # Actualizeaza status
+        new_batch_idx = batch_idx + processed
+        status['batch_index'] = new_batch_idx
+        status['last_update'] = time.time()
+        status['total_products'] = total
+        status['total_cached'] = new_batch_idx
+        set_cache_status(status)
 
         elapsed = time.time() - start
 
@@ -127,8 +117,8 @@ class handler(BaseHTTPRequestHandler):
         self._json({
             'ok': True,
             'batch': f'{batch_idx}-{new_batch_idx}/{total}',
-            'processed': len(results),
-            'total_cached': cache['total_cached'],
+            'processed': processed,
+            'total_cached': new_batch_idx,
             'elapsed': round(elapsed, 1),
             'next_batch': new_batch_idx if has_more else 'DONE',
             'status': 'IN_PROGRESS' if has_more else 'COMPLETED',
