@@ -1687,6 +1687,45 @@
         if (!data.not_cached) {
           hideLoading();
           displayResults(data);
+
+          const encCode = encodeURIComponent(code);
+
+          // Daca nu are imagine, incearca sa o obtina de la Samsung
+          if (!data.image_url) {
+            fetch(`/api/search?code=${encCode}&vendor=samsung`)
+              .then(r => r.ok ? r.json() : null)
+              .then(r => {
+                if (r && r.image_url) {
+                  const img = document.getElementById('product-image');
+                  img.src = r.image_url;
+                  img.style.display = 'block';
+                  document.getElementById('image-placeholder').style.display = 'none';
+                }
+              })
+              .catch(() => {});
+          }
+
+          // Daca vendori sunt null in cache, incearca sa-i incarce live
+          const prices = data.prices || {};
+          ['samsung', 'emag', 'flanco', 'altex'].forEach(v => {
+            if (prices[v] === null || prices[v] === undefined) {
+              fetch(`/api/search?code=${encCode}&vendor=${v}`)
+                .then(r => r.ok ? r.json() : null)
+                .then(r => {
+                  if (r && r.price !== null && r.price !== undefined) {
+                    updateVendorPrice(v, r.price, r.url);
+                    if (v === 'samsung' && r.image_url && !data.image_url) {
+                      const img = document.getElementById('product-image');
+                      img.src = r.image_url;
+                      img.style.display = 'block';
+                      document.getElementById('image-placeholder').style.display = 'none';
+                    }
+                  }
+                })
+                .catch(() => {});
+            }
+          });
+
           return;
         }
 
