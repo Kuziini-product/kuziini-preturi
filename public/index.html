@@ -877,6 +877,36 @@
       transition: color 0.2s;
     }
     .cart-remove:hover { color: #dc2626; }
+    .cart-qty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .cart-qty button {
+      width: 26px;
+      height: 26px;
+      border: 1px solid #e0d8f8;
+      border-radius: 6px;
+      background: #f8f6ff;
+      color: #7c3aed;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+    .cart-qty button:hover { background: #ede9fe; }
+    .cart-qty span {
+      min-width: 24px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: #1e1b4b;
+    }
+    .cart-subtotal { font-weight: 800; text-align: right; white-space: nowrap; color: #7c3aed; }
 
     .cart-total-row {
       background: #f8f6ff;
@@ -1101,6 +1131,8 @@
             <th style="text-align:right">Pret Kuziini</th>
             <th style="text-align:right">Cel mai ieftin</th>
             <th style="text-align:right">Diferenta</th>
+            <th style="text-align:center">Cant.</th>
+            <th style="text-align:right">Subtotal</th>
             <th></th>
           </tr>
         </thead>
@@ -1583,14 +1615,7 @@
       // Show add button only if we have Kuziini price
       if (data.kuziini_price) {
         btn.classList.add('visible');
-        const inCart = cart.some(item => item.code === data.code);
-        if (inCart) {
-          btn.textContent = 'Deja in cos';
-          btn.classList.add('added');
-        } else {
-          btn.textContent = 'Adauga in cos';
-          btn.classList.remove('added');
-        }
+        updateCartButton(data.code);
       } else {
         btn.classList.remove('visible');
       }
@@ -1600,8 +1625,15 @@
       if (!lastSearchResult || !lastSearchResult.kuziini_price) return;
       const data = lastSearchResult;
 
-      // Check if already in cart
-      if (cart.some(item => item.code === data.code)) return;
+      // If already in cart, increment quantity
+      const existing = cart.find(item => item.code === data.code);
+      if (existing) {
+        existing.qty = (existing.qty || 1) + 1;
+        saveCart();
+        renderCart();
+        updateCartButton(data.code);
+        return;
+      }
 
       // Find cheapest vendor
       const vendorPrices = data.prices || {};
@@ -1623,6 +1655,7 @@
         cheapest_price: cheapestPrice,
         all_prices: vendorPrices,
         image_url: data.image_url,
+        qty: 1,
       };
 
       // Alert if Kuziini is more expensive
@@ -1636,11 +1669,35 @@
       cart.push(item);
       saveCart();
       renderCart();
+      updateCartButton(data.code);
+    }
 
-      // Update button
+    function updateCartButton(code) {
       const btn = document.getElementById('add-cart-btn');
-      btn.textContent = 'Deja in cos';
-      btn.classList.add('added');
+      const existing = cart.find(item => item.code === code);
+      if (existing) {
+        btn.textContent = `In cos (${existing.qty || 1})`;
+        btn.classList.add('added');
+      } else {
+        btn.textContent = 'Adauga in cos';
+        btn.classList.remove('added');
+      }
+    }
+
+    function changeQty(code, delta) {
+      const item = cart.find(i => i.code === code);
+      if (!item) return;
+      const newQty = (item.qty || 1) + delta;
+      if (newQty < 1) {
+        removeFromCart(code);
+        return;
+      }
+      item.qty = newQty;
+      saveCart();
+      renderCart();
+      if (lastSearchResult && lastSearchResult.code === code) {
+        updateCartButton(code);
+      }
     }
 
     function removeFromCart(code) {
@@ -1678,28 +1735,29 @@
       }
 
       section.classList.add('visible');
-      countBadge.textContent = cart.length;
+      const totalItems = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+      countBadge.textContent = totalItems;
 
-      let totalKuziini = 0;
+      let totalSubtotal = 0;
       let html = '';
 
       cart.forEach(item => {
-        totalKuziini += item.kuziini_price;
+        const qty = item.qty || 1;
         const kzStr = formatPrice(item.kuziini_price);
         let cheapStr = 'N/A';
         let diffStr = '—';
         let diffClass = '';
         let alertTag = '';
+        let diffPerUnit = 0;
 
         if (item.cheapest_price) {
           cheapStr = formatPrice(item.cheapest_price) + ' (' + item.cheapest_vendor + ')';
           const diff = item.cheapest_price - item.kuziini_price;
+          diffPerUnit = item.kuziini_price - item.cheapest_price;
           if (diff > 0) {
-            // Kuziini is cheaper (good)
             diffStr = '+' + formatPrice(diff);
             diffClass = 'positive';
           } else if (diff < 0) {
-            // Kuziini is more expensive
             diffStr = formatPrice(diff);
             diffClass = 'negative';
             alertTag = '<span class="cart-alert">SCUMP</span>';
@@ -1708,17 +1766,30 @@
           }
         }
 
+        // Subtotal = (kuziini_price + diferenta pozitiva daca e mai scump) * qty
+        // Adica subtotal = kuziini_price * qty (pretul pe care il platesti)
+        const subtotal = item.kuziini_price * qty;
+        totalSubtotal += subtotal;
+
         html += `<tr>
           <td><span class="cart-code">${item.code}</span><br><span class="cart-cat">${item.category}</span></td>
           <td class="cart-price">${kzStr}</td>
           <td class="cart-price">${cheapStr}</td>
           <td class="cart-diff ${diffClass}">${diffStr}${alertTag}</td>
+          <td>
+            <div class="cart-qty">
+              <button onclick="changeQty('${item.code}', -1)">−</button>
+              <span>${qty}</span>
+              <button onclick="changeQty('${item.code}', +1)">+</button>
+            </div>
+          </td>
+          <td class="cart-subtotal">${formatPrice(subtotal)}</td>
           <td><button class="cart-remove" onclick="removeFromCart('${item.code}')" title="Sterge">&times;</button></td>
         </tr>`;
       });
 
       body.innerHTML = html;
-      totalEl.textContent = formatPrice(totalKuziini);
+      totalEl.textContent = formatPrice(totalSubtotal);
     }
 
     function exportCart() {
@@ -1726,11 +1797,13 @@
 
       // Generate Excel-compatible HTML table
       let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Cos Kuziini</x:Name></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table border="1">';
-      html += '<tr><th>Cod Produs</th><th>Categorie</th><th>Pret Kuziini (Lei)</th><th>Cel mai ieftin vendor</th><th>Pret vendor (Lei)</th><th>Diferenta (Lei)</th><th>Samsung (Lei)</th><th>eMAG (Lei)</th><th>Flanco (Lei)</th><th>Altex (Lei)</th></tr>';
+      html += '<tr><th>Cod Produs</th><th>Categorie</th><th>Cant.</th><th>Pret Kuziini (Lei)</th><th>Cel mai ieftin vendor</th><th>Pret vendor (Lei)</th><th>Diferenta (Lei)</th><th>Subtotal (Lei)</th><th>Samsung (Lei)</th><th>eMAG (Lei)</th><th>Flanco (Lei)</th><th>Altex (Lei)</th></tr>';
 
       let totalKz = 0;
       cart.forEach(item => {
-        totalKz += item.kuziini_price;
+        const qty = item.qty || 1;
+        const subtotal = item.kuziini_price * qty;
+        totalKz += subtotal;
         const cheapV = item.cheapest_vendor || 'N/A';
         const cheapP = item.cheapest_price || '';
         const diff = item.cheapest_price ? (item.cheapest_price - item.kuziini_price) : '';
@@ -1738,10 +1811,12 @@
         html += `<tr>
           <td>${item.code}</td>
           <td>${item.category}</td>
+          <td>${qty}</td>
           <td>${item.kuziini_price.toFixed(2)}</td>
           <td>${cheapV}</td>
           <td>${cheapP ? cheapP.toFixed(2) : ''}</td>
           <td>${diff !== '' ? diff.toFixed(2) : ''}</td>
+          <td>${subtotal.toFixed(2)}</td>
           <td>${p.samsung ? p.samsung.toFixed(2) : ''}</td>
           <td>${p.emag ? p.emag.toFixed(2) : ''}</td>
           <td>${p.flanco ? p.flanco.toFixed(2) : ''}</td>
@@ -1749,7 +1824,7 @@
         </tr>`;
       });
 
-      html += `<tr><td colspan="2"><b>TOTAL</b></td><td><b>${totalKz.toFixed(2)}</b></td><td colspan="7"></td></tr>`;
+      html += `<tr><td colspan="2"><b>TOTAL</b></td><td><b>${cart.reduce((s,i) => s + (i.qty||1), 0)}</b></td><td colspan="4"></td><td><b>${totalKz.toFixed(2)}</b></td><td colspan="4"></td></tr>`;
       html += '</table></body></html>';
 
       const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
