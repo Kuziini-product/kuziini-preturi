@@ -51,7 +51,23 @@
       background: #ffffff;
       border-radius: 24px;
       box-shadow: 0 4px 32px rgba(100, 80, 200, 0.10);
-      border: 1px solid rgba(200, 190, 240, 0.4);
+      border: none;
+      position: relative;
+      z-index: 0;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 26px;
+      background: conic-gradient(
+        from var(--logo-angle),
+        #7c3aed 0%, #4f46e5 18%, #0ea5e9 36%,
+        #38bdf8 52%, #818cf8 68%, #a78bfa 82%, #7c3aed 100%
+      );
+      animation: logo-spin-border 5s linear infinite;
+      z-index: -1;
+      opacity: 0.55;
     }
 
     /* ── Animated logo tab border ── */
@@ -1528,14 +1544,15 @@
     .cart-total-row {
       background: #f8f6ff;
       border-radius: 12px;
-      padding: 14px 16px;
+      padding: 12px 16px;
       margin-top: 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 12px;
     }
     .cart-total-label {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       color: #7c6fa8;
     }
@@ -1780,8 +1797,6 @@
           Cos produse <span class="cart-badge" id="cart-count">0</span>
         </div>
         <div class="cart-actions">
-          <button class="cart-action-btn btn-offer" onclick="generateOffer()">Genereaza Oferta</button>
-          <button class="cart-action-btn btn-export" onclick="exportCart()">Descarca Excel</button>
           <button class="cart-action-btn btn-clear" onclick="clearCart()">Goleste</button>
         </div>
       </div>
@@ -1802,8 +1817,11 @@
         </table>
       </div>
       <div class="cart-total-row">
-        <span class="cart-total-label">Total Kuziini (cu TVA)</span>
-        <span class="cart-total-value" id="cart-total">0,00 Lei</span>
+        <div>
+          <span class="cart-total-label">Total Kuziini (cu TVA)</span><br>
+          <span class="cart-total-value" id="cart-total">0,00 Lei</span>
+        </div>
+        <button class="cart-action-btn btn-offer" onclick="generateOffer()">Genereaza Oferta</button>
       </div>
     </div>
 
@@ -1815,7 +1833,7 @@
     <!-- ── Offers Section ── -->
     <div class="offers-section" id="offers-section">
       <div class="offers-title">Ofertele mele</div>
-      <input class="offers-search" id="offers-search" placeholder="Cauta dupa client, telefon sau numar oferta..."
+      <input class="offers-search" id="offers-search" placeholder="Cauta dupa client, telefon, nr. oferta sau cod produs..."
              oninput="renderOffersList(this.value)" />
       <div id="offers-body"></div>
     </div>
@@ -3220,6 +3238,13 @@ function _saveToStorage() {
 }
 
 function saveAndToast() {
+  const client = (document.getElementById('field-client') || {}).value || '';
+  const phone  = (document.getElementById('field-phone')  || {}).value || '';
+  if (!client.trim() && !phone.trim()) {
+    alert('Completati cel putin numele clientului sau telefonul pentru a salva oferta.');
+    document.getElementById('field-client').focus();
+    return;
+  }
   if (_saveToStorage()) {
     const t = document.getElementById('saved-toast');
     t.style.display = 'block';
@@ -3230,7 +3255,10 @@ function saveAndToast() {
 function doPrint() { _saveToStorage(); window.print(); }
 
 function closeOffer() {
-  if (confirm('Salvezi aceasta oferta in lista "Ofertele mele"?')) {
+  const client = (document.getElementById('field-client') || {}).value || '';
+  const phone  = (document.getElementById('field-phone')  || {}).value || '';
+  const hasClient = client.trim() || phone.trim();
+  if (hasClient && confirm('Salvezi aceasta oferta in lista "Ofertele mele"?')) {
     _saveToStorage();
   }
   window.close();
@@ -3380,7 +3408,8 @@ else { setTimeout(_renderTotals, 100); }
         ? all.filter(o =>
             (o.client || '').toLowerCase().includes(q) ||
             (o.phone  || '').toLowerCase().includes(q) ||
-            (o.num    || '').toLowerCase().includes(q))
+            (o.num    || '').toLowerCase().includes(q) ||
+            (o.products || []).some(p => (p.code || '').toLowerCase().includes(q)))
         : all;
 
       updateOffersBadge();
