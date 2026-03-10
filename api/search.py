@@ -104,6 +104,17 @@ class handler(BaseHTTPRequestHandler):
         elif path == '/api/ping':
             self._json({'pong': True, 'time': time.time()})
 
+        elif path == '/api/test_excel':
+            t0 = time.time()
+            products = load_products()
+            t1 = time.time()
+            self._json({
+                'ok': True,
+                'count': len(products),
+                'elapsed_ms': round((t1 - t0) * 1000),
+                'codes_sample': list(products.keys())[:5],
+            })
+
         elif path == '/api/cache_status':
             try:
                 with open(CACHE_FILE, 'r', encoding='utf-8') as f:
