@@ -1598,16 +1598,21 @@
         kzPrice.className = 'kuziini-price-value not-found';
       }
 
-      // Product image
+      // Product image - reset la fiecare cautare noua
+      const img = document.getElementById('product-image');
+      const placeholder = document.getElementById('image-placeholder');
       if (data.image_url) {
-        const img = document.getElementById('product-image');
         img.src = data.image_url;
         img.style.display = 'block';
-        document.getElementById('image-placeholder').style.display = 'none';
+        placeholder.style.display = 'none';
         img.onerror = () => {
           img.style.display = 'none';
-          document.getElementById('image-placeholder').style.display = 'flex';
+          placeholder.style.display = 'flex';
         };
+      } else {
+        img.src = '';
+        img.style.display = 'none';
+        placeholder.style.display = 'flex';
       }
 
       // Vendor prices + URLs

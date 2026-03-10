@@ -31,7 +31,7 @@ IS_VERCEL = os.environ.get('VERCEL', '') == '1' or os.environ.get('VERCEL_ENV', 
 IS_WINDOWS = platform.system() == 'Windows'
 
 # Pe Vercel timeout-uri mai scurte (10s total per functie pe Hobby)
-CURL_TIMEOUT = 5 if IS_VERCEL else 12
+CURL_TIMEOUT = 8 if IS_VERCEL else 12
 REQ_TIMEOUT = 5 if IS_VERCEL else 10
 
 EXCEL_FILE = None
@@ -1365,6 +1365,40 @@ def scrape_flanco(code):
                     if prices:
                         return (prices[0], product_url)
 
+    # ── DuckDuckGo fallback (similar cu Altex) ──
+    log("  Flanco: cautare via DuckDuckGo...")
+    for variant in get_search_variants(code)[:1]:
+        ddg_q = f'site:flanco.ro televizor samsung {variant}'
+        ddg_url = f'https://html.duckduckgo.com/html/?q={urllib.parse.quote(ddg_q)}'
+        _, ddg_soup = get_page_curl(ddg_url, timeout=8)
+        if ddg_soup:
+            flanco_urls = []
+            for a in ddg_soup.find_all('a', href=True):
+                href = a['href']
+                if 'flanco.ro/' in href and '.html' in href and 'televizor' in href.lower():
+                    if href not in flanco_urls:
+                        flanco_urls.append(href)
+            log(f"  DDG Flanco URLs: {flanco_urls[:3]}")
+            for furl in flanco_urls[:2]:
+                _, prod_soup = get_page_curl(furl, timeout=10, referer='https://www.flanco.ro/')
+                if prod_soup and product_matches_code(prod_soup, code):
+                    for sel in [
+                        '[data-price-type="finalPrice"] .price',
+                        '.special-price .price',
+                        '.price-wrapper .price',
+                        '.price-box .price',
+                        '.price',
+                    ]:
+                        for elem in prod_soup.select(sel)[:3]:
+                            p = parse_ro_price(elem.get_text(separator=''))
+                            if p and p > 400:
+                                log(f"  Flanco PRET GASIT (DDG + {sel}): {p}")
+                                return (p, furl)
+                    p = extract_json_ld_price(prod_soup)
+                    if p:
+                        log(f"  Flanco PRET GASIT (DDG + JSON-LD): {p}")
+                        return (p, furl)
+
     log("  Flanco: negasit", 'warning')
     return (None, None)
 
@@ -2200,8 +2234,8 @@ def search_product(code):
     result_urls = {}
     image_result = [None]
 
-    # Timeout per-vendor: pe Vercel 7s, local fara limita
-    VENDOR_TIMEOUT = 7 if IS_VERCEL else 120
+    # Timeout per-vendor: pe Vercel 9s (Hobby=10s total), local fara limita
+    VENDOR_TIMEOUT = 9 if IS_VERCEL else 120
 
     vendor_search_urls = {
         'samsung': f'https://www.samsung.com/ro/search/?searchvalue={urllib.parse.quote(code)}',
