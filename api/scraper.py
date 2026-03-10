@@ -2442,6 +2442,146 @@ def get_samsung_specs(code):
     return {'sections': sections}
 
 
+# ─── Functie suplimentara noua: agregatori romani de preturi ─────────────────
+# Apelata DUPA ce scraperul principal a esuat (price=None).
+# Nu modifica nicio functie existenta.
+
+def scrape_vendor_supplementary(code, vendor):
+    """
+    Cauta pretul unui vendor prin site-uri agregatoare romane de preturi.
+    Incercate: preturi.ro, shopmania.ro, compari.ro (extins).
+    Returneaza (price, url) sau (None, None).
+    """
+    log(f"\n--- Supplementary ({vendor}/{code}) ---")
+
+    for variant in get_search_variants(code)[:2]:
+        v_enc = urllib.parse.quote(variant)
+
+        # ── preturi.ro ───────────────────────────────────────────────────────
+        for search_url in [
+            f'https://www.preturi.ro/search/?q={v_enc}',
+            f'https://www.preturi.ro/search/?keywords={v_enc}',
+        ]:
+            _, soup = get_page_curl(
+                search_url, timeout=12, referer='https://www.preturi.ro/')
+            if not soup:
+                continue
+            log(f"  Preturi.ro search OK: {search_url[-60:]}")
+
+            prices = extract_vendor_prices_from_page(soup)
+            if vendor in prices:
+                log(f"  Preturi.ro {vendor} (search direct): {prices[vendor]}")
+                return (prices[vendor], search_url)
+
+            product_url = None
+            for a in soup.find_all('a', href=True):
+                href = a['href']
+                hl = href.lower()
+                if variant.lower() in hl or code.lower() in hl:
+                    product_url = href if href.startswith('http') else 'https://www.preturi.ro' + href
+                    break
+            if not product_url:
+                for a in soup.find_all('a', href=True):
+                    href = a['href']
+                    if any(p in href.lower() for p in ['/produs/', '/televizor', '/p/']):
+                        product_url = href if href.startswith('http') else 'https://www.preturi.ro' + href
+                        break
+            if product_url:
+                log(f"  Preturi.ro product URL: {product_url[:80]}")
+                _, prod_soup = get_page_curl(
+                    product_url, timeout=12, referer=search_url)
+                if prod_soup:
+                    prices = extract_vendor_prices_from_page(prod_soup)
+                    if vendor in prices:
+                        log(f"  Preturi.ro {vendor}: {prices[vendor]}")
+                        return (prices[vendor], product_url)
+                    log(f"  Preturi.ro: niciun pret pentru {vendor}")
+            break  # o singura varianta per agregator
+
+        # ── shopmania.ro ─────────────────────────────────────────────────────
+        for search_url in [
+            f'https://www.shopmania.ro/cumpara/-{v_enc}',
+            f'https://www.shopmania.ro/cauta/?q={v_enc}',
+        ]:
+            _, soup = get_page_curl(
+                search_url, timeout=12, referer='https://www.shopmania.ro/')
+            if not soup:
+                continue
+            log(f"  ShopMania search OK: {search_url[-60:]}")
+
+            prices = extract_vendor_prices_from_page(soup)
+            if vendor in prices:
+                log(f"  ShopMania {vendor} (search direct): {prices[vendor]}")
+                return (prices[vendor], search_url)
+
+            product_url = None
+            for a in soup.find_all('a', href=True):
+                href = a['href']
+                if variant.lower() in href.lower() or code.lower() in href.lower():
+                    product_url = href if href.startswith('http') else 'https://www.shopmania.ro' + href
+                    break
+            if not product_url:
+                for a in soup.find_all('a', href=True):
+                    href = a['href']
+                    if any(p in href.lower() for p in ['/produs/', '/televizor', '/p/']):
+                        product_url = href if href.startswith('http') else 'https://www.shopmania.ro' + href
+                        break
+            if product_url:
+                log(f"  ShopMania product URL: {product_url[:80]}")
+                _, prod_soup = get_page_curl(
+                    product_url, timeout=12, referer=search_url)
+                if prod_soup:
+                    prices = extract_vendor_prices_from_page(prod_soup)
+                    if vendor in prices:
+                        log(f"  ShopMania {vendor}: {prices[vendor]}")
+                        return (prices[vendor], product_url)
+                    log(f"  ShopMania: niciun pret pentru {vendor}")
+            break
+
+        # ── compari.ro (extins cu link direct catre produs) ──────────────────
+        for search_url in [
+            f'https://www.compari.ro/search/?keywords={v_enc}',
+            f'https://www.compari.ro/search/?q={v_enc}',
+        ]:
+            _, soup = get_page_curl(
+                search_url, timeout=12, referer='https://www.compari.ro/')
+            if not soup:
+                continue
+            log(f"  Compari search OK: {search_url[-60:]}")
+
+            prices = extract_vendor_prices_from_page(soup)
+            if vendor in prices:
+                log(f"  Compari {vendor} (search direct): {prices[vendor]}")
+                return (prices[vendor], search_url)
+
+            product_url = None
+            for a in soup.find_all('a', href=True):
+                href = a['href']
+                if variant.lower() in href.lower() or code.lower() in href.lower():
+                    product_url = href if href.startswith('http') else 'https://www.compari.ro' + href
+                    break
+            if not product_url:
+                for a in soup.find_all('a', href=True):
+                    href = a['href']
+                    if any(p in href.lower() for p in ['/produs/', '/p/', '/product/', '/pret/']):
+                        product_url = href if href.startswith('http') else 'https://www.compari.ro' + href
+                        break
+            if product_url:
+                log(f"  Compari product URL: {product_url[:80]}")
+                _, prod_soup = get_page_curl(
+                    product_url, timeout=12, referer=search_url)
+                if prod_soup:
+                    prices = extract_vendor_prices_from_page(prod_soup)
+                    if vendor in prices:
+                        log(f"  Compari {vendor}: {prices[vendor]}")
+                        return (prices[vendor], product_url)
+                    log(f"  Compari: niciun pret pentru {vendor}")
+            break
+
+    log(f"  Supplementary: negasit {vendor}", 'warning')
+    return (None, None)
+
+
 # ─── Cautare per vendor (rapid, sub 10s) ─────────────────────────────────────
 
 def search_single_vendor(code, vendor):
@@ -2487,6 +2627,17 @@ def search_single_vendor(code, vendor):
         price = None
         url = None
         image_url = None
+
+    # Fallback suplimentar: daca scraperul principal nu a gasit pretul,
+    # incearca agregatorii romani (preturi.ro, shopmania.ro, compari.ro)
+    if price is None:
+        try:
+            sup_price, sup_url = scrape_vendor_supplementary(code, vendor)
+            if sup_price:
+                price = sup_price
+                url = sup_url or url
+        except Exception as e:
+            log(f"  {vendor} supplementary eroare: {e}")
 
     return {
         'code': code,
