@@ -59,6 +59,13 @@ class handler(BaseHTTPRequestHandler):
         )
         is_chain = parsed.get('chain', [''])[0] == '1'
         is_reset = parsed.get('reset', [''])[0] == '1'
+        skip_to = parsed.get('skip_to', [''])[0]
+
+        # Skip: sari la un anumit batch index
+        if skip_to and skip_to.isdigit():
+            batch_idx = int(skip_to)
+            status['batch_index'] = batch_idx
+            set_cache_status(status)
 
         # Reset: incepe de la 0
         if is_reset:
