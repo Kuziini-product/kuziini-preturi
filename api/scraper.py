@@ -1964,7 +1964,35 @@ def get_product_image(code):
                         log(f"  [Image] eMAG fallback: {src[:70]}")
                         return src
 
-    return None
+    # ── 5. Fallback Altex ───────────────────────────────────────────────────
+    for variant in get_search_variants(code)[:1]:
+        _, soup = get_page(f'https://altex.ro/cauta/{urllib.parse.quote(variant)}/')
+        if soup:
+            for sel in ['img.product-image', '.product-thumb img', '.product-item img',
+                        'article img', '.a-m-product-card img']:
+                img_el = soup.select_one(sel)
+                if img_el:
+                    src = (img_el.get('src') or img_el.get('data-src') or '')
+                    if src and src.startswith('http') and 'logo' not in src.lower():
+                        log(f"  [Image] Altex fallback: {src[:70]}")
+                        return src
+
+    # ── 6. Fallback Flanco ──────────────────────────────────────────────────
+    for variant in get_search_variants(code)[:1]:
+        _, soup = get_page(f'https://www.flanco.ro/catalogsearch/result/?q={urllib.parse.quote(variant)}')
+        if soup:
+            for sel in ['.product-item img', '.product-image img', 'img.product-image-photo']:
+                img_el = soup.select_one(sel)
+                if img_el:
+                    src = (img_el.get('src') or img_el.get('data-src') or '')
+                    if src and src.startswith('http') and 'logo' not in src.lower() and 'placeholder' not in src.lower():
+                        log(f"  [Image] Flanco fallback: {src[:70]}")
+                        return src
+
+    # ── 7. Fallback: placeholder cu codul produsului ────────────────────────
+    placeholder = f'https://placehold.co/400x300/1e1b4b/c4b5fd?text={urllib.parse.quote(code)}&font=roboto'
+    log(f"  [Image] Placeholder: {placeholder[:70]}")
+    return placeholder
 
 
 # ─── Cautare per vendor (rapid, sub 10s) ─────────────────────────────────────
