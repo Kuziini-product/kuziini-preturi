@@ -1959,7 +1959,7 @@ def scrape_altex(code):
     for variant in get_search_variants(code):
         variant_lower = variant.lower()
         v_enc = urllib.parse.quote(variant)
-        search_url = f'https://altex.ro/cauta/{v_enc}/'
+        search_url = f'https://altex.ro/cauta/?q={v_enc}'
 
         # ── STEP 1: Fetch search page cu cookie jar ──────────────────────────
         # Salveaza cookies de la Altex (necesare pentru API calls ulterioare)
@@ -2211,7 +2211,7 @@ def get_product_image(code):
 
     # ── 5. Fallback Altex ───────────────────────────────────────────────────
     for variant in get_search_variants(code)[:1]:
-        _, soup = get_page(f'https://altex.ro/cauta/{urllib.parse.quote(variant)}/')
+        _, soup = get_page(f'https://altex.ro/cauta/?q={urllib.parse.quote(variant)}')
         if soup:
             for sel in ['img.product-image', '.product-thumb img', '.product-item img',
                         'article img', '.a-m-product-card img']:
@@ -2608,7 +2608,7 @@ def search_single_vendor(code, vendor):
         'samsung': f'https://www.samsung.com/ro/search/?searchvalue={urllib.parse.quote(code)}',
         'emag': f'https://www.emag.ro/search/{urllib.parse.quote(code)}',
         'flanco': f'https://www.flanco.ro/catalogsearch/result/?q={urllib.parse.quote(code)}',
-        'altex': f'https://altex.ro/cauta/{urllib.parse.quote(code)}/',
+        'altex': f'https://altex.ro/cauta/?q={urllib.parse.quote(code)}',
     }
 
     if vendor not in vendor_funcs:
@@ -2692,7 +2692,7 @@ def search_product(code, cron_mode=False):
         'samsung': f'https://www.samsung.com/ro/search/?searchvalue={urllib.parse.quote(code)}',
         'emag':    f'https://www.emag.ro/search/{urllib.parse.quote(code)}',
         'flanco':  f'https://www.flanco.ro/catalogsearch/result/?q={urllib.parse.quote(code)}',
-        'altex':   f'https://altex.ro/cauta/{urllib.parse.quote(code)}/',
+        'altex':   f'https://altex.ro/cauta/?q={urllib.parse.quote(code)}',
     }
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:
