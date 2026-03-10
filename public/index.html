@@ -2949,13 +2949,31 @@ thead th.right { text-align: right; }
 }
 .disc-btn:hover { background: #5b21b6; }
 .disc-info { font-size: 11px; color: #6b7280; font-style: italic; margin-left: auto; }
+.disc-warn {
+  display: none; width: 100%; margin-top: 6px;
+  background: #fef2f2; border: 1.5px solid #fca5a5; border-radius: 8px;
+  padding: 7px 12px; color: #dc2626; font-size: 11px; font-weight: 700;
+}
 
 /* Total */
 .total-section { padding: 0 40px 28px; }
+.total-lines {
+  background: #faf5ff; border: 1.5px solid #ede9fe; border-radius: 12px;
+  padding: 14px 22px; margin-top: 14px;
+}
+.total-line {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 5px 0; font-size: 13px;
+}
+.total-line + .total-line { border-top: 1px solid #ede9fe; }
+.tl-label { color: #7c6fa8; font-weight: 600; }
+.tl-value { color: #1e1b4b; font-weight: 700; }
+.total-line.disc-line .tl-label { color: #7c3aed; }
+.total-line.disc-line .tl-value { color: #7c3aed; font-weight: 800; }
 .total-row {
   display: flex; justify-content: space-between; align-items: center;
   background: linear-gradient(135deg, #1e1b4b, #4c1d95);
-  border-radius: 12px; padding: 16px 26px; margin-top: 14px; color: #fff;
+  border-radius: 12px; padding: 16px 26px; margin-top: 10px; color: #fff;
 }
 .total-label { font-size: 13px; font-weight: 600; color: #c4b5fd; }
 .total-meta  { font-size: 11px; color: #a78bfa; margin-top: 2px; }
@@ -3070,10 +3088,21 @@ thead th.right { text-align: right; }
     <input id="disc-input" class="disc-input" type="number" min="0" max="99" step="0.5" value="${initDiscount}" />
     <span class="disc-pct">%</span>
     <button class="disc-btn" onclick="applyDiscount()">Aplica Discount</button>
-    <span class="disc-info" id="disc-info">${initDiscount > 0 ? 'Discount de ' + initDiscount + '% aplicat' : 'Fara discount'}</span>
+    <span class="disc-info" id="disc-info">${initDiscount > 0 ? 'Discount ' + initDiscount + '%' : 'Fara discount'}</span>
+    <div class="disc-warn" id="disc-warn"></div>
   </div>
 
   <div class="total-section">
+    <div class="total-lines">
+      <div class="total-line">
+        <span class="tl-label">Subtotal (fara discount)</span>
+        <span class="tl-value" id="total-subtotal">${_fpOffer(initTotal)}</span>
+      </div>
+      <div class="total-line disc-line" id="disc-line" style="${initDiscount > 0 ? '' : 'display:none'}">
+        <span class="tl-label">Discount <span id="disc-pct-display">${initDiscount}%</span></span>
+        <span class="tl-value" id="total-disc-amount">— Lei</span>
+      </div>
+    </div>
     <div class="total-row">
       <div>
         <div class="total-label">TOTAL OFERTĂ (cu TVA)</div>
@@ -3105,25 +3134,65 @@ function _fp(v) {
 }
 
 function applyDiscount() {
-  _disc = Math.max(0, Math.min(99, parseFloat(document.getElementById('disc-input').value) || 0));
+  const warn = document.getElementById('disc-warn');
+  const inp  = document.getElementById('disc-input');
+  const requested = Math.max(0, Math.min(99, parseFloat(inp.value) || 0));
+
+  // Validation: total sell with discount must be >= total acquisition * 0.95
+  const totalCost = _oData.products.reduce((s, p) => s + (p.kuziini_price || 0) * (p.qty || 1), 0);
+  const totalSell = _oData.products.reduce((s, p) => s + p.baseSellPrice * (p.qty || 1), 0);
+  const minAllowed = totalCost * 0.95;
+  const totalAfterDisc = totalSell * (1 - requested / 100);
+
+  if (totalAfterDisc < minAllowed) {
+    // Max discount = discount at which totalSell*(1-d) = minAllowed
+    const maxDisc = Math.max(0, (1 - minAllowed / totalSell) * 100);
+    const maxD = Math.floor(maxDisc * 10) / 10;
+    inp.value = maxD;
+    _disc = maxD;
+    warn.textContent = '\u26a0 Discount prea mare! Totalul ar fi sub pretul de achizitie cu 5%. Discount maxim permis: ' + maxD.toFixed(1) + '%';
+    warn.style.display = 'block';
+  } else {
+    _disc = requested;
+    warn.style.display = 'none';
+  }
   _renderTotals();
 }
 
 function _renderTotals() {
-  let total = 0;
+  let subtotal = 0;
+  let grandTotal = 0;
   _oData.products.forEach((item, i) => {
+    const subFull = item.baseSellPrice * (item.qty || 1);
+    subtotal += subFull;
     const sell = item.baseSellPrice * (1 - _disc / 100);
     const sub  = sell * (item.qty || 1);
-    total += sub;
+    grandTotal += sub;
     const se = document.getElementById('sell-' + i);
     const su = document.getElementById('sub-' + i);
     if (se) se.innerHTML = _fp(sell) + (item.baseSellPrice !== item.kuziini_price ? '<span style="background:#7c3aed;color:#fff;font-size:9px;padding:1px 5px;border-radius:6px;margin-left:5px">ajustat</span>' : '');
     if (su) su.textContent = _fp(sub);
   });
-  const tot = document.getElementById('offer-total');
-  if (tot) tot.textContent = _fp(total);
-  const info = document.getElementById('disc-info');
-  if (info) info.textContent = _disc > 0 ? 'Discount de ' + _disc + '% aplicat' : 'Fara discount';
+  const discAmount = subtotal - grandTotal;
+
+  const elSub  = document.getElementById('total-subtotal');
+  const elDisc = document.getElementById('total-disc-amount');
+  const elPct  = document.getElementById('disc-pct-display');
+  const elLine = document.getElementById('disc-line');
+  const elTot  = document.getElementById('offer-total');
+  const elInfo = document.getElementById('disc-info');
+
+  if (elSub)  elSub.textContent  = _fp(subtotal);
+  if (elTot)  elTot.textContent  = _fp(grandTotal);
+  if (_disc > 0) {
+    if (elLine) elLine.style.display = '';
+    if (elDisc) elDisc.textContent = '-' + _fp(discAmount);
+    if (elPct)  elPct.textContent  = _disc + '%';
+    if (elInfo) elInfo.textContent = 'Discount ' + _disc + '% = -' + _fp(discAmount);
+  } else {
+    if (elLine) elLine.style.display = 'none';
+    if (elInfo) elInfo.textContent = 'Fara discount';
+  }
 }
 
 function _getState() {
@@ -3229,6 +3298,7 @@ function exportExcel() {
 
 // Apply saved discount on load (if reopening)
 if (_disc > 0) { setTimeout(_renderTotals, 100); }
+else { setTimeout(_renderTotals, 100); }
 <\/script>
 </body></html>`;
 
