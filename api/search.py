@@ -106,11 +106,12 @@ class handler(BaseHTTPRequestHandler):
                 inches = int(inches_match.group(1)) if inches_match else None
                 product_list.append({
                     'code': code,
+                    'group': info.get('group', ''),
                     'category': info.get('category', ''),
                     'price': round(info.get('price', 0), 2),
                     'inches': inches,
                 })
-            product_list.sort(key=lambda x: (x['category'], x.get('inches') or 0, x['code']))
+            product_list.sort(key=lambda x: (x.get('group', ''), x['category'], x.get('inches') or 0, x['code']))
             self._json({'products': product_list, 'count': len(product_list)})
 
         elif path == '/api/cache_status':

@@ -976,6 +976,12 @@
       <div class="filters-title">Selecteaza produs</div>
       <div class="filters-row">
         <div class="filter-group">
+          <label>Tip produs</label>
+          <select class="filter-select" id="filter-group" onchange="applyFilters()">
+            <option value="">Toate</option>
+          </select>
+        </div>
+        <div class="filter-group">
           <label>Categorie</label>
           <select class="filter-select" id="filter-category" onchange="applyFilters()">
             <option value="">Toate</option>
@@ -1514,31 +1520,74 @@
         .catch(() => {});
     }
 
+    // Ordinea grupurilor in dropdown
+    const GROUP_ORDER = ['TV', 'Audio', 'Frigider', 'MSV', 'MSR', 'Aspiratoare', 'Cuptoare', 'Cuptoare cu microunde', 'Plite', 'Hote', 'Proiectoare'];
+    const GROUP_LABELS = {
+      'TV': 'TV / Televizoare',
+      'Audio': 'Audio / Soundbar',
+      'Frigider': 'Frigidere',
+      'MSV': 'Masini spalat vase',
+      'MSR': 'Masini spalat rufe',
+      'Aspiratoare': 'Aspiratoare',
+      'Cuptoare': 'Cuptoare',
+      'Cuptoare cu microunde': 'Cuptoare cu microunde',
+      'Plite': 'Plite',
+      'Hote': 'Hote',
+      'Proiectoare': 'Proiectoare',
+    };
+
     function populateFilters() {
-      const categories = [...new Set(allProducts.map(p => p.category))].sort();
-      const catSelect = document.getElementById('filter-category');
-      categories.forEach(c => {
+      const groups = [...new Set(allProducts.map(p => p.group).filter(Boolean))];
+      groups.sort((a, b) => (GROUP_ORDER.indexOf(a) === -1 ? 99 : GROUP_ORDER.indexOf(a)) - (GROUP_ORDER.indexOf(b) === -1 ? 99 : GROUP_ORDER.indexOf(b)));
+      const grpSelect = document.getElementById('filter-group');
+      groups.forEach(g => {
         const opt = document.createElement('option');
-        opt.value = c;
-        opt.textContent = c;
-        catSelect.appendChild(opt);
+        opt.value = g;
+        opt.textContent = GROUP_LABELS[g] || g;
+        grpSelect.appendChild(opt);
       });
     }
 
     function applyFilters() {
-      const cat = document.getElementById('filter-category').value;
+      const grp = document.getElementById('filter-group').value;
+      const catSelect = document.getElementById('filter-category');
       const inchSelect = document.getElementById('filter-inches');
+      const selectedCat = catSelect.value;
       const selectedInch = inchSelect.value;
 
+      // Filtreaza dupa grup
+      let afterGroup = allProducts;
+      if (grp) afterGroup = afterGroup.filter(p => p.group === grp);
+
+      // Actualizeaza categoriile disponibile pentru grupul selectat
+      const catGroup = catSelect.closest('.filter-group');
+      const availableCats = [...new Set(afterGroup.map(p => p.category))].sort();
+      if (availableCats.length <= 1) {
+        catGroup.style.display = 'none';
+        catSelect.value = '';
+      } else {
+        catGroup.style.display = '';
+        catSelect.innerHTML = '<option value="">Toate</option>';
+        availableCats.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c;
+          opt.textContent = c;
+          catSelect.appendChild(opt);
+        });
+        if (selectedCat && availableCats.includes(selectedCat)) {
+          catSelect.value = selectedCat;
+        }
+      }
+
       // Filtreaza dupa categorie
-      let afterCat = allProducts;
+      const cat = catSelect.value;
+      let afterCat = afterGroup;
       if (cat) afterCat = afterCat.filter(p => p.category === cat);
 
-      // Actualizeaza diagonalele disponibile (doar cele din categoria selectata)
+      // Actualizeaza diagonalele disponibile
       const availableInches = [...new Set(afterCat.map(p => p.inches).filter(Boolean))].sort((a, b) => a - b);
       const inchGroup = inchSelect.closest('.filter-group');
 
-      // Ascunde filtrul de diagonala daca categoria nu are produse cu inch (ex: sisteme sunet)
       if (availableInches.length === 0) {
         inchGroup.style.display = 'none';
         inchSelect.value = '';
@@ -1551,8 +1600,6 @@
           opt.textContent = i + '"';
           inchSelect.appendChild(opt);
         });
-
-        // Pastreaza selectia de inch daca e inca disponibila
         if (selectedInch && availableInches.includes(parseInt(selectedInch))) {
           inchSelect.value = selectedInch;
         }
@@ -1576,10 +1623,10 @@
         dropdown.appendChild(opt);
       });
 
+      const hasFilter = grp || cat || inch;
       document.getElementById('product-count').textContent =
-        `${filtered.length} produse${cat || inch ? ' (filtrate)' : ''}`;
+        `${filtered.length} produse${hasFilter ? ' (filtrate)' : ''}`;
 
-      // Daca ramane un singur produs, selecteaza-l automat
       if (filtered.length === 1) {
         dropdown.value = filtered[0].code;
       }
