@@ -18,7 +18,7 @@ from scraper import search_product, search_single_vendor, load_products, log, se
 set_cron_timeouts()
 from cache import (
     set_cached_price, get_cache_status, set_cache_status, is_configured,
-    save_price_history, save_cron_event
+    save_price_history, save_cron_event, set_product_archive
 )
 
 BATCH_SIZE = 1  # 1 produs per invocatie (scraping dureaza ~30-50s per produs)
@@ -102,6 +102,15 @@ class handler(BaseHTTPRequestHandler):
                 result = search_product(code, cron_mode=True)
                 # Salveaza in Redis
                 set_cached_price(code, result)
+                # Salveaza in arhiva permanenta (prices + URLs, fara TTL)
+                set_product_archive(
+                    code,
+                    prices=result.get('prices', {}),
+                    urls=result.get('urls', {}),
+                    kuziini_price=result.get('kuziini_price'),
+                    category=result.get('category', ''),
+                    image_url=result.get('image_url'),
+                )
                 # Salveaza istoricul preturilor (snapshot zilnic)
                 if result.get('prices'):
                     save_price_history(code, result['prices'])
@@ -132,6 +141,14 @@ class handler(BaseHTTPRequestHandler):
                         # Re-save cu preturile completate
                         if any(prices.get(v) for v in missing):
                             set_cached_price(code, result)
+                            set_product_archive(
+                                code,
+                                prices=result.get('prices', {}),
+                                urls=result.get('urls', {}),
+                                kuziini_price=result.get('kuziini_price'),
+                                category=result.get('category', ''),
+                                image_url=result.get('image_url'),
+                            )
                             if result.get('prices'):
                                 save_price_history(code, result['prices'])
                     else:

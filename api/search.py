@@ -226,6 +226,15 @@ class handler(BaseHTTPRequestHandler):
                 'count': len(events),
             })
 
+        elif path == '/api/archive':
+            # Returneaza arhiva completa (prices + URLs pentru toate produsele)
+            if cache_configured():
+                from cache import get_full_archive
+                archive = get_full_archive()
+                self._json(archive)
+            else:
+                self._json({})
+
         else:
             self._json({'error': 'Not found'}, 404)
 

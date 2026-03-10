@@ -227,3 +227,54 @@ def test_connection():
     except Exception as e:
         info['error'] = str(e)
     return info
+
+
+# ─── Archive: prices + URLs persistente (fara TTL) ────────────────────────────
+# Stocate in Redis ca Hash (HSET/HGET/HGETALL).
+# Nu expira — cron-ul le regenereaza zilnic.
+
+def set_product_archive(code, prices, urls, kuziini_price=None, category='', image_url=None):
+    """Salveaza prices + URLs in arhiva permanenta (fara TTL). Apelat de cron dupa fiecare produs."""
+    code = code.upper()
+    entry = {
+        'vendors': {
+            v: {
+                'price': prices.get(v) if prices else None,
+                'url': urls.get(v) if urls else None,
+            }
+            for v in ['samsung', 'emag', 'flanco', 'altex']
+        },
+        'kuziini_price': round(kuziini_price, 2) if kuziini_price else None,
+        'category': category,
+        'image_url': image_url,
+        'updated': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+    }
+    payload = json.dumps(entry, ensure_ascii=False)
+    _redis_cmd('HSET', 'archive:prices', code, payload)
+
+
+def get_product_archive(code):
+    """Returneaza entry-ul de arhiva pentru un singur produs."""
+    code = code.upper()
+    raw = _redis_cmd('HGET', 'archive:prices', code)
+    if raw:
+        try:
+            return json.loads(raw)
+        except (json.JSONDecodeError, TypeError):
+            pass
+    return None
+
+
+def get_full_archive():
+    """Returneaza arhiva completa pentru toate produsele (HGETALL)."""
+    raw = _redis_cmd('HGETALL', 'archive:prices')
+    if not raw or not isinstance(raw, list):
+        return {}
+    # HGETALL returneaza lista plata [key, value, key, value, ...]
+    result = {}
+    for i in range(0, len(raw) - 1, 2):
+        try:
+            result[raw[i]] = json.loads(raw[i + 1])
+        except (json.JSONDecodeError, TypeError, IndexError):
+            pass
+    return result

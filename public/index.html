@@ -1889,8 +1889,36 @@
       document.getElementById('error-msg').classList.remove('visible');
       showLoading(code);
 
+      // ── Pas 0: Arhiva pre-scraped (instant, fara request de retea) ──
+      const archiveEntry = _priceArchive && _priceArchive[code];
+      if (archiveEntry && archiveEntry.vendors) {
+        const av = archiveEntry.vendors;
+        const archiveData = {
+          code: code,
+          category: archiveEntry.category || '',
+          kuziini_price: archiveEntry.kuziini_price || null,
+          image_url: archiveEntry.image_url || null,
+          prices: {
+            samsung: av.samsung && av.samsung.price != null ? av.samsung.price : null,
+            emag:    av.emag    && av.emag.price    != null ? av.emag.price    : null,
+            flanco:  av.flanco  && av.flanco.price  != null ? av.flanco.price  : null,
+            altex:   av.altex   && av.altex.price   != null ? av.altex.price   : null,
+          },
+          urls: {
+            samsung: av.samsung && av.samsung.url || null,
+            emag:    av.emag    && av.emag.url    || null,
+            flanco:  av.flanco  && av.flanco.url  || null,
+            altex:   av.altex   && av.altex.url   || null,
+          },
+          from_archive: true,
+        };
+        hideLoading();
+        displayResults(archiveData);
+        return;
+      }
+
       try {
-        // Pas 1: Verifica cache-ul (rapid, sub 1s)
+        // Pas 1: Verifica cache-ul Redis (rapid, sub 1s)
         const resp = await fetch(`/api/search?code=${encodeURIComponent(code)}`);
         if (!resp.ok) {
           const err = await resp.json();
@@ -2228,6 +2256,27 @@
 
     // Load products on page init
     loadProducts();
+
+    // ── Archive: incarca preturile pre-scraped la startup ──────────────
+    // Archive contine {code: {vendors:{samsung:{price,url},...}, kuziini_price, category, updated}}
+    let _priceArchive = null;
+    let _archiveLoading = false;
+
+    async function loadPriceArchive() {
+      if (_archiveLoading) return;
+      _archiveLoading = true;
+      try {
+        const resp = await fetch('/api/archive');
+        if (resp.ok) {
+          _priceArchive = await resp.json();
+          console.log('[Archive] Incarcat:', Object.keys(_priceArchive || {}).length, 'produse');
+        }
+      } catch (e) {
+        console.warn('[Archive] Nu s-a putut incarca:', e.message);
+      }
+    }
+
+    loadPriceArchive();
 
     // ── Cart ─────────────────────────────────────────────────────────────
     let cart = JSON.parse(localStorage.getItem('kuziini_cart') || '[]');
