@@ -3156,19 +3156,19 @@ function applyDiscount() {
   const inp  = document.getElementById('disc-input');
   const requested = Math.max(0, Math.min(99, parseFloat(inp.value) || 0));
 
-  // Validation: total sell with discount must be >= total acquisition * 0.95
+  // Validation: total sell with discount must be >= total acquisition + 5% (minimum profit)
   const totalCost = _oData.products.reduce((s, p) => s + (p.kuziini_price || 0) * (p.qty || 1), 0);
   const totalSell = _oData.products.reduce((s, p) => s + p.baseSellPrice * (p.qty || 1), 0);
-  const minAllowed = totalCost * 0.95;
+  const minAllowed = totalCost * 1.05;
   const totalAfterDisc = totalSell * (1 - requested / 100);
 
   if (totalAfterDisc < minAllowed) {
-    // Max discount = discount at which totalSell*(1-d) = minAllowed
+    // Max discount = discount at which totalSell*(1-d) = minAllowed (acquisition + 5%)
     const maxDisc = Math.max(0, (1 - minAllowed / totalSell) * 100);
     const maxD = Math.floor(maxDisc * 10) / 10;
     inp.value = maxD;
     _disc = maxD;
-    warn.textContent = '\u26a0 Discount prea mare! Totalul ar fi sub pretul de achizitie cu 5%. Discount maxim permis: ' + maxD.toFixed(1) + '%';
+    warn.textContent = '\u26a0 Discount prea mare! Profitul minim Kuziini (5% peste achizitie) nu poate fi garantat. Discount maxim permis: ' + maxD.toFixed(1) + '%';
     warn.style.display = 'block';
   } else {
     _disc = requested;
