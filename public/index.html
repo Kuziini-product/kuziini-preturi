@@ -1321,6 +1321,17 @@
   <script>
     // ── Helpers ──────────────────────────────────────────────────────────
 
+    // Deschide link extern in browser (PWA-friendly: back revine in app)
+    function openExternal(url) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
     function formatPrice(value) {
       if (value === null || value === undefined) return null;
       return new Intl.NumberFormat('ro-RO', {
@@ -1468,10 +1479,10 @@
         const price   = data.prices[v];
         const url     = data.urls && data.urls[v];
 
-        // Seteaza URL si face cardul clickabil
+        // Seteaza URL si face cardul clickabil (link extern PWA-friendly)
         if (url) {
           card.classList.add('clickable');
-          card.onclick = () => window.open(url, '_blank');
+          card.onclick = () => openExternal(url);
           card.title = `Deschide ${sitenames[v]} ↗`;
         }
 
@@ -1581,7 +1592,7 @@
 
       if (url) {
         card.classList.add('clickable');
-        card.onclick = () => window.open(url, '_blank');
+        card.onclick = () => openExternal(url);
         card.title = `Deschide ${sitenames[vendor]} ↗`;
       }
 
