@@ -31,7 +31,13 @@ IS_VERCEL = os.environ.get('VERCEL', '') == '1' or os.environ.get('VERCEL_ENV', 
 IS_WINDOWS = platform.system() == 'Windows'
 
 # Pe Vercel timeout-uri mai scurte (10s total per functie pe Hobby)
+# Cron mode seteaza CURL_TIMEOUT la 15s (cron are 60s)
 CURL_TIMEOUT = 8 if IS_VERCEL else 12
+
+def set_cron_timeouts():
+    """Mareste timeout-urile pentru cron mode (60s budget)."""
+    global CURL_TIMEOUT
+    CURL_TIMEOUT = 15
 REQ_TIMEOUT = 5 if IS_VERCEL else 10
 
 EXCEL_FILE = None
@@ -2207,9 +2213,10 @@ def search_single_vendor(code, vendor):
 
 # ─── Functie principala de cautare (folosita de Flask handler) ────────────────
 
-def search_product(code):
+def search_product(code, cron_mode=False):
     """
     Cauta preturile pentru un cod de produs Samsung.
+    cron_mode=True: timeout-uri mai mari (cron are 60s, nu 10s).
     Returneaza dict cu rezultatele.
     """
     import concurrent.futures
@@ -2234,8 +2241,13 @@ def search_product(code):
     result_urls = {}
     image_result = [None]
 
-    # Timeout per-vendor: pe Vercel 9s (Hobby=10s total), local fara limita
-    VENDOR_TIMEOUT = 9 if IS_VERCEL else 120
+    # Timeout per-vendor: cron=45s, user request=9s, local=120s
+    if cron_mode:
+        VENDOR_TIMEOUT = 45
+    elif IS_VERCEL:
+        VENDOR_TIMEOUT = 9
+    else:
+        VENDOR_TIMEOUT = 120
 
     vendor_search_urls = {
         'samsung': f'https://www.samsung.com/ro/search/?searchvalue={urllib.parse.quote(code)}',

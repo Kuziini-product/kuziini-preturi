@@ -12,7 +12,10 @@ import sys
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(__file__))
-from scraper import search_product, load_products, log
+from scraper import search_product, load_products, log, set_cron_timeouts
+
+# Cron are 60s budget, mareste timeout-urile
+set_cron_timeouts()
 from cache import (
     set_cached_price, get_cache_status, set_cache_status, is_configured
 )
@@ -88,7 +91,7 @@ class handler(BaseHTTPRequestHandler):
                 log(f"  CRON: timeout safety, oprit dupa {processed} produse")
                 break
             try:
-                result = search_product(code)
+                result = search_product(code, cron_mode=True)
                 # Salveaza in Redis
                 set_cached_price(code, result)
                 processed += 1
