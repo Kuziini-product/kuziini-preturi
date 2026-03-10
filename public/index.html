@@ -1824,8 +1824,8 @@
             diffStr = '+' + formatPrice(diff);
             diffClass = 'positive';
           } else if (diff < 0) {
-            // Kuziini e mai scump - pretul devine vendor + 5%
-            sellingPrice = item.cheapest_price * 1.05;
+            // Kuziini e mai scump - pretul devine Kuziini + 5%
+            sellingPrice = item.kuziini_price * 1.05;
             diffStr = formatPrice(diff);
             diffClass = 'negative';
             alertTag = '<span class="cart-alert">+5%</span>';
@@ -1876,10 +1876,10 @@
         const cheapV = item.cheapest_vendor || 'N/A';
         const cheapP = item.cheapest_price || '';
         const diff = item.cheapest_price ? (item.cheapest_price - item.kuziini_price) : '';
-        // Daca Kuziini e mai scump, pretul de vanzare = vendor + 5%
+        // Daca Kuziini e mai scump, pretul de vanzare = Kuziini + 5%
         let sellingPrice = item.kuziini_price;
         if (item.cheapest_price && item.kuziini_price > item.cheapest_price) {
-          sellingPrice = item.cheapest_price * 1.05;
+          sellingPrice = item.kuziini_price * 1.05;
         }
         const subtotal = sellingPrice * qty;
         totalKz += subtotal;
