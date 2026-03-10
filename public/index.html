@@ -1089,6 +1089,58 @@
       font-weight: 600;
     }
 
+    /* ── Offers Button ── */
+    .offers-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      margin-top: 12px;
+      margin-right: 8px;
+      background: linear-gradient(135deg, #7c3aed, #5b21b6);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .offers-btn:hover { background: linear-gradient(135deg, #6d28d9, #4c1d95); }
+    .offers-badge {
+      display: inline-block; background: #fff; color: #7c3aed;
+      border-radius: 10px; font-size: 11px; font-weight: 800;
+      padding: 1px 7px; margin-left: 6px;
+    }
+
+    /* ── Offers Section ── */
+    .offers-section {
+      display: none; background: #fff; border-radius: 18px;
+      box-shadow: 0 4px 24px rgba(124,58,237,0.10); padding: 24px;
+      margin-top: 16px; border: 1px solid #ede9fe;
+    }
+    .offers-section.visible { display: block; }
+    .offers-title {
+      font-size: 18px; font-weight: 800; color: #1e1b4b; margin-bottom: 16px;
+    }
+    .offers-search {
+      width: 100%; padding: 10px 14px; border: 1.5px solid #c4b5fd;
+      border-radius: 10px; font-size: 13px; font-family: 'Inter', sans-serif;
+      outline: none; margin-bottom: 16px; background: #faf5ff;
+      transition: border-color .2s;
+    }
+    .offers-search:focus { border-color: #7c3aed; }
+    .offer-open-btn {
+      background: #ede9fe; color: #5b21b6; border: none; border-radius: 8px;
+      padding: 5px 12px; font-size: 11px; font-weight: 700; cursor: pointer;
+    }
+    .offer-open-btn:hover { background: #ddd6fe; }
+    .offer-del-btn {
+      background: #fee2e2; color: #dc2626; border: none; border-radius: 8px;
+      padding: 5px 10px; font-size: 12px; font-weight: 700; cursor: pointer;
+      margin-left: 4px;
+    }
+    .offer-del-btn:hover { background: #fca5a5; }
+
     /* ── Reports Button ── */
     .reports-btn {
       display: inline-block;
@@ -1666,6 +1718,19 @@
         <span class="cart-total-label">Total Kuziini (cu TVA)</span>
         <span class="cart-total-value" id="cart-total">0,00 Lei</span>
       </div>
+    </div>
+
+    <!-- ── Offers Button ── -->
+    <button class="offers-btn" onclick="loadOffersSection()">
+      Ofertele mele <span class="offers-badge" id="offers-count">0</span>
+    </button>
+
+    <!-- ── Offers Section ── -->
+    <div class="offers-section" id="offers-section">
+      <div class="offers-title">Ofertele mele</div>
+      <input class="offers-search" id="offers-search" placeholder="Cauta dupa client, telefon sau numar oferta..."
+             oninput="renderOffersList(this.value)" />
+      <div id="offers-body"></div>
     </div>
 
     <!-- ── Reports Button ── -->
@@ -2671,239 +2736,224 @@
       URL.revokeObjectURL(url);
     }
 
-    function generateOffer() {
-      if (cart.length === 0) return;
+    // ── Offer window builder ──────────────────────────────────────────────
+    function _openOfferWindow(offerData, savedState) {
+      // offerData: {num, date, ts, products[{code,category,kuziini_price,all_prices,image_url,qty,baseSellPrice}]}
+      // savedState: {client,phone,notes,discount} or null for new
 
-      const date = new Date();
-      const dateStr = date.toLocaleDateString('ro-RO', { day: '2-digit', month: '2-digit', year: 'numeric' });
-      const pad = n => String(n).padStart(2, '0');
-      const offerNum = `KZ-${date.getFullYear()}${pad(date.getMonth()+1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}`;
+      const initClient   = (savedState && savedState.client)   || '';
+      const initPhone    = (savedState && savedState.phone)    || '';
+      const initNotes    = (savedState && savedState.notes)    || '';
+      const initDiscount = (savedState && savedState.discount) || 0;
 
-      function fp(v) {
-        if (v === null || v === undefined) return '—';
-        return new Intl.NumberFormat('ro-RO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v) + ' Lei';
-      }
+      const totalItems = offerData.products.reduce((s, p) => s + (p.qty || 1), 0);
+      const logoSrc    = window.location.origin + '/Kuziini%20logo-01.jpg';
 
+      // Build product rows (initial, no discount applied yet)
       let rowsHTML = '';
-      let totalSell = 0;
-      const vendorLabels = { samsung: 'Samsung', emag: 'eMAG', flanco: 'Flanco', altex: 'Altex' };
-      const vendorColors = { samsung: '#1428a0', emag: '#0071ce', flanco: '#e2001a', altex: '#e30613' };
-
-      cart.forEach((item, idx) => {
-        const qty = item.qty || 1;
-        const archive = _priceArchive && _priceArchive[item.code];
-        const vendors = archive ? (archive.vendors || {}) : {};
-
-        // Pret de vanzare (aceeasi logica ca renderCart)
-        let sellPrice = item.kuziini_price;
-        if (item.cheapest_price && item.kuziini_price > item.cheapest_price) {
-          sellPrice = item.kuziini_price * 1.05;
-        } else if (item.cheapest_price && item.kuziini_price < item.cheapest_price) {
-          sellPrice = item.cheapest_price;
-        }
-
-        const subtotal = sellPrice * qty;
-        totalSell += subtotal;
-
+      offerData.products.forEach((item, idx) => {
+        const sell = item.baseSellPrice;
+        const sub  = sell * (item.qty || 1);
         const imgHTML = item.image_url
-          ? `<img src="${item.image_url}" style="width:90px;height:70px;object-fit:contain;border-radius:6px;">`
+          ? `<img src="${item.image_url}" style="width:90px;height:70px;object-fit:contain;border-radius:6px;" loading="lazy">`
           : `<div style="width:90px;height:70px;background:#f3f4f6;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#9ca3af;">No img</div>`;
 
-        // Vendor-uri cu link-uri si preturi
-        let vCells = '';
-        ['samsung', 'emag', 'flanco', 'altex'].forEach(v => {
-          const price = item.all_prices && item.all_prices[v];
-          const url = vendors[v] && vendors[v].url;
-          const col = vendorColors[v];
-          const lbl = vendorLabels[v];
-          if (price) {
-            vCells += url
-              ? `<a href="${url}" target="_blank" class="v-chip" style="border-color:${col};color:${col};">${lbl}<br><strong>${fp(price)}</strong></a>`
-              : `<span class="v-chip" style="border-color:#d1d5db;color:#374151;">${lbl}<br><strong>${fp(price)}</strong></span>`;
-          } else {
-            vCells += `<span class="v-chip v-na">${lbl}<br>—</span>`;
-          }
-        });
-
-        const sellBadge = sellPrice !== item.kuziini_price
-          ? `<span style="background:#7c3aed;color:#fff;font-size:10px;padding:2px 6px;border-radius:8px;margin-left:6px;">ajustat</span>`
+        const adjBadge = sell !== item.kuziini_price
+          ? `<span style="background:#7c3aed;color:#fff;font-size:9px;padding:1px 5px;border-radius:6px;margin-left:5px;vertical-align:middle;">ajustat</span>`
           : '';
 
         rowsHTML += `
-        <tr class="prod-row">
+        <tr class="prod-row" id="row-${idx}">
           <td class="prod-idx">${idx + 1}</td>
           <td class="prod-img">${imgHTML}</td>
           <td class="prod-info">
             <div class="prod-code">${item.code}</div>
             <div class="prod-cat">${item.category || ''}</div>
-            <div class="prod-vendors">${vCells}</div>
           </td>
-          <td class="prod-num">${qty}</td>
-          <td class="prod-num kz-price">${fp(item.kuziini_price)}</td>
-          <td class="prod-num sell-price">${fp(sellPrice)}${sellBadge}</td>
-          <td class="prod-num sub-price">${fp(subtotal)}</td>
+          <td class="prod-num">${item.qty || 1}</td>
+          <td class="prod-num kz-price" style="color:#6b7280;font-size:12px;">
+            <span id="kz-${idx}" style="text-decoration:none">${_fpOffer(item.kuziini_price)}</span>
+          </td>
+          <td class="prod-num sell-price" id="sell-${idx}">${_fpOffer(sell)}${adjBadge}</td>
+          <td class="prod-num sub-price"  id="sub-${idx}">${_fpOffer(sub)}</td>
         </tr>`;
       });
 
-      const totalItems = cart.reduce((s, i) => s + (i.qty || 1), 0);
+      const initTotal = offerData.products.reduce((s, p) => s + p.baseSellPrice * (p.qty || 1), 0);
 
       const html = `<!DOCTYPE html>
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
-<title>Oferta Kuziini ${offerNum}</title>
+<title>Oferta ${offerData.num}</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f3ff; min-height: 100vh; }
-  .page { max-width: 900px; margin: 0 auto; background: #fff; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f3ff; min-height: 100vh; }
+.page { max-width: 920px; margin: 0 auto; background: #fff; box-shadow: 0 0 40px rgba(0,0,0,.08); }
 
-  /* ── Header ── */
-  .offer-header {
-    background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 60%, #7c3aed 100%);
-    padding: 32px 40px 24px;
-    color: #fff;
-    display: flex; justify-content: space-between; align-items: flex-start;
-  }
-  .brand-name { font-size: 32px; font-weight: 900; letter-spacing: 2px; }
-  .brand-sub { font-size: 12px; color: #c4b5fd; margin-top: 2px; letter-spacing: 1px; }
-  .offer-meta { text-align: right; }
-  .offer-title { font-size: 18px; font-weight: 700; letter-spacing: 1px; color: #e9d5ff; }
-  .offer-num { font-size: 13px; color: #c4b5fd; margin-top: 4px; }
-  .offer-date { font-size: 13px; color: #ddd6fe; margin-top: 2px; }
+/* Header */
+.offer-header {
+  background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 55%, #7c3aed 100%);
+  padding: 28px 40px 22px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.hdr-logo { height: 60px; max-width: 220px; object-fit: contain; filter: brightness(0) invert(1); }
+.hdr-logo-fallback { font-size: 28px; font-weight: 900; color: #fff; letter-spacing: 2px; }
+.offer-meta { text-align: right; }
+.offer-title { font-size: 17px; font-weight: 700; letter-spacing: .06em; color: #e9d5ff; }
+.offer-num   { font-size: 13px; color: #c4b5fd; margin-top: 4px; }
+.offer-date  { font-size: 12px; color: #ddd6fe; margin-top: 2px; }
 
-  /* ── Client ── */
-  .client-section {
-    background: #faf5ff; border-bottom: 2px solid #ede9fe;
-    padding: 20px 40px; display: flex; gap: 40px; flex-wrap: wrap;
-  }
-  .client-field { display: flex; flex-direction: column; gap: 4px; min-width: 200px; }
-  .client-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #7c3aed; }
-  .client-input {
-    border: none; border-bottom: 2px solid #c4b5fd; background: transparent;
-    font-size: 14px; font-weight: 600; color: #1e1b4b; padding: 4px 0;
-    outline: none; min-width: 220px;
-  }
-  .client-input:focus { border-color: #7c3aed; }
-  .client-input::placeholder { color: #c4b5fd; font-weight: 400; }
+/* Client */
+.client-section {
+  background: #faf5ff; border-bottom: 2px solid #ede9fe;
+  padding: 18px 40px; display: flex; gap: 36px; flex-wrap: wrap;
+}
+.client-field { display: flex; flex-direction: column; gap: 3px; min-width: 180px; }
+.client-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: #7c3aed; }
+.client-input {
+  border: none; border-bottom: 2px solid #c4b5fd; background: transparent;
+  font-size: 14px; font-weight: 600; color: #1e1b4b; padding: 4px 0; outline: none; min-width: 200px;
+}
+.client-input:focus { border-color: #7c3aed; }
+.client-input::placeholder { color: #c4b5fd; font-weight: 400; }
 
-  /* ── Table ── */
-  .table-wrap { padding: 24px 40px 0; }
-  .section-title {
-    font-size: 11px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .1em; color: #7c3aed; margin-bottom: 12px;
-  }
-  table { width: 100%; border-collapse: collapse; }
-  thead tr { background: #1e1b4b; }
-  thead th {
-    color: #e9d5ff; font-size: 10px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .06em; padding: 10px 12px; text-align: left;
-  }
-  thead th.right { text-align: right; }
-  .prod-row { border-bottom: 1px solid #ede9fe; vertical-align: top; }
-  .prod-row:last-child { border-bottom: 2px solid #7c3aed; }
-  .prod-idx { color: #9ca3af; font-size: 12px; padding: 16px 8px 16px 12px; width: 28px; }
-  .prod-img { padding: 12px 8px; width: 106px; }
-  .prod-info { padding: 14px 12px; }
-  .prod-code { font-size: 14px; font-weight: 800; color: #1e1b4b; font-family: monospace; }
-  .prod-cat { font-size: 11px; color: #7c6fa8; margin-top: 2px; }
-  .prod-vendors { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-  .v-chip {
-    display: inline-block; padding: 4px 8px; border: 1.5px solid; border-radius: 8px;
-    font-size: 10px; text-decoration: none; line-height: 1.4; text-align: center;
-    transition: opacity .15s;
-  }
-  .v-chip:hover { opacity: .75; }
-  .v-na { border-color: #e5e7eb !important; color: #d1d5db !important; }
-  .prod-num { text-align: right; padding: 16px 12px; font-size: 13px; white-space: nowrap; vertical-align: middle; }
-  .kz-price { color: #374151; }
-  .sell-price { font-weight: 700; color: #1e1b4b; }
-  .sub-price { font-weight: 800; color: #7c3aed; font-size: 14px; }
+/* Table */
+.table-wrap { padding: 20px 40px 0; }
+.section-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: #7c3aed; margin-bottom: 10px; }
+table { width: 100%; border-collapse: collapse; }
+thead tr { background: #1e1b4b; }
+thead th { color: #e9d5ff; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 9px 11px; text-align: left; }
+thead th.right { text-align: right; }
+.prod-row { border-bottom: 1px solid #ede9fe; vertical-align: middle; }
+.prod-row:nth-child(even) { background: #faf5ff; }
+.prod-row:last-child { border-bottom: 2px solid #7c3aed; }
+.prod-idx  { color: #9ca3af; font-size: 11px; padding: 14px 6px 14px 11px; width: 26px; }
+.prod-img  { padding: 10px 6px; width: 102px; }
+.prod-info { padding: 13px 10px; }
+.prod-code { font-size: 13px; font-weight: 800; color: #1e1b4b; font-family: 'Courier New', monospace; }
+.prod-cat  { font-size: 10px; color: #7c6fa8; margin-top: 2px; }
+.prod-num  { text-align: right; padding: 14px 11px; font-size: 13px; white-space: nowrap; }
+.kz-price  { color: #6b7280; }
+.sell-price{ font-weight: 700; color: #1e1b4b; }
+.sub-price { font-weight: 800; color: #7c3aed; font-size: 14px; }
 
-  /* ── Total ── */
-  .total-section { padding: 0 40px 28px; }
-  .total-row {
-    display: flex; justify-content: space-between; align-items: center;
-    background: linear-gradient(135deg, #1e1b4b, #4c1d95);
-    border-radius: 12px; padding: 18px 28px; margin-top: 16px;
-    color: #fff;
-  }
-  .total-label { font-size: 14px; font-weight: 600; color: #c4b5fd; }
-  .total-items { font-size: 12px; color: #a78bfa; margin-top: 2px; }
-  .total-value { font-size: 28px; font-weight: 900; color: #fff; }
+/* Discount section */
+.disc-section {
+  margin: 16px 40px 0; padding: 14px 20px;
+  background: #faf5ff; border: 2px dashed #c4b5fd; border-radius: 12px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.disc-label { font-size: 12px; font-weight: 700; color: #5b21b6; }
+.disc-input {
+  width: 70px; padding: 6px 10px; border: 2px solid #7c3aed; border-radius: 8px;
+  font-size: 14px; font-weight: 700; color: #1e1b4b; text-align: center; outline: none; background: #fff;
+}
+.disc-input:focus { border-color: #4c1d95; }
+.disc-pct { font-size: 14px; font-weight: 700; color: #5b21b6; }
+.disc-btn {
+  background: #7c3aed; color: #fff; border: none; border-radius: 8px;
+  padding: 7px 18px; font-size: 12px; font-weight: 700; cursor: pointer;
+  transition: background .15s;
+}
+.disc-btn:hover { background: #5b21b6; }
+.disc-info { font-size: 11px; color: #6b7280; font-style: italic; margin-left: auto; }
 
-  /* ── Footer ── */
-  .offer-footer {
-    background: #faf5ff; border-top: 2px solid #ede9fe;
-    padding: 18px 40px; display: flex; justify-content: space-between;
-    align-items: center; flex-wrap: wrap; gap: 12px;
-  }
-  .footer-note { font-size: 11px; color: #7c6fa8; }
-  .footer-note strong { color: #4c1d95; }
+/* Total */
+.total-section { padding: 0 40px 28px; }
+.total-row {
+  display: flex; justify-content: space-between; align-items: center;
+  background: linear-gradient(135deg, #1e1b4b, #4c1d95);
+  border-radius: 12px; padding: 16px 26px; margin-top: 14px; color: #fff;
+}
+.total-label { font-size: 13px; font-weight: 600; color: #c4b5fd; }
+.total-meta  { font-size: 11px; color: #a78bfa; margin-top: 2px; }
+.total-value { font-size: 26px; font-weight: 900; color: #fff; }
 
-  /* ── Print button ── */
-  .print-bar {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    background: rgba(124,58,237,.96); backdrop-filter: blur(8px);
-    padding: 10px 24px; display: flex; align-items: center; gap: 16px;
-    box-shadow: 0 2px 12px rgba(76,29,149,.3);
-  }
-  .print-bar span { color: #e9d5ff; font-size: 13px; font-weight: 600; }
-  .btn-print {
-    background: #fff; color: #7c3aed; border: none; border-radius: 8px;
-    padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer;
-    transition: background .15s;
-  }
-  .btn-print:hover { background: #f3e8ff; }
-  .btn-close {
-    background: transparent; color: #c4b5fd; border: 1px solid #c4b5fd;
-    border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer;
-  }
-  .page-push { height: 52px; }
+/* Footer */
+.offer-footer {
+  background: #faf5ff; border-top: 2px solid #ede9fe;
+  padding: 16px 40px; display: flex; justify-content: space-between;
+  align-items: center; flex-wrap: wrap; gap: 10px;
+}
+.footer-note { font-size: 10px; color: #7c6fa8; line-height: 1.6; }
+.footer-note strong { color: #4c1d95; }
 
-  @media print {
-    body { background: #fff; }
-    .print-bar { display: none !important; }
-    .page-push { display: none; }
-    .page { max-width: 100%; box-shadow: none; }
-    .client-input { border-bottom: 1px solid #333; }
-    a { color: inherit !important; text-decoration: none; }
-  }
+/* Print bar */
+.print-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(30,27,75,.97); backdrop-filter: blur(8px);
+  padding: 9px 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  box-shadow: 0 2px 14px rgba(76,29,149,.4);
+}
+.print-bar-label { color: #c4b5fd; font-size: 12px; font-weight: 600; flex: 1; }
+.pbtn {
+  border: none; border-radius: 8px; padding: 7px 16px;
+  font-size: 12px; font-weight: 700; cursor: pointer; transition: all .15s;
+}
+.pbtn-print  { background: #fff; color: #7c3aed; }
+.pbtn-print:hover  { background: #f3e8ff; }
+.pbtn-excel  { background: #22c55e; color: #fff; }
+.pbtn-excel:hover  { background: #16a34a; }
+.pbtn-save   { background: #a78bfa; color: #fff; }
+.pbtn-save:hover   { background: #7c3aed; }
+.pbtn-close  { background: transparent; color: #a78bfa; border: 1px solid #a78bfa; }
+.pbtn-close:hover  { background: rgba(167,139,250,.15); }
+.saved-toast {
+  position: fixed; bottom: 24px; right: 24px; background: #16a34a; color: #fff;
+  border-radius: 10px; padding: 10px 20px; font-size: 13px; font-weight: 600;
+  box-shadow: 0 4px 14px rgba(0,0,0,.2); display: none; z-index: 200;
+}
+.page-push { height: 50px; }
+
+@media print {
+  body { background: #fff; }
+  .print-bar, .page-push, .disc-section { display: none !important; }
+  .page { max-width: 100%; box-shadow: none; }
+  .client-input { border-bottom: 1px solid #999; }
+}
 </style>
 </head>
 <body>
 
-<div class="print-bar no-print">
-  <span>Previzualizare ofertă — completati campul Client si apasati Print</span>
-  <button class="btn-print" onclick="window.print()">&#128438; Printeaza / Salveaza PDF</button>
-  <button class="btn-close" onclick="window.close()">Inchide</button>
+<div class="saved-toast" id="saved-toast">✓ Oferta salvata!</div>
+
+<div class="print-bar">
+  <span class="print-bar-label">Oferta ${offerData.num} — completati datele clientului</span>
+  <button class="pbtn pbtn-save"  onclick="saveAndToast()">Salveaza</button>
+  <button class="pbtn pbtn-excel" onclick="exportExcel()">Export Excel</button>
+  <button class="pbtn pbtn-print" onclick="doPrint()">Print / PDF</button>
+  <button class="pbtn pbtn-close" onclick="closeOffer()">Inchide</button>
 </div>
-<div class="page-push no-print"></div>
+<div class="page-push"></div>
 
 <div class="page">
+
   <div class="offer-header">
     <div>
-      <div class="brand-name">KUZIINI</div>
-      <div class="brand-sub">Solutii complete pentru bucatarie</div>
+      <img class="hdr-logo" src="${logoSrc}"
+           onerror="this.style.display='none';document.getElementById('logo-fb').style.display='block'">
+      <div class="hdr-logo-fallback" id="logo-fb" style="display:none">KUZIINI</div>
     </div>
     <div class="offer-meta">
       <div class="offer-title">OFERTĂ COMERCIALĂ</div>
-      <div class="offer-num">${offerNum}</div>
-      <div class="offer-date">Data: ${dateStr}</div>
+      <div class="offer-num">${offerData.num}</div>
+      <div class="offer-date">Data: ${offerData.date}</div>
     </div>
   </div>
 
   <div class="client-section">
     <div class="client-field">
       <span class="client-label">Client</span>
-      <input class="client-input" placeholder="Numele clientului..." />
+      <input id="field-client" class="client-input" placeholder="Numele clientului..." value="${initClient.replace(/"/g,'&quot;')}" />
     </div>
     <div class="client-field">
-      <span class="client-label">Telefon</span>
-      <input class="client-input" placeholder="07XX XXX XXX" />
+      <span class="client-label">Telefon / Email</span>
+      <input id="field-phone" class="client-input" placeholder="07XX XXX XXX" value="${initPhone.replace(/"/g,'&quot;')}" />
     </div>
     <div class="client-field">
       <span class="client-label">Observatii</span>
-      <input class="client-input" placeholder="Note oferta..." />
+      <input id="field-notes" class="client-input" placeholder="Note oferta..." value="${initNotes.replace(/"/g,'&quot;')}" />
     </div>
   </div>
 
@@ -2912,41 +2962,183 @@
     <table>
       <thead>
         <tr>
-          <th>#</th>
-          <th></th>
-          <th>Produs</th>
+          <th>#</th><th></th><th>Produs</th>
           <th class="right">Cant.</th>
           <th class="right">Pret Kuziini</th>
           <th class="right">Pret Vanzare</th>
           <th class="right">Subtotal</th>
         </tr>
       </thead>
-      <tbody>${rowsHTML}</tbody>
+      <tbody id="offer-tbody">${rowsHTML}</tbody>
     </table>
+  </div>
+
+  <!-- Discount section -->
+  <div class="disc-section">
+    <span class="disc-label">Discount global:</span>
+    <input id="disc-input" class="disc-input" type="number" min="0" max="99" step="0.5" value="${initDiscount}" />
+    <span class="disc-pct">%</span>
+    <button class="disc-btn" onclick="applyDiscount()">Aplica Discount</button>
+    <span class="disc-info" id="disc-info">${initDiscount > 0 ? 'Discount de ' + initDiscount + '% aplicat' : 'Fara discount'}</span>
   </div>
 
   <div class="total-section">
     <div class="total-row">
       <div>
         <div class="total-label">TOTAL OFERTĂ (cu TVA)</div>
-        <div class="total-items">${totalItems} produs${totalItems !== 1 ? 'e' : ''} · ${cart.length} pozitie${cart.length !== 1 ? 'i' : ''}</div>
+        <div class="total-meta" id="total-meta">${totalItems} produs${totalItems !== 1 ? 'e' : ''} · ${offerData.products.length} pozitii</div>
       </div>
-      <div class="total-value">${fp(totalSell)}</div>
+      <div class="total-value" id="offer-total">${_fpOffer(initTotal)}</div>
     </div>
   </div>
 
   <div class="offer-footer">
     <div class="footer-note">
-      <strong>Valabilitate oferta:</strong> 7 zile calendaristice de la data emiterii.
+      <strong>Valabilitate oferta:</strong> 7 zile calendaristice de la data emiterii.<br>
       Preturile includ TVA. Stocul este limitat.
     </div>
-    <div class="footer-note">
+    <div class="footer-note" style="text-align:right">
       <strong>Kuziini</strong> · kuziini.ro<br>
-      Oferta nr. ${offerNum} · ${dateStr}
+      Oferta nr. ${offerData.num} · ${offerData.date}
     </div>
   </div>
 </div>
 
+<script>
+const _oData = ${JSON.stringify(offerData)};
+let _disc = ${initDiscount};
+
+function _fp(v) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  return new Intl.NumberFormat('ro-RO', {minimumFractionDigits:2,maximumFractionDigits:2}).format(v) + ' Lei';
+}
+
+function applyDiscount() {
+  _disc = Math.max(0, Math.min(99, parseFloat(document.getElementById('disc-input').value) || 0));
+  _renderTotals();
+}
+
+function _renderTotals() {
+  let total = 0;
+  _oData.products.forEach((item, i) => {
+    const sell = item.baseSellPrice * (1 - _disc / 100);
+    const sub  = sell * (item.qty || 1);
+    total += sub;
+    const se = document.getElementById('sell-' + i);
+    const su = document.getElementById('sub-' + i);
+    if (se) se.innerHTML = _fp(sell) + (item.baseSellPrice !== item.kuziini_price ? '<span style="background:#7c3aed;color:#fff;font-size:9px;padding:1px 5px;border-radius:6px;margin-left:5px">ajustat</span>' : '');
+    if (su) su.textContent = _fp(sub);
+  });
+  const tot = document.getElementById('offer-total');
+  if (tot) tot.textContent = _fp(total);
+  const info = document.getElementById('disc-info');
+  if (info) info.textContent = _disc > 0 ? 'Discount de ' + _disc + '% aplicat' : 'Fara discount';
+}
+
+function _getState() {
+  let total = _oData.products.reduce((s, p) => s + p.baseSellPrice * (1 - _disc/100) * (p.qty||1), 0);
+  return {
+    id: _oData.num, num: _oData.num, date: _oData.date, ts: _oData.ts,
+    client: (document.getElementById('field-client') || {}).value || '',
+    phone:  (document.getElementById('field-phone')  || {}).value || '',
+    notes:  (document.getElementById('field-notes')  || {}).value || '',
+    discount: _disc,
+    products: _oData.products,
+    total: total,
+  };
+}
+
+function _saveToStorage() {
+  const state = _getState();
+  try {
+    const all = JSON.parse(localStorage.getItem('kuziini_offers') || '[]');
+    const idx = all.findIndex(o => o.id === state.id);
+    if (idx >= 0) all[idx] = state; else all.unshift(state);
+    localStorage.setItem('kuziini_offers', JSON.stringify(all));
+    return true;
+  } catch(e) { return false; }
+}
+
+function saveAndToast() {
+  if (_saveToStorage()) {
+    const t = document.getElementById('saved-toast');
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 2200);
+  }
+}
+
+function doPrint() { _saveToStorage(); window.print(); }
+
+function closeOffer() {
+  if (confirm('Salvezi aceasta oferta in lista "Ofertele mele"?')) {
+    _saveToStorage();
+  }
+  window.close();
+}
+
+function exportExcel() {
+  _saveToStorage();
+  const state = _getState();
+  let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
+           + '<head><meta charset="UTF-8"></head><body><table border="1" style="border-collapse:collapse">';
+  // Header row
+  html += '<tr style="background:#2B2A29;color:#fff;font-weight:bold;">'
+    + '<th>#</th><th>Cod Produs</th><th>Categorie</th><th>Cant.</th>'
+    + '<th>Pret Achizitie Kuziini (Lei)</th><th>Discount (%)</th><th>Pret cu Discount (Lei)</th>'
+    + '<th>Samsung.ro (Lei)</th><th>eMAG.ro (Lei)</th><th>Flanco.ro (Lei)</th><th>Altex.ro (Lei)</th>'
+    + '<th>Min. Piata (Lei)</th><th>Diferenta (Lei)</th><th>Diferenta (%)</th>'
+    + '</tr>';
+
+  state.products.forEach((item, i) => {
+    const discSell = item.baseSellPrice * (1 - _disc / 100);
+    const ap = item.all_prices || {};
+    const vals = [ap.samsung, ap.emag, ap.flanco, ap.altex].filter(v => v && v > 0);
+    const minM  = vals.length > 0 ? Math.min(...vals) : null;
+    const diffL = minM !== null ? (discSell - minM) : null;
+    const diffP = minM !== null && minM > 0 ? ((discSell - minM) / minM * 100) : null;
+    const fn = v => (v !== null && v !== undefined) ? v.toFixed(2) : '';
+    const rowBg = minM !== null ? (discSell > minM ? '#FEE2E2' : '#D1FAE5') : '#FFFFFF';
+    html += \`<tr style="background:\${rowBg}">
+      <td>\${i+1}</td>
+      <td><b>\${item.code}</b></td>
+      <td>\${item.category||''}</td>
+      <td>\${item.qty||1}</td>
+      <td>\${fn(item.kuziini_price)}</td>
+      <td>\${_disc > 0 ? _disc.toFixed(1)+'%' : '0%'}</td>
+      <td><b>\${fn(discSell)}</b></td>
+      <td>\${fn(ap.samsung)}</td>
+      <td>\${fn(ap.emag)}</td>
+      <td>\${fn(ap.flanco)}</td>
+      <td>\${fn(ap.altex)}</td>
+      <td>\${fn(minM)}</td>
+      <td style="color:\${diffL!==null&&diffL<0?'red':''}"><b>\${fn(diffL)}</b></td>
+      <td style="color:\${diffP!==null&&diffP<0?'red':''}"><b>\${diffP!==null?diffP.toFixed(1)+'%':''}</b></td>
+    </tr>\`;
+  });
+  // Footer
+  const grandTotal = state.products.reduce((s, p) => s + p.baseSellPrice*(1-_disc/100)*(p.qty||1), 0);
+  html += \`<tr style="background:#2B2A29;color:#fff;font-weight:bold;">
+    <td colspan="3">Total produse: \${state.products.reduce((s,p)=>s+(p.qty||1),0)}</td>
+    <td></td><td></td><td></td>
+    <td><b>\${grandTotal.toFixed(2)}</b></td>
+    <td colspan="7"></td>
+  </tr>\`;
+  html += '</table></body></html>';
+
+  const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const d    = new Date();
+  const ts   = d.toISOString().replace(/[-:T]/g,'').slice(0,12);
+  a.href     = url;
+  a.download = 'Oferta_Kuziini_' + ts + '.xls';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Apply saved discount on load (if reopening)
+if (_disc > 0) { setTimeout(_renderTotals, 100); }
+<\/script>
 </body></html>`;
 
       const w = window.open('', '_blank', 'width=980,height=900,scrollbars=yes');
@@ -2955,8 +3147,149 @@
       w.document.close();
     }
 
+    function _fpOffer(v) {
+      if (v === null || v === undefined) return '—';
+      return new Intl.NumberFormat('ro-RO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v) + ' Lei';
+    }
+
+    function generateOffer(savedState) {
+      if (cart.length === 0) return;
+      const date = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const offerData = {
+        num: savedState ? savedState.num
+           : `KZ-${date.getFullYear()}${pad(date.getMonth()+1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}`,
+        date: savedState ? savedState.date
+           : date.toLocaleDateString('ro-RO', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+        ts: savedState ? savedState.ts : Date.now(),
+        products: cart.map(item => {
+          const archive  = _priceArchive && _priceArchive[item.code];
+          const varchive = archive ? (archive.vendors || {}) : {};
+          let sellPrice  = item.kuziini_price;
+          if (item.cheapest_price && item.kuziini_price > item.cheapest_price)
+            sellPrice = item.kuziini_price * 1.05;
+          else if (item.cheapest_price && item.kuziini_price < item.cheapest_price)
+            sellPrice = item.cheapest_price;
+          return {
+            code: item.code, category: item.category || '',
+            kuziini_price: item.kuziini_price,
+            all_prices: item.all_prices || {},
+            urls: {
+              samsung: varchive.samsung && varchive.samsung.url || null,
+              emag:    varchive.emag    && varchive.emag.url    || null,
+              flanco:  varchive.flanco  && varchive.flanco.url  || null,
+              altex:   varchive.altex   && varchive.altex.url   || null,
+            },
+            image_url: item.image_url || null,
+            qty: item.qty || 1,
+            baseSellPrice: sellPrice,
+          };
+        }),
+      };
+      _openOfferWindow(offerData, savedState || null);
+    }
+
+    // ── Offer management ─────────────────────────────────────────────────
+
+    function updateOffersBadge() {
+      try {
+        const all = JSON.parse(localStorage.getItem('kuziini_offers') || '[]');
+        const el  = document.getElementById('offers-count');
+        if (el) el.textContent = all.length;
+      } catch(e) {}
+    }
+
+    function loadOffersSection() {
+      const section = document.getElementById('offers-section');
+      if (section.classList.contains('visible')) {
+        section.classList.remove('visible');
+        return;
+      }
+      section.classList.add('visible');
+      renderOffersList('');
+    }
+
+    function renderOffersList(filter) {
+      const body = document.getElementById('offers-body');
+      let all = [];
+      try { all = JSON.parse(localStorage.getItem('kuziini_offers') || '[]'); } catch(e) {}
+
+      const q = (filter || '').toLowerCase();
+      const items = q
+        ? all.filter(o =>
+            (o.client || '').toLowerCase().includes(q) ||
+            (o.phone  || '').toLowerCase().includes(q) ||
+            (o.num    || '').toLowerCase().includes(q))
+        : all;
+
+      updateOffersBadge();
+
+      if (items.length === 0) {
+        body.innerHTML = `<div style="text-align:center;padding:28px;color:#9ca3af;font-size:13px;">
+          ${q ? 'Nicio oferta gasita pentru "' + filter + '".' : 'Nu ai salvat inca nicio oferta. Genereaza o oferta din sectiunea Cos.'}
+        </div>`;
+        return;
+      }
+
+      let html = '<table class="report-table"><thead><tr>'
+        + '<th>Nr. Oferta</th><th>Data</th><th>Client</th><th>Telefon/Email</th>'
+        + '<th style="text-align:center">Produse</th>'
+        + '<th style="text-align:right">Total</th><th></th>'
+        + '</tr></thead><tbody>';
+
+      items.forEach(o => {
+        const totalBuc = (o.products || []).reduce((s, p) => s + (p.qty || 1), 0);
+        const discTxt  = o.discount > 0 ? `<br><span style="font-size:10px;color:#7c3aed">Discount: ${o.discount}%</span>` : '';
+        html += `<tr>
+          <td><span class="cart-code">${o.num}</span>${discTxt}</td>
+          <td style="font-size:11px;color:#6b7280;white-space:nowrap">${o.date || ''}</td>
+          <td style="font-size:12px;font-weight:600">${o.client || '—'}</td>
+          <td style="font-size:11px;color:#6b7280">${o.phone || '—'}</td>
+          <td style="text-align:center;font-size:12px">${totalBuc}</td>
+          <td style="text-align:right;font-weight:700;white-space:nowrap">${o.total ? formatPrice(o.total) : '—'}</td>
+          <td style="white-space:nowrap">
+            <button class="offer-open-btn" onclick="openSavedOffer('${o.id}')">Deschide</button>
+            <button class="offer-del-btn"  onclick="deleteOffer('${o.id}')">✕</button>
+          </td>
+        </tr>`;
+      });
+
+      html += '</tbody></table>';
+      body.innerHTML = html;
+    }
+
+    function deleteOffer(id) {
+      if (!confirm('Stergi oferta ' + id + '?')) return;
+      try {
+        const all = JSON.parse(localStorage.getItem('kuziini_offers') || '[]');
+        localStorage.setItem('kuziini_offers', JSON.stringify(all.filter(o => o.id !== id)));
+      } catch(e) {}
+      renderOffersList(document.getElementById('offers-search').value || '');
+      updateOffersBadge();
+    }
+
+    function openSavedOffer(id) {
+      let all = [];
+      try { all = JSON.parse(localStorage.getItem('kuziini_offers') || '[]'); } catch(e) {}
+      const saved = all.find(o => o.id === id);
+      if (!saved || !saved.products) return;
+
+      // Rebuild offerData + savedState from stored offer
+      const offerData = {
+        num: saved.num, date: saved.date, ts: saved.ts,
+        products: saved.products,
+      };
+      const savedState = {
+        client: saved.client || '', phone: saved.phone || '',
+        notes: saved.notes || '', discount: saved.discount || 0,
+        num: saved.num, date: saved.date, ts: saved.ts,
+      };
+      _openOfferWindow(offerData, savedState);
+    }
+
     // Render cart on page load (from localStorage)
     renderCart();
+    updateOffersBadge();
 
     // ── Rapoarte preturi ──────────────────────────────────────────────────
     let reportsData = null;
