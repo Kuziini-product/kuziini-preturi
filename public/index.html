@@ -1779,10 +1779,25 @@
       <!-- Inline edit panel (hidden by default) -->
       <div id="admin-edit-panel" style="display:none;background:#f5f3ff;border-radius:12px;padding:14px 16px;margin-top:14px;border:1px solid #ede9fe" >
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <span style="font-size:11px;font-weight:800;color:#7c3aed;text-transform:uppercase">Editeaza permisiuni: <span id="edit-username-lbl"></span></span>
+          <span style="font-size:11px;font-weight:800;color:#7c3aed;text-transform:uppercase">Editeaza utilizator: <span id="edit-username-lbl"></span></span>
           <button onclick="closeEditPanel()" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:18px">&#x2715;</button>
         </div>
         <input type="hidden" id="edit-username-val">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+          <div style="flex:1;min-width:140px">
+            <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Nume afisat</div>
+            <input id="edit-name" class="admin-input" type="text" placeholder="Nume complet" style="width:100%;box-sizing:border-box">
+          </div>
+          <div style="min-width:130px">
+            <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Rol</div>
+            <select id="edit-role" onchange="applyRolePreset('edit')" class="admin-input" style="width:100%;padding:6px 8px">
+              <option value="admin">Administrator</option>
+              <option value="manager">Manager</option>
+              <option value="agent">Agent vanzari</option>
+              <option value="viewer">Vizualizare</option>
+            </select>
+          </div>
+        </div>
         <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:12px">
           <div>
             <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Oferte</div>
@@ -4389,6 +4404,9 @@ else { setTimeout(_renderTotals, 100); }
     function adminEditUser(username, userData) {
       document.getElementById('edit-username-lbl').textContent = username;
       document.getElementById('edit-username-val').value = username;
+      document.getElementById('edit-name').value = userData.name || '';
+      const roleEl = document.getElementById('edit-role');
+      if (roleEl) roleEl.value = userData.role || 'agent';
       document.getElementById('edit-newpass').value = '';
       document.getElementById('edit-msg').style.display = 'none';
       _writePerms('edit', userData.permissions);
@@ -4404,8 +4422,12 @@ else { setTimeout(_renderTotals, 100); }
       const username = document.getElementById('edit-username-val').value;
       const permissions = _readPerms('edit');
       const newpass = document.getElementById('edit-newpass').value || undefined;
+      const name = (document.getElementById('edit-name').value || '').trim() || undefined;
+      const role = document.getElementById('edit-role')?.value || undefined;
       const msg = document.getElementById('edit-msg');
       const body = { username, permissions };
+      if (name) body.name = name;
+      if (role) body.role = role;
       if (newpass) body.password = newpass;
       const r = await fetch('/api/users/update', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify(body)});
       const d = await r.json();
