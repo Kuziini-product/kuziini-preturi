@@ -12,7 +12,7 @@ import sys
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(__file__))
-from scraper import search_product, load_products, log, set_cron_timeouts
+from scraper import search_product, load_products, log, set_cron_timeouts, get_samsung_specs
 
 # Cron are 60s budget, mareste timeout-urile
 set_cron_timeouts()
@@ -98,6 +98,19 @@ class handler(BaseHTTPRequestHandler):
                 # Salveaza istoricul preturilor (snapshot zilnic)
                 if result.get('prices'):
                     save_price_history(code, result['prices'])
+                # Pre-cache specificatii Samsung (nu incape in 10s user request)
+                elapsed2 = time.time() - start
+                if elapsed2 < 40:  # doar daca avem timp
+                    try:
+                        from cache import _redis_cmd
+                        import json as _json
+                        specs = get_samsung_specs(code)
+                        if specs:
+                            payload = _json.dumps(specs, ensure_ascii=False)
+                            _redis_cmd('SET', f'specs:{code}', payload, 'EX', 604800)
+                            log(f"  CRON: {code} specs cached")
+                    except Exception as se:
+                        log(f"  CRON: {code} specs EROARE: {se}")
                 processed += 1
                 log(f"  CRON: {code} OK")
             except Exception as e:
