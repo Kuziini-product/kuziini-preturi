@@ -417,33 +417,51 @@
 
     /* Price highlighting */
     .vendor-card.price-min {
-      border-color: #22c55e;
-      background: #f0fdf4;
+      border-color: #16a34a;
+      border-width: 2px;
+      background: #dcfce7;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18), 0 4px 18px rgba(22, 163, 74, 0.13);
     }
 
     .vendor-card.price-min .vendor-price {
-      color: #15803d;
+      color: #14532d;
+      font-size: 22px;
     }
 
     .vendor-card.price-min .price-badge {
-      background: #dcfce7;
-      color: #15803d;
-      border: 1px solid #86efac;
+      background: #16a34a;
+      color: #fff;
+      border: 1px solid #15803d;
+      font-size: 11px;
     }
 
     .vendor-card.price-max {
-      border-color: #f87171;
-      background: #fff5f5;
+      border-color: #dc2626;
+      border-width: 2px;
+      background: #fee2e2;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14), 0 4px 18px rgba(220, 38, 38, 0.10);
     }
 
     .vendor-card.price-max .vendor-price {
-      color: #dc2626;
+      color: #7f1d1d;
     }
 
     .vendor-card.price-max .price-badge {
-      background: #fee2e2;
-      color: #dc2626;
-      border: 1px solid #fca5a5;
+      background: #dc2626;
+      color: #fff;
+      border: 1px solid #b91c1c;
+      font-size: 11px;
+    }
+
+    /* Loading pulse animation pe cardul vendorului */
+    @keyframes vendor-loading-pulse {
+      0%, 100% { opacity: 1; border-color: inherit; }
+      50%       { opacity: 0.55; border-color: #a78bfa; }
+    }
+
+    .vendor-card.loading {
+      animation: vendor-loading-pulse 1.4s ease-in-out infinite;
+      border-color: #c4b5fd;
     }
 
     .price-badge {
@@ -1758,7 +1776,7 @@
         const card = document.getElementById(`card-${v}`);
         const price = document.getElementById(`price-${v}`);
         const badge = document.getElementById(`badge-${v}`);
-        card.classList.remove('price-min', 'price-max', 'clickable');
+        card.classList.remove('price-min', 'price-max', 'clickable', 'loading');
         card.onclick = null;
         card.title = '';
         price.className = 'vendor-price not-available';
@@ -1949,11 +1967,13 @@
       const vendors = ['samsung', 'emag', 'flanco', 'altex'];
       const liveResults = { ...baseData.prices };
 
-      // Arata indicator de scraping pe fiecare card
+      // Arata indicator de scraping pe fiecare card + porneste animatia de loading
       vendors.forEach(v => {
+        const card   = document.getElementById(`card-${v}`);
         const priceEl = document.getElementById(`price-${v}`);
         const sitenames = { samsung: 'samsung.ro', emag: 'emag.ro', flanco: 'flanco.ro', altex: 'altex.ro' };
         if (priceEl && liveResults[v] === null) {
+          card.classList.add('loading');
           priceEl.className = 'vendor-price not-available';
           priceEl.innerHTML = `
             <span class="price-val" style="font-size:12px; color:#a78bfa;">Se caută...</span>
@@ -1971,6 +1991,9 @@
           const result = await resp.json();
           const price = result.price || (result.prices && result.prices[vendor]) || null;
           const url = result.url || (result.urls && result.urls[vendor]) || null;
+
+          // Opreste animatia de loading pe cardul acestui vendor
+          document.getElementById(`card-${vendor}`)?.classList.remove('loading');
 
           if (price !== null) {
             liveResults[vendor] = price;
