@@ -1716,6 +1716,8 @@
             style="font-size:11px;font-weight:700;padding:5px 14px;border-radius:8px;border:none;cursor:pointer;background:#7c3aed;color:#fff">Utilizatori</button>
           <button id="admin-tab-activity" onclick="switchAdminTab('activity')"
             style="font-size:11px;font-weight:700;padding:5px 14px;border-radius:8px;border:none;cursor:pointer;background:#ede9fe;color:#7c3aed">Raport Activitate</button>
+          <button id="admin-tab-settings" onclick="switchAdminTab('settings')"
+            style="font-size:11px;font-weight:700;padding:5px 14px;border-radius:8px;border:none;cursor:pointer;background:#ede9fe;color:#7c3aed">&#9881; Setari</button>
         </div>
         <button class="admin-close" onclick="closeAdminModal()">&#x2715;</button>
       </div>
@@ -1864,20 +1866,60 @@
         <div id="activity-summary-wrap"></div>
         <div id="activity-log-wrap" style="margin-top:18px"></div>
       </div>
+
+      <!-- ── Settings section ── -->
+      <div id="admin-settings-section" style="display:none">
+        <div style="font-size:12px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.06em;margin-bottom:18px">Setari aplicatie</div>
+
+        <!-- WhatsApp notifications -->
+        <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:16px 18px;margin-bottom:18px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+            <span style="font-size:18px">&#128323;</span>
+            <span style="font-size:13px;font-weight:800;color:#15803d">Notificari WhatsApp (CallMeBot)</span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+            <div>
+              <div style="font-size:10px;font-weight:800;color:#15803d;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Numar telefon destinatar</div>
+              <input id="wa-phone" class="admin-input" placeholder="40723333221" style="width:100%;box-sizing:border-box"
+                title="Format international fara +, ex: 40723333221">
+              <div style="font-size:9px;color:#6b7280;margin-top:3px">Format international fara +, ex: 40723333221</div>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:800;color:#15803d;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">CallMeBot API Key</div>
+              <input id="wa-apikey" class="admin-input" placeholder="1234567" style="width:100%;box-sizing:border-box">
+              <div style="font-size:9px;color:#6b7280;margin-top:3px">Primesti cheia dupa activare pe telefon</div>
+            </div>
+          </div>
+
+          <div style="background:#dcfce7;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:#15803d;line-height:1.6">
+            <b>Activare (o singura data pe telefonul destinatar):</b><br>
+            1. Salveaza contactul <b>+34 644 51 98 70</b> in WhatsApp<br>
+            2. Trimite mesajul exact: <b>I allow callmebot to send me messages</b><br>
+            3. Primesti API Key-ul — introdu-l in campul de mai sus
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center">
+            <button onclick="saveWaSettings()" style="padding:7px 18px;border-radius:9px;border:none;background:#16a34a;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Salveaza</button>
+            <button onclick="testWaSettings()" style="padding:7px 18px;border-radius:9px;border:1.5px solid #16a34a;background:#fff;color:#16a34a;font-size:12px;font-weight:700;cursor:pointer">Trimite mesaj test</button>
+            <span id="wa-settings-msg" style="font-size:11px;font-weight:600"></span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Share offer modal -->
   <div id="share-overlay" style="display:none;position:fixed;inset:0;background:rgba(30,27,75,0.6);backdrop-filter:blur(4px);z-index:9000;align-items:center;justify-content:center">
-    <div style="background:#fff;border-radius:18px;padding:26px 28px 22px;max-width:360px;width:92%;box-shadow:0 8px 40px rgba(124,58,237,0.22)">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div style="background:#fff;border-radius:18px;padding:26px 28px 22px;max-width:400px;width:92%;box-shadow:0 8px 40px rgba(124,58,237,0.22)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
         <span style="font-size:14px;font-weight:800;color:#1e1b4b">Partajeaza oferta</span>
         <button onclick="closeShareModal()" style="background:none;border:none;font-size:22px;color:#9ca3af;cursor:pointer;line-height:1">&#x2715;</button>
       </div>
-      <p style="font-size:12px;color:#6b7280;margin-bottom:14px">Selectati utilizatorul cu care doriti sa partajati aceasta oferta:</p>
-      <select id="share-user-select" style="width:100%;padding:9px 12px;border-radius:10px;border:1.5px solid #ede9fe;font-size:13px;color:#1e1b4b;background:#faf8ff;margin-bottom:6px">
-        <option value="">— Selectati utilizator —</option>
-      </select>
+      <p style="font-size:12px;color:#6b7280;margin-bottom:12px">Selectati unul sau mai multi utilizatori:</p>
+      <div id="share-users-list" style="max-height:200px;overflow-y:auto;border:1.5px solid #ede9fe;border-radius:10px;padding:8px 12px;margin-bottom:8px;background:#faf8ff">
+        <div style="color:#9ca3af;font-size:12px;text-align:center;padding:10px">Se incarca...</div>
+      </div>
       <div id="share-msg" style="font-size:11px;min-height:16px;margin-bottom:10px"></div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button onclick="closeShareModal()" style="padding:8px 18px;border-radius:9px;border:1.5px solid #e0d8f8;background:#f5f3ff;color:#7c3aed;font-size:12px;font-weight:700;cursor:pointer">Anuleaza</button>
@@ -4388,23 +4430,29 @@ else { setTimeout(_renderTotals, 100); }
 
     async function shareOfferPrompt(id) {
       _shareOfferId = id;
-      const msgEl = document.getElementById('share-msg');
-      const sel   = document.getElementById('share-user-select');
+      const msgEl  = document.getElementById('share-msg');
+      const listEl = document.getElementById('share-users-list');
       msgEl.textContent = '';
-      sel.innerHTML = '<option value="">— Selectati utilizator —</option>';
+      listEl.innerHTML  = '<div style="color:#9ca3af;font-size:12px;text-align:center;padding:10px">Se incarca...</div>';
       document.getElementById('share-overlay').style.display = 'flex';
-      // Load users
       try {
         const r = await fetch('/api/users/for_share', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
         if (r.ok) {
           const d = await r.json();
           const me = currentUsername();
-          (d.users || []).filter(u => u.username !== me).forEach(u => {
-            const opt = document.createElement('option');
-            opt.value = u.username;
-            opt.textContent = u.name && u.name !== u.username ? `${u.name} (${u.username})` : u.username;
-            sel.appendChild(opt);
-          });
+          const users = (d.users || []).filter(u => u.username !== me);
+          if (users.length === 0) {
+            listEl.innerHTML = '<div style="color:#9ca3af;font-size:12px;text-align:center;padding:10px">Nu exista alti utilizatori.</div>';
+            return;
+          }
+          listEl.innerHTML = users.map(u => {
+            const label = u.name && u.name !== u.username ? `${u.name} <span style="color:#9ca3af">(${u.username})</span>` : u.username;
+            const dot   = u.chat_color ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${u.chat_color};margin-right:6px;flex-shrink:0"></span>` : '';
+            return `<label style="display:flex;align-items:center;gap:6px;padding:6px 4px;cursor:pointer;border-radius:6px;font-size:12px;color:#1e1b4b;transition:background .15s" onmouseover="this.style.background='#f5f3ff'" onmouseout="this.style.background=''">
+              <input type="checkbox" class="share-user-cb" value="${u.username}" style="accent-color:#7c3aed;width:15px;height:15px;cursor:pointer">
+              ${dot}<span>${label}</span>
+            </label>`;
+          }).join('');
         }
       } catch(e) { msgEl.textContent = 'Eroare la incarcarea utilizatorilor.'; msgEl.style.color='#dc2626'; }
     }
@@ -4415,17 +4463,25 @@ else { setTimeout(_renderTotals, 100); }
     }
 
     async function confirmShare() {
-      const target = document.getElementById('share-user-select').value;
-      const msgEl  = document.getElementById('share-msg');
-      if (!target) { msgEl.textContent = 'Selectati un utilizator.'; msgEl.style.color='#dc2626'; return; }
+      const targets = [...document.querySelectorAll('.share-user-cb:checked')].map(cb => cb.value);
+      const msgEl   = document.getElementById('share-msg');
+      if (!targets.length) { msgEl.textContent = 'Selectati cel putin un utilizator.'; msgEl.style.color='#dc2626'; return; }
       const btn = document.getElementById('share-confirm-btn');
       btn.disabled = true; btn.textContent = 'Se trimite...';
       try {
-        const r = await fetch('/api/offers/share', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({offer_id: _shareOfferId, target_username: target})});
+        const r = await fetch('/api/offers/share', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({offer_id: _shareOfferId, target_usernames: targets})});
         const d = await r.json();
         if (r.ok) {
-          msgEl.textContent = 'Partajat cu succes!'; msgEl.style.color='#16a34a';
-          setTimeout(closeShareModal, 1200);
+          const errs = d.errors || [];
+          if (errs.length) {
+            msgEl.textContent = `Partajat cu ${targets.length - errs.length} useri. Erori: ${errs.join(', ')}`;
+            msgEl.style.color = '#d97706';
+          } else {
+            msgEl.textContent = `Partajat cu succes cu ${targets.length} ${targets.length === 1 ? 'utilizator' : 'utilizatori'}!`;
+            msgEl.style.color = '#16a34a';
+          }
+          await loadOffersFromServer();
+          setTimeout(closeShareModal, 1800);
         } else { msgEl.textContent = d.error || 'Eroare la partajare.'; msgEl.style.color='#dc2626'; }
       } catch(e) { msgEl.textContent = 'Eroare de retea.'; msgEl.style.color='#dc2626'; }
       btn.disabled = false; btn.textContent = 'Partajeaza';
@@ -4491,20 +4547,56 @@ else { setTimeout(_renderTotals, 100); }
     }
 
     function switchAdminTab(tab) {
-      const isUsers = tab === 'users';
-      document.getElementById('admin-users-section').style.display  = isUsers ? '' : 'none';
-      document.getElementById('admin-activity-section').style.display = isUsers ? 'none' : '';
-      // Update tab button styles
-      const btnU = document.getElementById('admin-tab-users');
-      const btnA = document.getElementById('admin-tab-activity');
-      if (isUsers) {
-        btnU.style.background = '#7c3aed'; btnU.style.color = '#fff';
-        btnA.style.background = '#ede9fe'; btnA.style.color = '#7c3aed';
-      } else {
-        btnA.style.background = '#7c3aed'; btnA.style.color = '#fff';
-        btnU.style.background = '#ede9fe'; btnU.style.color = '#7c3aed';
+      document.getElementById('admin-users-section').style.display     = tab === 'users'    ? '' : 'none';
+      document.getElementById('admin-activity-section').style.display  = tab === 'activity' ? '' : 'none';
+      document.getElementById('admin-settings-section').style.display  = tab === 'settings' ? '' : 'none';
+      const tabs = {users:'admin-tab-users', activity:'admin-tab-activity', settings:'admin-tab-settings'};
+      Object.entries(tabs).forEach(([t, id]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.background = t === tab ? '#7c3aed' : '#ede9fe';
+        el.style.color      = t === tab ? '#fff'    : '#7c3aed';
+      });
+      if (tab === 'activity') {
         loadActivityReport();
+      } else if (tab === 'settings') {
+        loadWaSettings();
       }
+    }
+
+    async function loadWaSettings() {
+      try {
+        const r = await fetch('/api/settings/get', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
+        if (!r.ok) return;
+        const d = await r.json();
+        const s = d.settings || {};
+        document.getElementById('wa-phone').value  = s.wa_phone  || '';
+        document.getElementById('wa-apikey').value = s.wa_apikey || '';
+      } catch(e) {}
+    }
+
+    async function saveWaSettings() {
+      const phone  = (document.getElementById('wa-phone').value  || '').trim().replace(/^\+/, '');
+      const apikey = (document.getElementById('wa-apikey').value || '').trim();
+      const msg    = document.getElementById('wa-settings-msg');
+      try {
+        const r = await fetch('/api/settings/save', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({wa_phone: phone, wa_apikey: apikey})});
+        if (r.ok) { msg.textContent = '✓ Salvat!'; msg.style.color = '#16a34a'; }
+        else       { msg.textContent = 'Eroare la salvare.'; msg.style.color = '#dc2626'; }
+      } catch(e) { msg.textContent = 'Eroare de retea.'; msg.style.color = '#dc2626'; }
+      setTimeout(() => { msg.textContent = ''; }, 3000);
+    }
+
+    async function testWaSettings() {
+      const msg = document.getElementById('wa-settings-msg');
+      msg.textContent = 'Se trimite...'; msg.style.color = '#7c3aed';
+      try {
+        const r = await fetch('/api/settings/test_wa', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
+        const d = await r.json();
+        msg.textContent = d.message || (r.ok ? '✓ Trimis!' : 'Eroare.');
+        msg.style.color = r.ok && d.ok ? '#16a34a' : '#dc2626';
+      } catch(e) { msg.textContent = 'Eroare de retea.'; msg.style.color = '#dc2626'; }
+      setTimeout(() => { msg.textContent = ''; }, 5000);
     }
 
     const _ACT_LABELS = {

@@ -364,15 +364,49 @@ class handler(BaseHTTPRequestHandler):
             if not session:
                 return
             oid = body.get('offer_id') or ''
-            target = (body.get('target_username') or '').strip()
-            if not oid or not target:
-                self._json({'error': 'offer_id si target_username sunt obligatorii.'}, 400)
+            # Support both single target_username and multiple target_usernames list
+            targets = body.get('target_usernames') or []
+            if not targets:
+                single = (body.get('target_username') or '').strip()
+                if single:
+                    targets = [single]
+            if not oid or not targets:
+                self._json({'error': 'offer_id si cel putin un utilizator sunt obligatorii.'}, 400)
                 return
-            err = auth_utils.share_offer(oid, session['username'], session, target)
-            if err:
-                self._json({'error': err}, 400)
+            errors = auth_utils.share_offer_multi(oid, session['username'], session, targets)
+            if len(errors) == len(targets):
+                # All failed
+                self._json({'error': '; '.join(errors)}, 400)
                 return
+            self._json({'ok': True, 'errors': errors})
+
+        elif path == '/api/settings/get':
+            session = self._require_auth(require_admin=True)
+            if not session:
+                return
+            self._json({'settings': auth_utils.get_app_settings()})
+
+        elif path == '/api/settings/save':
+            session = self._require_auth(require_admin=True)
+            if not session:
+                return
+            current = auth_utils.get_app_settings()
+            current.update({k: v for k, v in body.items() if k in ('wa_phone', 'wa_apikey')})
+            auth_utils.save_app_settings(current)
             self._json({'ok': True})
+
+        elif path == '/api/settings/test_wa':
+            session = self._require_auth(require_admin=True)
+            if not session:
+                return
+            import whatsapp as wa
+            user = auth_utils.get_user(session['username'])
+            agent_name = user.get('name', session['username']) if user else session['username']
+            ok = wa.notify('offer_save', agent_name, session['username'], {
+                'num': 'TEST-001', 'client': 'Client Test', 'total': 999.99,
+                'products': [{'qty': 1}], 'date': '2024-01-01'
+            })
+            self._json({'ok': ok, 'message': 'Mesaj trimis cu succes!' if ok else 'Eroare: verifica numarul si apikey-ul.'})
 
         elif path == '/api/offers/delete':
             session = self._require_auth()

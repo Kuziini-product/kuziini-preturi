@@ -475,6 +475,49 @@ def share_offer(oid, requester, session, target_username):
     _list_prepend(f'offers:shared:{target["username"]}', oid)
     return None
 
+def share_offer_multi(oid, requester, session, target_usernames):
+    """Share an offer with multiple users. Returns list of errors (empty = all OK)."""
+    o = _jget(f'offer:{oid}')
+    if not o:
+        return ['Oferta inexistenta']
+    if not has_permission(session, 'offers', 'global') and o.get('owner_id') != requester:
+        return ['Acces interzis']
+    shared = o.get('shared_with', [])
+    errors = []
+    for uname in target_usernames:
+        uname = uname.strip()
+        if not uname:
+            continue
+        if uname == requester:
+            errors.append(f'Nu poti partaja cu tine insuti ({uname})')
+            continue
+        target = get_user(uname)
+        if not target:
+            errors.append(f'Userul "{uname}" nu exista')
+            continue
+        if uname not in shared:
+            shared.append(uname)
+            _list_prepend(f'offers:shared:{uname}', oid)
+    o['shared_with'] = shared
+    _jset(f'offer:{oid}', o)
+    return errors
+
+
+# ── App settings (stored in Redis) ────────────────────────────────────────
+
+def get_app_settings():
+    raw = _rc('GET', 'app:settings')
+    if not raw:
+        return {}
+    try:
+        return json.loads(raw)
+    except Exception:
+        return {}
+
+def save_app_settings(settings):
+    _rc('SET', 'app:settings', json.dumps(settings, ensure_ascii=False))
+
+
 def _user_color_map(usernames):
     """Return {username: chat_color} for a list of usernames."""
     colors = {}
