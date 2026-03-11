@@ -1567,9 +1567,22 @@ def _curl_with_cookies(url, timeout=None, referer=None, save_cookies=False):
     except subprocess.TimeoutExpired:
         log(f"  curl(cookie) TIMEOUT ({timeout}s): {url[:60]}", 'warning')
     except FileNotFoundError:
-        log("  curl.exe negasit pe sistem", 'warning')
+        log("  curl.exe negasit pe sistem, fallback requests", 'warning')
     except Exception as e:
-        log(f"  curl(cookie) exceptie: {e}", 'error')
+        log(f"  curl(cookie) exceptie: {e}, fallback requests", 'error')
+    # ── Fallback: requests Session ──
+    try:
+        hdrs = dict(HEADERS)
+        if referer:
+            hdrs['Referer'] = referer
+            hdrs['Sec-Fetch-Site'] = 'same-origin'
+        resp = SESSION.get(url, timeout=timeout, allow_redirects=True, headers=hdrs)
+        size = len(resp.text)
+        log(f"  requests(cookie-fallback) {url[:65]} -> {resp.status_code} ({size:,}b)")
+        if resp.status_code == 200 and size > 500:
+            return resp.text, BeautifulSoup(resp.text, 'html.parser')
+    except Exception as e2:
+        log(f"  requests(cookie-fallback) eroare: {e2}", 'warning')
     return None, None
 
 
@@ -2502,7 +2515,42 @@ def _altex_scrape_via_api(code):
                     except (json.JSONDecodeError, Exception) as e:
                         log(f"  Altex API intern parse eroare: {e}")
         except Exception as e:
-            log(f"  Altex API intern exceptie: {e}")
+            log(f"  Altex API intern curl exceptie: {e}")
+
+        # ── Fallback: requests direct pe API-ul CDN Altex ──
+        try:
+            api_hdrs = {
+                'User-Agent': HEADERS['User-Agent'],
+                'Accept': 'application/json, text/plain, */*',
+                'Accept-Language': 'ro-RO,ro;q=0.9',
+                'Referer': referer,
+                'Origin': 'https://altex.ro',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Sec-Fetch-Dest': 'empty',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Site': 'same-site',
+                'Sec-Ch-Ua': HEADERS.get('Sec-Ch-Ua', ''),
+                'Sec-Ch-Ua-Mobile': '?0',
+                'Sec-Ch-Ua-Platform': '"Windows"',
+            }
+            resp = requests.get(api_url, headers=api_hdrs, timeout=15)
+            log(f"  Altex API requests fallback: {resp.status_code} {len(resp.text)}b")
+            if resp.status_code == 200 and resp.text.strip() and resp.text.strip()[0] in '{[':
+                data = resp.json()
+                prod_url = _altex_find_product_url_in_json(data, code_lower)
+                p = find_price_in_json(data)
+                if p:
+                    log(f"  Altex API requests PRET: {p}")
+                    return (p, prod_url or api_url)
+                if prod_url and '/cpd/' in prod_url:
+                    full_url = prod_url if prod_url.startswith('http') else 'https://altex.ro' + prod_url
+                    _, pp = _curl_with_cookies(full_url, timeout=15, referer=api_url)
+                    if pp:
+                        price = _altex_extract_price_from_product_page(pp, full_url)
+                        if price:
+                            return (price, full_url)
+        except Exception as e2:
+            log(f"  Altex API requests fallback eroare: {e2}")
 
     return (None, None)
 
