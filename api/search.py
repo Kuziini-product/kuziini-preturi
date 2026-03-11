@@ -604,7 +604,7 @@ class handler(BaseHTTPRequestHandler):
         elif path == '/api/chat/get':
             session = self._require_auth()
             if not session: return
-            messages = auth_utils.get_general_chat()
+            messages = auth_utils.get_inbox(session['username'])
             users = auth_utils.get_all_usernames()
             self._json({'messages': messages, 'users': users})
 
@@ -614,10 +614,21 @@ class handler(BaseHTTPRequestHandler):
             text = (body.get('text') or '').strip()
             if not text:
                 self._json({'error': 'text obligatoriu'}, 400); return
+            recipients = body.get('recipients') or []
+            offer_ref = (body.get('offer_ref') or '').strip() or None
             u = auth_utils.get_user(session['username'])
             name = u.get('name', session['username']) if u else session['username']
-            messages = auth_utils.add_general_chat(session['username'], name, text)
+            auth_utils.add_inbox_message(session['username'], name, text, recipients, offer_ref)
+            messages = auth_utils.get_inbox(session['username'])
             self._json({'ok': True, 'messages': messages})
+
+        elif path == '/api/chat/read':
+            session = self._require_auth()
+            if not session: return
+            msg_ids = body.get('ids') or []
+            if msg_ids:
+                auth_utils.mark_inbox_read(session['username'], msg_ids)
+            self._json({'ok': True})
 
         else:
             self._json({'error': 'Not found'}, 404)

@@ -2344,20 +2344,46 @@
     <!-- ── General Chat Floating Panel ── -->
     <div id="gchat-toggle" style="position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4c1d95);color:#fff;border:none;font-size:22px;cursor:grab;box-shadow:0 4px 20px rgba(124,58,237,0.35);z-index:8000;display:flex;align-items:center;justify-content:center;user-select:none;touch-action:none" title="Chat general">&#x1F4AC;<span id="gchat-badge" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border-radius:50%;min-width:18px;height:18px;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 1px 4px rgba(0,0,0,.3)">0</span></div>
 
-    <div id="gchat-panel" style="display:none;position:fixed;bottom:24px;right:24px;width:380px;max-height:560px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(124,58,237,0.22);z-index:8100;flex-direction:column;overflow:hidden;border:1.5px solid #ede9fe">
-      <div id="gchat-header" style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px 10px;background:linear-gradient(135deg,#1e1b4b,#4c1d95);flex-shrink:0;cursor:grab;user-select:none">
-        <span style="font-size:13px;font-weight:800;color:#fff;letter-spacing:.03em">&#x1F4AC; Chat general</span>
+    <div id="gchat-panel" style="display:none;position:fixed;bottom:24px;right:24px;width:400px;max-height:580px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(124,58,237,0.22);z-index:8100;flex-direction:column;overflow:hidden;border:1.5px solid #ede9fe">
+      <div id="gchat-header" style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px 8px;background:linear-gradient(135deg,#1e1b4b,#4c1d95);flex-shrink:0;cursor:grab;user-select:none">
+        <span style="font-size:13px;font-weight:800;color:#fff;letter-spacing:.03em">&#x1F4E8; Mesaje</span>
         <button onclick="toggleGeneralChat()" style="background:none;border:none;font-size:18px;color:rgba(255,255,255,0.7);cursor:pointer;line-height:1">&#x2715;</button>
       </div>
-      <div style="padding:6px 14px 4px;border-bottom:1px solid #f3f0ff;flex-shrink:0;background:#fff;display:flex;gap:6px">
-        <input id="gchat-search" placeholder="&#x1F50D; Cauta oferta sau utilizator..." style="flex:1;padding:6px 10px;border-radius:8px;border:1.5px solid #e0d8f8;font-size:11px;color:#1e1b4b;outline:none;background:#faf8ff" oninput="gchatSearchTag(this.value)">
+      <!-- Tabs: Inbox / Compune -->
+      <div style="display:flex;border-bottom:1.5px solid #ede9fe;flex-shrink:0;background:#faf8ff">
+        <button id="inbox-tab-list" onclick="switchInboxTab('list')" style="flex:1;padding:8px;font-size:11px;font-weight:700;border:none;cursor:pointer;background:#fff;color:#7c3aed;border-bottom:2px solid #7c3aed">Inbox <span id="inbox-unread-tab" style="background:#dc2626;color:#fff;border-radius:8px;padding:0 5px;font-size:9px;font-weight:800;display:none"></span></button>
+        <button id="inbox-tab-compose" onclick="switchInboxTab('compose')" style="flex:1;padding:8px;font-size:11px;font-weight:700;border:none;cursor:pointer;background:#faf8ff;color:#9ca3af;border-bottom:2px solid transparent">+ Compune</button>
       </div>
-      <div id="gchat-search-results" style="display:none;max-height:140px;overflow-y:auto;border-bottom:1px solid #f3f0ff;flex-shrink:0;background:#fff"></div>
-      <div id="gchat-messages" style="flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-height:200px;max-height:320px;background:#faf8ff"></div>
-      <div id="gchat-suggestions" style="display:none;position:absolute;bottom:60px;left:14px;right:14px;background:#fff;border:1.5px solid #e0d8f8;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:150px;overflow-y:auto;z-index:10"></div>
-      <div style="padding:10px 14px;border-top:1px solid #ede9fe;display:flex;gap:6px;flex-shrink:0;background:#fff">
-        <input id="gchat-input" placeholder="Scrie... @user #oferta" style="flex:1;padding:8px 12px;border-radius:10px;border:1.5px solid #e0d8f8;font-size:12px;color:#1e1b4b;outline:none" onkeydown="gchatKeydown(event)" oninput="gchatAutocomplete(this)">
-        <button onclick="sendGeneralChat()" style="padding:8px 14px;border-radius:10px;border:none;background:#7c3aed;color:#fff;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Trimite</button>
+      <!-- Inbox list view -->
+      <div id="inbox-view-list" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:6px 14px 4px;flex-shrink:0;background:#fff;display:flex;gap:6px">
+          <input id="inbox-filter" placeholder="&#x1F50D; Filtreaza mesaje..." style="flex:1;padding:5px 10px;border-radius:8px;border:1.5px solid #e0d8f8;font-size:11px;color:#1e1b4b;outline:none;background:#faf8ff" oninput="filterInbox(this.value)">
+        </div>
+        <div id="inbox-messages" style="flex:1;overflow-y:auto;min-height:200px;max-height:400px"></div>
+      </div>
+      <!-- Compose view -->
+      <div id="inbox-view-compose" style="flex:1;display:none;flex-direction:column;overflow:hidden">
+        <div style="padding:10px 14px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;background:#fff">
+          <div>
+            <label style="font-size:10px;font-weight:700;color:#6b7280;display:block;margin-bottom:2px">Catre (click sau cauta)</label>
+            <div id="compose-recipients-box" style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;border:1.5px solid #e0d8f8;border-radius:8px;padding:4px 8px;min-height:32px;background:#faf8ff;cursor:text" onclick="document.getElementById('compose-to').focus()">
+              <input id="compose-to" placeholder="@utilizator..." style="border:none;outline:none;font-size:11px;background:transparent;flex:1;min-width:80px;padding:2px 0;color:#1e1b4b" oninput="composeSearchRecipient(this.value)" onkeydown="composeToKeydown(event)">
+            </div>
+            <div id="compose-to-suggestions" style="display:none;max-height:120px;overflow-y:auto;background:#fff;border:1.5px solid #e0d8f8;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);margin-top:2px"></div>
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:700;color:#6b7280;display:block;margin-bottom:2px">Oferta (optional)</label>
+            <input id="compose-offer" placeholder="#KZ-..." style="width:100%;padding:5px 10px;border-radius:8px;border:1.5px solid #e0d8f8;font-size:11px;color:#1e1b4b;outline:none;background:#faf8ff" oninput="composeSearchOffer(this.value)">
+            <div id="compose-offer-suggestions" style="display:none;max-height:100px;overflow-y:auto;background:#fff;border:1.5px solid #e0d8f8;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);margin-top:2px"></div>
+            <div id="compose-offer-tag" style="display:none;margin-top:4px"></div>
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:700;color:#6b7280;display:block;margin-bottom:2px">Mesaj</label>
+            <textarea id="compose-text" placeholder="Scrie mesajul..." style="width:100%;min-height:60px;padding:8px 10px;border-radius:8px;border:1.5px solid #e0d8f8;font-size:12px;color:#1e1b4b;outline:none;resize:vertical;font-family:inherit;background:#faf8ff" onkeydown="if(event.key==='Enter'&&event.ctrlKey){event.preventDefault();sendCompose()}"></textarea>
+          </div>
+          <button onclick="sendCompose()" style="padding:8px;border-radius:8px;border:none;background:#7c3aed;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Trimite mesaj</button>
+          <div id="compose-status" style="font-size:11px;text-align:center;display:none"></div>
+        </div>
       </div>
     </div>
 
@@ -4576,14 +4602,18 @@ else { setTimeout(_renderTotals, 100); }
     function _chatUnread(oid, total) { return Math.max(0, total - (_chatSeen()[oid] || 0)); }
 
     function _updateChatBadges() {
-      const total = _serverOffers.reduce((sum, o) => sum + _chatUnread(o.id, o.chat_count || 0), 0);
+      const offerChatUnread = _serverOffers.reduce((sum, o) => sum + _chatUnread(o.id, o.chat_count || 0), 0);
       // Badge pe butonul "Ofertele mele"
       const btnBadge = document.getElementById('chat-badge-btn');
-      if (btnBadge) { btnBadge.textContent = total; btnBadge.style.display = total > 0 ? 'inline-flex' : 'none'; }
+      if (btnBadge) { btnBadge.textContent = offerChatUnread; btnBadge.style.display = offerChatUnread > 0 ? 'inline-flex' : 'none'; }
       // Badge in header (user-badge area)
       const hdrBadge  = document.getElementById('chat-badge-header');
       const hdrCount  = document.getElementById('chat-badge-header-count');
-      if (hdrBadge && hdrCount) { hdrCount.textContent = total; hdrBadge.style.display = total > 0 ? '' : 'none'; }
+      if (hdrBadge && hdrCount) { hdrCount.textContent = offerChatUnread; hdrBadge.style.display = offerChatUnread > 0 ? '' : 'none'; }
+      // Also update inbox floating badge with combined count
+      const inboxUnread = (_inboxMessages || []).filter(m => !m.is_read).length;
+      const sharedUnseen = _sharedWithMe().filter(o => !_seenShared().includes(o.id)).length;
+      updateGchatBadge(inboxUnread + offerChatUnread + sharedUnseen);
     }
 
     async function openChatModal(offerId, offerNum) {
@@ -5747,20 +5777,20 @@ else { setTimeout(_renderTotals, 100); }
       setTimeout(() => { printWin.print(); }, 300);
     }
 
-    // ── General Chat Panel ─────────────────────────────────────────────
+    // ── Inbox / Messages Panel ──────────────────────────────────────────
 
     let _gchatOpen = false;
     let _gchatUsers = [];
-    let _gchatOffers = [];
-    let _gchatLastCount = parseInt(localStorage.getItem('gchat_seen') || '0');
+    let _inboxMessages = [];
+    let _inboxTab = 'list';
+    let _composeRecipients = [];
+    let _composeOfferRef = null;
 
     // ── Draggable chat button ──
     (function() {
       const btn = document.getElementById('gchat-toggle');
       if (!btn) return;
       let isDragging = false, wasDragged = false, startX, startY, startLeft, startTop;
-
-      // Restore saved position
       const saved = localStorage.getItem('gchat_pos');
       if (saved) {
         try {
@@ -5770,69 +5800,56 @@ else { setTimeout(_renderTotals, 100); }
           btn.style.top = Math.min(pos.y, window.innerHeight - 60) + 'px';
         } catch(e) {}
       }
-
       function onStart(cx, cy) {
         isDragging = true; wasDragged = false;
         const rect = btn.getBoundingClientRect();
-        startX = cx; startY = cy;
-        startLeft = rect.left; startTop = rect.top;
-        btn.style.cursor = 'grabbing';
-        btn.style.transition = 'none';
+        startX = cx; startY = cy; startLeft = rect.left; startTop = rect.top;
+        btn.style.cursor = 'grabbing'; btn.style.transition = 'none';
       }
       function onMove(cx, cy) {
         if (!isDragging) return;
         const dx = cx - startX, dy = cy - startY;
         if (Math.abs(dx) > 3 || Math.abs(dy) > 3) wasDragged = true;
-        let nx = startLeft + dx, ny = startTop + dy;
-        nx = Math.max(0, Math.min(nx, window.innerWidth - 56));
-        ny = Math.max(0, Math.min(ny, window.innerHeight - 56));
+        let nx = Math.max(0, Math.min(startLeft + dx, window.innerWidth - 56));
+        let ny = Math.max(0, Math.min(startTop + dy, window.innerHeight - 56));
         btn.style.right = 'auto'; btn.style.bottom = 'auto';
         btn.style.left = nx + 'px'; btn.style.top = ny + 'px';
       }
       function onEnd() {
         if (!isDragging) return;
-        isDragging = false;
-        btn.style.cursor = 'grab';
-        btn.style.transition = '';
+        isDragging = false; btn.style.cursor = 'grab'; btn.style.transition = '';
         const rect = btn.getBoundingClientRect();
         localStorage.setItem('gchat_pos', JSON.stringify({x: rect.left, y: rect.top}));
         if (!wasDragged) toggleGeneralChat();
       }
-
-      // Mouse events
       btn.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX, e.clientY); });
       document.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
       document.addEventListener('mouseup', onEnd);
-      // Touch events
       btn.addEventListener('touchstart', e => { const t = e.touches[0]; onStart(t.clientX, t.clientY); }, {passive: true});
       document.addEventListener('touchmove', e => { if (isDragging) { const t = e.touches[0]; onMove(t.clientX, t.clientY); } }, {passive: true});
       document.addEventListener('touchend', onEnd);
     })();
 
-    // ── Draggable chat panel (by header) ──
+    // ── Draggable panel (by header) ──
     (function() {
       const panel = document.getElementById('gchat-panel');
       const hdr = document.getElementById('gchat-header');
       if (!panel || !hdr) return;
       let isDragging = false, startX, startY, startLeft, startTop;
-
       function onStart(cx, cy) {
         isDragging = true;
         const rect = panel.getBoundingClientRect();
-        startX = cx; startY = cy;
-        startLeft = rect.left; startTop = rect.top;
+        startX = cx; startY = cy; startLeft = rect.left; startTop = rect.top;
         hdr.style.cursor = 'grabbing';
       }
       function onMove(cx, cy) {
         if (!isDragging) return;
-        let nx = startLeft + (cx - startX), ny = startTop + (cy - startY);
-        nx = Math.max(0, Math.min(nx, window.innerWidth - 200));
-        ny = Math.max(0, Math.min(ny, window.innerHeight - 100));
+        let nx = Math.max(0, Math.min(startLeft + (cx - startX), window.innerWidth - 200));
+        let ny = Math.max(0, Math.min(startTop + (cy - startY), window.innerHeight - 100));
         panel.style.right = 'auto'; panel.style.bottom = 'auto';
         panel.style.left = nx + 'px'; panel.style.top = ny + 'px';
       }
       function onEnd() { isDragging = false; hdr.style.cursor = 'grab'; }
-
       hdr.addEventListener('mousedown', e => { if (e.target.tagName === 'BUTTON') return; e.preventDefault(); onStart(e.clientX, e.clientY); });
       document.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
       document.addEventListener('mouseup', onEnd);
@@ -5846,53 +5863,108 @@ else { setTimeout(_renderTotals, 100); }
       const panel = document.getElementById('gchat-panel');
       const btn = document.getElementById('gchat-toggle');
       if (_gchatOpen) {
-        // Position panel near the button
         const btnRect = btn.getBoundingClientRect();
         panel.style.right = 'auto'; panel.style.bottom = 'auto';
-        panel.style.left = Math.max(0, Math.min(btnRect.left - 330, window.innerWidth - 390)) + 'px';
-        panel.style.top = Math.max(0, btnRect.top - 530) + 'px';
+        panel.style.left = Math.max(0, Math.min(btnRect.left - 350, window.innerWidth - 410)) + 'px';
+        panel.style.top = Math.max(0, btnRect.top - 560) + 'px';
         panel.style.display = 'flex';
         btn.style.display = 'none';
-        loadGeneralChat();
-        setTimeout(() => document.getElementById('gchat-input').focus(), 200);
+        switchInboxTab('list');
+        loadInbox();
       } else {
         panel.style.display = 'none';
         btn.style.display = 'flex';
       }
     }
 
-    async function loadGeneralChat() {
+    function switchInboxTab(tab) {
+      _inboxTab = tab;
+      const listTab = document.getElementById('inbox-tab-list');
+      const composeTab = document.getElementById('inbox-tab-compose');
+      const listView = document.getElementById('inbox-view-list');
+      const composeView = document.getElementById('inbox-view-compose');
+      if (tab === 'list') {
+        listTab.style.background = '#fff'; listTab.style.color = '#7c3aed'; listTab.style.borderBottom = '2px solid #7c3aed';
+        composeTab.style.background = '#faf8ff'; composeTab.style.color = '#9ca3af'; composeTab.style.borderBottom = '2px solid transparent';
+        listView.style.display = 'flex'; composeView.style.display = 'none';
+      } else {
+        composeTab.style.background = '#fff'; composeTab.style.color = '#7c3aed'; composeTab.style.borderBottom = '2px solid #7c3aed';
+        listTab.style.background = '#faf8ff'; listTab.style.color = '#9ca3af'; listTab.style.borderBottom = '2px solid transparent';
+        listView.style.display = 'none'; composeView.style.display = 'flex';
+        _composeRecipients = [];
+        _composeOfferRef = null;
+        _renderComposeRecipients();
+        document.getElementById('compose-offer').value = '';
+        document.getElementById('compose-offer-tag').style.display = 'none';
+        document.getElementById('compose-text').value = '';
+        document.getElementById('compose-status').style.display = 'none';
+      }
+    }
+
+    async function loadInbox() {
       try {
         const r = await fetch('/api/chat/get', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
         if (!r.ok) return;
         const d = await r.json();
         _gchatUsers = d.users || [];
-        _gchatOffers = _serverOffers || [];
-        renderGchatMessages(d.messages || []);
-        localStorage.setItem('gchat_seen', String((d.messages || []).length));
-        _gchatLastCount = (d.messages || []).length;
-        updateGchatBadge(0);
+        _inboxMessages = d.messages || [];
+        renderInbox(_inboxMessages);
+        updateGchatBadge(_inboxMessages.filter(m => !m.is_read).length);
+        const unreadTab = document.getElementById('inbox-unread-tab');
+        const unreadCount = _inboxMessages.filter(m => !m.is_read).length;
+        if (unreadTab) { unreadTab.textContent = unreadCount; unreadTab.style.display = unreadCount > 0 ? 'inline' : 'none'; }
       } catch(e) {}
     }
 
-    function renderGchatMessages(msgs) {
-      const box = document.getElementById('gchat-messages');
+    function renderInbox(msgs, filter) {
+      const box = document.getElementById('inbox-messages');
       const me = currentUsername();
-      if (msgs.length === 0) {
-        box.innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:12px;padding:30px 0">Niciun mesaj inca. Fii primul!</div>';
+      let filtered = msgs;
+      if (filter) {
+        const q = filter.toLowerCase();
+        filtered = msgs.filter(m =>
+          (m.sender_name||m.sender||'').toLowerCase().includes(q) ||
+          (m.text||'').toLowerCase().includes(q) ||
+          (m.offer_ref||'').toLowerCase().includes(q) ||
+          (m.recipients||[]).some(r => r.toLowerCase().includes(q))
+        );
+      }
+      if (filtered.length === 0) {
+        box.innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:12px;padding:30px 0">Niciun mesaj.</div>';
         return;
       }
-      box.innerHTML = msgs.map(m => {
-        const isMine = m.username === me;
+      // Show newest first
+      const sorted = [...filtered].reverse();
+      box.innerHTML = sorted.map(m => {
+        const isMine = m.sender === me;
+        const isUnread = !m.is_read;
         const time = new Date(m.ts * 1000);
         const timeStr = time.toLocaleString('ro-RO', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-        const text = _gchatFormatText(m.text);
-        return `<div style="display:flex;flex-direction:column;align-items:${isMine ? 'flex-end' : 'flex-start'}">
-          <div style="font-size:9px;color:#9ca3af;margin-bottom:1px">${isMine ? '' : `<span style="color:${m.color||'#7c3aed'};font-weight:700">${m.name||m.username}</span> · `}${timeStr}</div>
-          <div style="background:${isMine ? '#ede9fe' : '#f3f4f6'};padding:7px 12px;border-radius:${isMine ? '12px 12px 4px 12px' : '12px 12px 12px 4px'};max-width:85%;font-size:12px;color:#1e1b4b;line-height:1.4;word-break:break-word">${text}</div>
+        const senderDisplay = isMine ? 'Tu' : (m.sender_name || m.sender);
+        const recipStr = (m.recipients||[]).length > 0
+          ? (m.recipients||[]).map(r => '@' + r).join(', ')
+          : 'Toti';
+        const preview = (m.text||'').substring(0, 80) + ((m.text||'').length > 80 ? '...' : '');
+        const offerTag = m.offer_ref
+          ? `<span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openSavedOffer('${m.offer_ref}')">#${m.offer_ref}</span>`
+          : '';
+        const unreadDot = isUnread ? '<span style="width:8px;height:8px;border-radius:50%;background:#7c3aed;flex-shrink:0"></span>' : '<span style="width:8px;flex-shrink:0"></span>';
+        return `<div onclick="openInboxMessage('${m.id}')" style="display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid #f3f0ff;cursor:pointer;background:${isUnread ? '#f5f3ff' : '#fff'};transition:background .15s;align-items:flex-start" onmouseenter="this.style.background='#ede9fe'" onmouseleave="this.style.background='${isUnread ? '#f5f3ff' : '#fff'}'">
+          ${unreadDot}
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+              <span style="font-size:11px;font-weight:${isUnread?'800':'600'};color:${isMine ? '#7c3aed' : (m.color||'#1e1b4b')};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${senderDisplay}</span>
+              <span style="font-size:9px;color:#9ca3af;white-space:nowrap;flex-shrink:0">${timeStr}</span>
+            </div>
+            <div style="font-size:10px;color:#6b7280;margin:1px 0">Catre: ${recipStr} ${offerTag}</div>
+            <div style="font-size:11px;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;${isUnread?'font-weight:600':''}"><span style="opacity:.85">${_inboxEscape(preview)}</span></div>
+          </div>
         </div>`;
       }).join('');
-      box.scrollTop = box.scrollHeight;
+    }
+
+    function _inboxEscape(text) {
+      return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
     function _gchatFormatText(text) {
@@ -5902,143 +5974,171 @@ else { setTimeout(_renderTotals, 100); }
       return t;
     }
 
-    async function sendGeneralChat() {
-      const inp = document.getElementById('gchat-input');
-      const text = inp.value.trim();
-      if (!text) return;
-      inp.value = '';
-      document.getElementById('gchat-suggestions').style.display = 'none';
-      try {
-        const r = await fetch('/api/chat/send', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({text})});
-        if (!r.ok) return;
-        const d = await r.json();
-        renderGchatMessages(d.messages || []);
-        localStorage.setItem('gchat_seen', String((d.messages || []).length));
-        _gchatLastCount = (d.messages || []).length;
-      } catch(e) {}
+    function openInboxMessage(msgId) {
+      const m = _inboxMessages.find(x => x.id === msgId);
+      if (!m) return;
+      const me = currentUsername();
+      // Mark as read
+      if (!m.is_read) {
+        m.is_read = true;
+        fetch('/api/chat/read', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({ids: [msgId]})}).catch(()=>{});
+        updateGchatBadge(_inboxMessages.filter(x => !x.is_read).length);
+        const unreadTab = document.getElementById('inbox-unread-tab');
+        const unreadCount = _inboxMessages.filter(x => !x.is_read).length;
+        if (unreadTab) { unreadTab.textContent = unreadCount; unreadTab.style.display = unreadCount > 0 ? 'inline' : 'none'; }
+      }
+      const box = document.getElementById('inbox-messages');
+      const isMine = m.sender === me;
+      const time = new Date(m.ts * 1000);
+      const timeStr = time.toLocaleString('ro-RO', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      const recipStr = (m.recipients||[]).length > 0
+        ? (m.recipients||[]).map(r => '<span style="background:#ddd6fe;color:#5b21b6;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600">@' + r + '</span>').join(' ')
+        : '<span style="color:#9ca3af;font-size:10px">Toti utilizatorii</span>';
+      const offerBtn = m.offer_ref
+        ? `<div style="margin-top:8px"><button onclick="openSavedOffer('${m.offer_ref}')" style="background:#fef3c7;color:#92400e;border:1.5px solid #fcd34d;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer">&#x1F4C4; Deschide oferta #${m.offer_ref}</button></div>`
+        : '';
+      const replyBtn = !isMine
+        ? `<button onclick="replyToMessage('${m.sender}','${m.offer_ref||''}')" style="background:#ede9fe;color:#7c3aed;border:none;border-radius:6px;padding:5px 12px;font-size:10px;font-weight:700;cursor:pointer;margin-top:6px">&#8617; Raspunde</button>`
+        : '';
+      box.innerHTML = `
+        <div style="padding:14px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+            <button onclick="loadInbox();renderInbox(_inboxMessages,document.getElementById('inbox-filter').value)" style="background:none;border:none;font-size:16px;cursor:pointer;color:#7c3aed;padding:0">&#8592;</button>
+            <span style="font-size:13px;font-weight:800;color:#1e1b4b">Mesaj</span>
+          </div>
+          <div style="background:#f9fafb;border-radius:10px;padding:12px 14px;border:1px solid #ede9fe">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <span style="font-size:12px;font-weight:700;color:${m.color||'#7c3aed'}">${isMine ? 'Tu' : (m.sender_name||m.sender)}</span>
+              <span style="font-size:9px;color:#9ca3af">${timeStr}</span>
+            </div>
+            <div style="font-size:10px;color:#6b7280;margin-bottom:8px">Catre: ${recipStr}</div>
+            <div style="font-size:12px;color:#1e1b4b;line-height:1.5;word-break:break-word">${_gchatFormatText(m.text)}</div>
+            ${offerBtn}
+            ${replyBtn}
+          </div>
+        </div>`;
     }
 
-    function gchatKeydown(e) {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendGeneralChat();
+    function replyToMessage(sender, offerRef) {
+      switchInboxTab('compose');
+      _composeRecipients = [sender];
+      _renderComposeRecipients();
+      if (offerRef) {
+        _composeOfferRef = offerRef;
+        document.getElementById('compose-offer').value = '';
+        document.getElementById('compose-offer-tag').innerHTML = `<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600">#${offerRef} <span onclick="_composeOfferRef=null;this.parentElement.parentElement.style.display='none'" style="cursor:pointer;margin-left:4px">&#x2715;</span></span>`;
+        document.getElementById('compose-offer-tag').style.display = '';
+      }
+      setTimeout(() => document.getElementById('compose-text').focus(), 100);
+    }
+
+    function filterInbox(q) {
+      renderInbox(_inboxMessages, q);
+    }
+
+    // ── Compose: recipient picker ──
+    function _renderComposeRecipients() {
+      const box = document.getElementById('compose-recipients-box');
+      const chips = box.querySelectorAll('.compose-chip');
+      chips.forEach(c => c.remove());
+      const inp = document.getElementById('compose-to');
+      _composeRecipients.forEach(r => {
+        const chip = document.createElement('span');
+        chip.className = 'compose-chip';
+        chip.style.cssText = 'background:#ddd6fe;color:#5b21b6;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:3px;white-space:nowrap';
+        chip.innerHTML = `@${r} <span onclick="removeComposeRecipient('${r}')" style="cursor:pointer;font-size:12px;line-height:1">&#x2715;</span>`;
+        box.insertBefore(chip, inp);
+      });
+    }
+
+    function removeComposeRecipient(username) {
+      _composeRecipients = _composeRecipients.filter(r => r !== username);
+      _renderComposeRecipients();
+    }
+
+    function addComposeRecipient(username) {
+      if (!_composeRecipients.includes(username)) {
+        _composeRecipients.push(username);
+        _renderComposeRecipients();
+      }
+      document.getElementById('compose-to').value = '';
+      document.getElementById('compose-to-suggestions').style.display = 'none';
+    }
+
+    function composeSearchRecipient(q) {
+      const box = document.getElementById('compose-to-suggestions');
+      if (!q || q.length < 1) { box.style.display = 'none'; return; }
+      const ql = q.toLowerCase().replace(/^@/, '');
+      const matches = _gchatUsers.filter(u =>
+        !_composeRecipients.includes(u.username) &&
+        (u.username.toLowerCase().includes(ql) || (u.name||'').toLowerCase().includes(ql))
+      );
+      if (matches.length === 0) { box.style.display = 'none'; return; }
+      box.innerHTML = matches.slice(0, 6).map(u =>
+        `<div style="padding:6px 12px;font-size:11px;cursor:pointer;border-bottom:1px solid #f3f0ff;display:flex;align-items:center;gap:6px" onclick="addComposeRecipient('${u.username}')">
+          <span style="width:6px;height:6px;border-radius:50%;background:#7c3aed;flex-shrink:0"></span>
+          <span style="font-weight:700;color:#5b21b6">@${u.username}</span>
+          <span style="color:#9ca3af;font-size:10px">${u.name||''}</span>
+        </div>`
+      ).join('');
+      box.style.display = '';
+    }
+
+    function composeToKeydown(e) {
+      if (e.key === 'Backspace' && !e.target.value && _composeRecipients.length > 0) {
+        _composeRecipients.pop();
+        _renderComposeRecipients();
       }
     }
 
-    function gchatAutocomplete(inp) {
-      const val = inp.value;
-      const cursorPos = inp.selectionStart;
-      const textBefore = val.substring(0, cursorPos);
-      const sugBox = document.getElementById('gchat-suggestions');
-
-      const atMatch = textBefore.match(/@(\w*)$/);
-      if (atMatch) {
-        const q = atMatch[1].toLowerCase();
-        const matches = _gchatUsers.filter(u => u.username.toLowerCase().includes(q) || (u.name||'').toLowerCase().includes(q));
-        if (matches.length > 0) {
-          sugBox.innerHTML = matches.slice(0, 8).map(u =>
-            `<div style="padding:6px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #f3f0ff" onmousedown="gchatInsert('@${u.username} ','@')">
-              <span style="font-weight:700;color:#5b21b6">@${u.username}</span> <span style="color:#9ca3af">${u.name||''}</span>
-            </div>`
-          ).join('');
-          sugBox.style.display = '';
-          return;
-        }
-      }
-
-      const hashMatch = textBefore.match(/#(\w*)$/);
-      if (hashMatch) {
-        const q = hashMatch[1].toLowerCase();
-        const offerMatches = (_serverOffers || []).filter(o =>
-          (o.client||'').toLowerCase().includes(q) ||
-          (o.phone||'').toLowerCase().includes(q) ||
-          (o.email||'').toLowerCase().includes(q) ||
-          (o.num||'').toLowerCase().includes(q) ||
-          (o.product_codes || []).some(c => c.toLowerCase().includes(q))
-        );
-        if (offerMatches.length > 0) {
-          sugBox.innerHTML = offerMatches.slice(0, 8).map(o =>
-            `<div style="padding:6px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #f3f0ff" onmousedown="gchatInsert('#${o.num} ','#')">
-              <span style="font-weight:700;color:#92400e">#${o.num}</span> <span style="color:#9ca3af">${o.client||''}</span>
-            </div>`
-          ).join('');
-          sugBox.style.display = '';
-          return;
-        }
-      }
-
-      sugBox.style.display = 'none';
-    }
-
-    function gchatInsert(text, prefix) {
-      const inp = document.getElementById('gchat-input');
-      const cursorPos = inp.selectionStart;
-      const val = inp.value;
-      const textBefore = val.substring(0, cursorPos);
-      const textAfter = val.substring(cursorPos);
-      const regex = prefix === '@' ? /@\w*$/ : /#\w*$/;
-      const cleaned = textBefore.replace(regex, '');
-      inp.value = cleaned + text + textAfter;
-      inp.focus();
-      const newPos = cleaned.length + text.length;
-      inp.setSelectionRange(newPos, newPos);
-      document.getElementById('gchat-suggestions').style.display = 'none';
-    }
-
-    // ── Chat search bar (search offers & users to tag) ──
-    function gchatSearchTag(q) {
-      const box = document.getElementById('gchat-search-results');
-      if (!q || q.length < 2) { box.style.display = 'none'; box.innerHTML = ''; return; }
-      const ql = q.toLowerCase();
-      let html = '';
-
-      // Search users
-      const userMatches = _gchatUsers.filter(u => u.username.toLowerCase().includes(ql) || (u.name||'').toLowerCase().includes(ql));
-      if (userMatches.length > 0) {
-        html += '<div style="padding:4px 12px;font-size:9px;font-weight:800;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;background:#f9fafb">Utilizatori</div>';
-        userMatches.slice(0, 5).forEach(u => {
-          html += `<div style="padding:6px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #f3f0ff;display:flex;align-items:center;gap:6px" onclick="gchatInsertFromSearch('@${u.username} ')">
-            <span style="width:8px;height:8px;border-radius:50%;background:#7c3aed;flex-shrink:0"></span>
-            <span style="font-weight:700;color:#5b21b6">@${u.username}</span>
-            <span style="color:#9ca3af;font-size:11px">${u.name||''}</span>
-          </div>`;
-        });
-      }
-
-      // Search offers (same rules as offers section search)
-      const offerMatches = (_serverOffers || []).filter(o =>
+    function composeSearchOffer(q) {
+      const box = document.getElementById('compose-offer-suggestions');
+      if (!q || q.length < 2) { box.style.display = 'none'; return; }
+      const ql = q.toLowerCase().replace(/^#/, '');
+      const matches = (_serverOffers || []).filter(o =>
         (o.client||'').toLowerCase().includes(ql) ||
         (o.phone||'').toLowerCase().includes(ql) ||
         (o.email||'').toLowerCase().includes(ql) ||
         (o.num||'').toLowerCase().includes(ql) ||
         (o.product_codes || []).some(c => c.toLowerCase().includes(ql))
       );
-      if (offerMatches.length > 0) {
-        html += '<div style="padding:4px 12px;font-size:9px;font-weight:800;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;background:#f9fafb">Oferte</div>';
-        offerMatches.slice(0, 8).forEach(o => {
-          const total = o.total ? formatPrice(o.total) : '';
-          html += `<div style="padding:6px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #f3f0ff;display:flex;align-items:center;gap:6px" onclick="gchatInsertFromSearch('#${o.num} ')">
-            <span style="width:8px;height:8px;border-radius:50%;background:#d97706;flex-shrink:0"></span>
-            <span style="font-weight:700;color:#92400e">#${o.num}</span>
-            <span style="color:#6b7280;font-size:11px">${o.client||'—'}</span>
-            <span style="color:#9ca3af;font-size:10px;margin-left:auto">${total}</span>
-          </div>`;
-        });
-      }
-
-      if (!html) {
-        html = '<div style="padding:12px;text-align:center;color:#9ca3af;font-size:11px">Niciun rezultat</div>';
-      }
-      box.innerHTML = html;
+      if (matches.length === 0) { box.style.display = 'none'; return; }
+      box.innerHTML = matches.slice(0, 6).map(o =>
+        `<div style="padding:6px 12px;font-size:11px;cursor:pointer;border-bottom:1px solid #f3f0ff;display:flex;align-items:center;gap:6px" onclick="selectComposeOffer('${o.num}')">
+          <span style="font-weight:700;color:#92400e">#${o.num}</span>
+          <span style="color:#6b7280;font-size:10px">${o.client||'—'}</span>
+          <span style="color:#9ca3af;font-size:9px;margin-left:auto">${o.total ? formatPrice(o.total) : ''}</span>
+        </div>`
+      ).join('');
       box.style.display = '';
     }
 
-    function gchatInsertFromSearch(tag) {
-      const inp = document.getElementById('gchat-input');
-      inp.value = (inp.value ? inp.value + ' ' : '') + tag;
-      inp.focus();
-      document.getElementById('gchat-search').value = '';
-      document.getElementById('gchat-search-results').style.display = 'none';
+    function selectComposeOffer(num) {
+      _composeOfferRef = num;
+      document.getElementById('compose-offer').value = '';
+      document.getElementById('compose-offer-suggestions').style.display = 'none';
+      document.getElementById('compose-offer-tag').innerHTML = `<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600">#${num} <span onclick="_composeOfferRef=null;this.parentElement.parentElement.style.display='none'" style="cursor:pointer;margin-left:4px">&#x2715;</span></span>`;
+      document.getElementById('compose-offer-tag').style.display = '';
+    }
+
+    async function sendCompose() {
+      const text = (document.getElementById('compose-text').value || '').trim();
+      const status = document.getElementById('compose-status');
+      if (!text) { status.textContent = 'Scrieti un mesaj.'; status.style.color = '#dc2626'; status.style.display = ''; return; }
+      status.textContent = 'Se trimite...'; status.style.color = '#6b7280'; status.style.display = '';
+      try {
+        const r = await fetch('/api/chat/send', {
+          method: 'POST',
+          headers: {...authHeaders(), 'Content-Type': 'application/json'},
+          body: JSON.stringify({text, recipients: _composeRecipients, offer_ref: _composeOfferRef})
+        });
+        if (!r.ok) { status.textContent = 'Eroare la trimitere.'; status.style.color = '#dc2626'; return; }
+        const d = await r.json();
+        _inboxMessages = d.messages || [];
+        status.textContent = 'Mesaj trimis!'; status.style.color = '#16a34a';
+        setTimeout(() => switchInboxTab('list'), 800);
+        renderInbox(_inboxMessages);
+      } catch(e) { status.textContent = 'Eroare de retea.'; status.style.color = '#dc2626'; }
     }
 
     function updateGchatBadge(count) {
@@ -6049,18 +6149,18 @@ else { setTimeout(_renderTotals, 100); }
       }
     }
 
-    // Poll general chat for new messages every 30s
+    // Poll inbox for new messages every 30s
     setInterval(async () => {
       const a = authLoad();
       if (!a || !a.token) return;
-      if (_gchatOpen) { loadGeneralChat(); return; }
+      if (_gchatOpen && _inboxTab === 'list') { loadInbox(); return; }
       try {
         const r = await fetch('/api/chat/get', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
         if (!r.ok) return;
         const d = await r.json();
-        const total = (d.messages || []).length;
-        const newMsgs = Math.max(0, total - _gchatLastCount);
-        updateGchatBadge(newMsgs);
+        _inboxMessages = d.messages || [];
+        const unread = _inboxMessages.filter(m => !m.is_read).length;
+        updateGchatBadge(unread);
       } catch(e) {}
     }, 30000);
 

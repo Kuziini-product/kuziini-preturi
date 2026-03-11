@@ -583,33 +583,84 @@ def delete_offer(oid, username, session):
     return None
 
 
-# ── General Chat ──────────────────────────────────────────────────────────
+# ── Inbox / General Chat ──────────────────────────────────────────────────
+# Message format:
+#   {id, sender, sender_name, recipients:[], offer_ref:str|null, text, ts, read_by:[]}
+# Redis key: inbox_messages (list of JSON messages, newest last)
 
-def get_general_chat(limit=100):
-    raw = _rc('LRANGE', 'general_chat', -limit, -1) or []
+def _inbox_msgs(limit=200):
+    raw = _rc('LRANGE', 'inbox_messages', -limit, -1) or []
     messages = []
     for m in raw:
         try: messages.append(json.loads(m))
         except: pass
-    authors = list({m['username'] for m in messages if m.get('username')})
+    authors = list({m['sender'] for m in messages if m.get('sender')})
     color_map = _user_color_map(authors)
     for m in messages:
-        m['color'] = color_map.get(m.get('username', ''), '#7c3aed')
+        m['color'] = color_map.get(m.get('sender', ''), '#7c3aed')
     return messages
 
 
-def add_general_chat(username, name, text):
+def get_inbox(username, limit=200):
+    """Get messages where user is sender or recipient (or broadcast)."""
+    msgs = _inbox_msgs(limit)
+    result = []
+    for m in msgs:
+        recips = m.get('recipients') or []
+        if m.get('sender') == username or username in recips or len(recips) == 0:
+            m['is_read'] = username in (m.get('read_by') or []) or m.get('sender') == username
+            result.append(m)
+    return result
+
+
+def add_inbox_message(sender, sender_name, text, recipients=None, offer_ref=None):
     import time as _t
-    msg = {'username': username, 'name': name, 'text': text, 'ts': int(_t.time())}
-    _rc('RPUSH', 'general_chat', json.dumps(msg, ensure_ascii=False))
-    _rc('LTRIM', 'general_chat', -200, -1)
-    return get_general_chat()
+    msg_id = f'msg-{int(_t.time()*1000)}-{secrets.token_hex(3)}'
+    msg = {
+        'id': msg_id,
+        'sender': sender,
+        'sender_name': sender_name,
+        'recipients': recipients or [],
+        'offer_ref': offer_ref or None,
+        'text': text,
+        'ts': int(_t.time()),
+        'read_by': [sender],
+    }
+    _rc('RPUSH', 'inbox_messages', json.dumps(msg, ensure_ascii=False))
+    _rc('LTRIM', 'inbox_messages', -500, -1)
+    return msg
+
+
+def mark_inbox_read(username, msg_ids):
+    """Mark specific messages as read by username."""
+    raw = _rc('LRANGE', 'inbox_messages', 0, -1) or []
+    ids_set = set(msg_ids)
+    for i, m_raw in enumerate(raw):
+        try:
+            m = json.loads(m_raw)
+            if m.get('id') in ids_set:
+                rb = m.get('read_by') or []
+                if username not in rb:
+                    rb.append(username)
+                    m['read_by'] = rb
+                    _rc('LSET', 'inbox_messages', i, json.dumps(m, ensure_ascii=False))
+        except:
+            pass
+
+
+# Legacy compat: keep get_general_chat for old clients during transition
+def get_general_chat(limit=100):
+    return _inbox_msgs(limit)
+
+
+def add_general_chat(username, name, text):
+    add_inbox_message(username, name, text)
+    return _inbox_msgs()
 
 
 def get_all_usernames():
     raw = _rc('HGETALL', 'users') or {}
     result = []
-    keys = list(raw.keys()) if isinstance(raw, dict) else raw
     if isinstance(raw, dict):
         for uname, data in raw.items():
             try:
