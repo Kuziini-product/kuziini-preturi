@@ -2341,8 +2341,10 @@
       <div id="report-detail"></div>
     </div>
 
-    <!-- ── General Chat Floating Panel ── -->
-    <div id="gchat-toggle" style="position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4c1d95);color:#fff;border:none;font-size:22px;cursor:grab;box-shadow:0 4px 20px rgba(124,58,237,0.35);z-index:8000;display:flex;align-items:center;justify-content:center;user-select:none;touch-action:none" title="Chat general">&#x1F4AC;<span id="gchat-badge" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border-radius:50%;min-width:18px;height:18px;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 1px 4px rgba(0,0,0,.3)">0</span></div>
+  </div><!-- /app-container -->
+
+  <!-- ── General Chat Floating Panel (outside app-container) ── -->
+  <div id="gchat-toggle" style="position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4c1d95);color:#fff;border:none;font-size:22px;cursor:grab;box-shadow:0 4px 20px rgba(124,58,237,0.35);z-index:8000;display:none;align-items:center;justify-content:center;user-select:none;touch-action:none" title="Mesaje">&#x1F4E8;<span id="gchat-badge" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border-radius:50%;min-width:18px;height:18px;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 1px 4px rgba(0,0,0,.3)">0</span></div>
 
     <div id="gchat-panel" style="display:none;position:fixed;bottom:24px;right:24px;width:400px;max-height:580px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(124,58,237,0.22);z-index:8100;flex-direction:column;overflow:hidden;border:1.5px solid #ede9fe">
       <div id="gchat-header" style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px 8px;background:linear-gradient(135deg,#1e1b4b,#4c1d95);flex-shrink:0;cursor:grab;user-select:none">
@@ -2386,8 +2388,6 @@
         </div>
       </div>
     </div>
-
-  </div><!-- /app-container -->
 
   <script>
     // ── Helpers ──────────────────────────────────────────────────────────
