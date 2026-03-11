@@ -4160,11 +4160,11 @@ else { setTimeout(_renderTotals, 100); }
         const ownerTag = showShare ? '' : `<span style="font-size:9px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;padding:1px 6px;border-radius:4px;margin-left:4px">de la: ${o.owner_id}</span>`;
         const isShared = (o.shared_with || []).length > 0;
         const chatTotal = o.chat_count || 0;
-        const chatNew = isShared ? _chatUnread(o.id, chatTotal) : 0;
+        const chatNew = _chatUnread(o.id, chatTotal);
         const chatBadge = chatNew > 0
           ? `<span style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;pointer-events:none">${chatNew}</span>`
-          : (chatTotal > 0 ? `<span style="position:absolute;top:-6px;right:-6px;background:#9ca3af;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;pointer-events:none">${chatTotal}</span>` : '');
-        const chatBtn = isShared
+          : '';
+        const chatBtn = (isShared || chatTotal > 0)
           ? `<span style="position:relative;display:inline-block"><button class="offer-chat-btn" onclick="openChatModal('${o.id}','${o.num}')" title="Chat">&#x1F4AC;</button>${chatBadge}</span>`
           : '';
         rows += `<tr>
