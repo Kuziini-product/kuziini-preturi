@@ -5960,6 +5960,33 @@ else { setTimeout(_renderTotals, 100); }
       } catch(e) {}
     }
 
+    // ── Thread grouping ──
+    function _buildThreads(msgs) {
+      // Group by thread key: offer_ref if present, or sorted participant pair for DMs
+      const threads = {};
+      const order = [];
+      msgs.forEach(m => {
+        let key;
+        if (m.offer_ref) {
+          key = 'offer:' + m.offer_ref;
+        } else {
+          // Group by participant set (sender + recipients sorted)
+          const parts = [m.sender, ...(m.recipients||[])].filter(Boolean);
+          const unique = [...new Set(parts)].sort();
+          key = unique.length > 0 ? 'dm:' + unique.join(',') : 'broadcast:' + m.id;
+        }
+        if (!threads[key]) { threads[key] = []; order.push(key); }
+        threads[key].push(m);
+      });
+      // Sort threads by latest message timestamp (newest first)
+      order.sort((a, b) => {
+        const latestA = threads[a][threads[a].length - 1].ts || 0;
+        const latestB = threads[b][threads[b].length - 1].ts || 0;
+        return latestB - latestA;
+      });
+      return order.map(k => ({key: k, messages: threads[k]}));
+    }
+
     function renderInbox(msgs, filter) {
       const box = document.getElementById('inbox-messages');
       const me = currentUsername();
@@ -5977,31 +6004,51 @@ else { setTimeout(_renderTotals, 100); }
         box.innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:12px;padding:30px 0">Niciun mesaj.</div>';
         return;
       }
-      // Show newest first
-      const sorted = [...filtered].reverse();
-      box.innerHTML = sorted.map(m => {
-        const isMine = m.sender === me;
-        const isUnread = !m.is_read;
-        const time = new Date(m.ts * 1000);
+      const threads = _buildThreads(filtered);
+      box.innerHTML = threads.map(t => {
+        const last = t.messages[t.messages.length - 1];
+        const first = t.messages[0];
+        const unreadCount = t.messages.filter(m => !m.is_read).length;
+        const totalCount = t.messages.length;
+        const isMine = last.sender === me;
+        const time = new Date(last.ts * 1000);
         const timeStr = time.toLocaleString('ro-RO', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-        const senderDisplay = isMine ? 'Tu' : (m.sender_name || m.sender);
-        const recipStr = (m.recipients||[]).length > 0
-          ? (m.recipients||[]).map(r => '@' + r).join(', ')
-          : 'Toti';
-        const preview = (m.text||'').substring(0, 80) + ((m.text||'').length > 80 ? '...' : '');
-        const offerTag = m.offer_ref
-          ? `<span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openSavedOffer('${m.offer_ref}')">#${m.offer_ref}</span>`
+        // Thread title
+        let title;
+        if (last.offer_ref) {
+          title = '#' + last.offer_ref;
+        } else {
+          const participants = new Set();
+          t.messages.forEach(m => { participants.add(m.sender); (m.recipients||[]).forEach(r => participants.add(r)); });
+          participants.delete(me);
+          title = participants.size > 0 ? [...participants].map(p => '@' + p).join(', ') : 'Broadcast';
+        }
+        const senders = [...new Set(t.messages.map(m => m.sender_name || m.sender))];
+        const senderStr = senders.length > 2 ? senders.slice(0,2).join(', ') + ' +' + (senders.length-2) : senders.join(', ');
+        const preview = (last.text||'').substring(0, 80) + ((last.text||'').length > 80 ? '...' : '');
+        const hasUnread = unreadCount > 0;
+        const offerTag = last.offer_ref
+          ? `<span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openSavedOffer('${last.offer_ref}')">#${last.offer_ref}</span>`
           : '';
-        const unreadDot = isUnread ? '<span style="width:8px;height:8px;border-radius:50%;background:#7c3aed;flex-shrink:0"></span>' : '<span style="width:8px;flex-shrink:0"></span>';
-        return `<div onclick="openInboxMessage('${m.id}')" style="display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid #f3f0ff;cursor:pointer;background:${isUnread ? '#f5f3ff' : '#fff'};transition:background .15s;align-items:flex-start" onmouseenter="this.style.background='#ede9fe'" onmouseleave="this.style.background='${isUnread ? '#f5f3ff' : '#fff'}'">
-          ${unreadDot}
+        const unreadBadge = unreadCount > 0
+          ? `<span style="background:#7c3aed;color:#fff;border-radius:8px;padding:0 5px;font-size:9px;font-weight:800;flex-shrink:0">${unreadCount}</span>`
+          : '';
+        const countBadge = totalCount > 1
+          ? `<span style="background:#e0d8f8;color:#5b21b6;border-radius:8px;padding:0 5px;font-size:9px;font-weight:700;flex-shrink:0">${totalCount}</span>`
+          : '';
+        const threadKey = encodeURIComponent(t.key);
+        return `<div onclick="openThread('${threadKey}')" style="display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid #f3f0ff;cursor:pointer;background:${hasUnread ? '#f5f3ff' : '#fff'};transition:background .15s;align-items:flex-start" onmouseenter="this.style.background='#ede9fe'" onmouseleave="this.style.background='${hasUnread ? '#f5f3ff' : '#fff'}'">
+          <div style="width:8px;padding-top:4px;flex-shrink:0">${hasUnread ? '<span style="display:block;width:8px;height:8px;border-radius:50%;background:#7c3aed"></span>' : ''}</div>
           <div style="flex:1;min-width:0">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
-              <span style="font-size:11px;font-weight:${isUnread?'800':'600'};color:${isMine ? '#7c3aed' : (m.color||'#1e1b4b')};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${senderDisplay}</span>
+              <div style="display:flex;align-items:center;gap:4px;min-width:0;overflow:hidden">
+                <span style="font-size:11px;font-weight:${hasUnread?'800':'700'};color:#1e1b4b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${_inboxEscape(title)}</span>
+                ${offerTag} ${countBadge} ${unreadBadge}
+              </div>
               <span style="font-size:9px;color:#9ca3af;white-space:nowrap;flex-shrink:0">${timeStr}</span>
             </div>
-            <div style="font-size:10px;color:#6b7280;margin:1px 0">Catre: ${recipStr} ${offerTag}</div>
-            <div style="font-size:11px;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;${isUnread?'font-weight:600':''}"><span style="opacity:.85">${_inboxEscape(preview)}</span></div>
+            <div style="font-size:10px;color:#6b7280;margin:1px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${_inboxEscape(senderStr)}</div>
+            <div style="font-size:11px;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;${hasUnread?'font-weight:600':''}"><span style="opacity:.85">${_inboxEscape(preview)}</span></div>
           </div>
         </div>`;
       }).join('');
@@ -6018,52 +6065,105 @@ else { setTimeout(_renderTotals, 100); }
       return t;
     }
 
-    function openInboxMessage(msgId) {
-      const m = _inboxMessages.find(x => x.id === msgId);
-      if (!m) return;
+    function openThread(encodedKey) {
+      const key = decodeURIComponent(encodedKey);
+      const threads = _buildThreads(_inboxMessages);
+      const thread = threads.find(t => t.key === key);
+      if (!thread) return;
       const me = currentUsername();
-      // Mark as read
-      if (!m.is_read) {
-        m.is_read = true;
-        const readBody = {ids: [msgId]};
-        if (m.source === 'offer_chat' && m.offer_ref) readBody.offer_id = m.offer_ref;
+      const box = document.getElementById('inbox-messages');
+      const exp = _gchatExpanded;
+
+      // Mark all unread in this thread as read
+      const unreadIds = [];
+      const offerIds = new Set();
+      thread.messages.forEach(m => {
+        if (!m.is_read) {
+          m.is_read = true;
+          unreadIds.push(m.id);
+          if (m.source === 'offer_chat' && m.offer_ref) offerIds.add(m.offer_ref);
+        }
+      });
+      if (unreadIds.length > 0) {
+        const readBody = {ids: unreadIds};
+        if (offerIds.size > 0) readBody.offer_id = [...offerIds][0];
         fetch('/api/chat/read', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify(readBody)}).catch(()=>{});
         updateGchatBadge(_inboxMessages.filter(x => !x.is_read).length);
         const unreadTab = document.getElementById('inbox-unread-tab');
         const unreadCount = _inboxMessages.filter(x => !x.is_read).length;
         if (unreadTab) { unreadTab.textContent = unreadCount; unreadTab.style.display = unreadCount > 0 ? 'inline' : 'none'; }
       }
-      const box = document.getElementById('inbox-messages');
-      const isMine = m.sender === me;
-      const time = new Date(m.ts * 1000);
-      const timeStr = time.toLocaleString('ro-RO', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-      const recipStr = (m.recipients||[]).length > 0
-        ? (m.recipients||[]).map(r => '<span style="background:#ddd6fe;color:#5b21b6;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600">@' + r + '</span>').join(' ')
-        : '<span style="color:#9ca3af;font-size:10px">Toti utilizatorii</span>';
-      const offerBtn = m.offer_ref
-        ? `<div style="margin-top:8px"><button onclick="openSavedOffer('${m.offer_ref}')" style="background:#fef3c7;color:#92400e;border:1.5px solid #fcd34d;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer">&#x1F4C4; Deschide oferta #${m.offer_ref}</button></div>`
+
+      // Thread header
+      const first = thread.messages[0];
+      const last = thread.messages[thread.messages.length - 1];
+      let threadTitle;
+      if (first.offer_ref) {
+        threadTitle = `<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:6px;font-weight:700;cursor:pointer" onclick="openSavedOffer('${first.offer_ref}')">#${first.offer_ref}</span>`;
+      } else {
+        const participants = new Set();
+        thread.messages.forEach(m => { participants.add(m.sender); (m.recipients||[]).forEach(r => participants.add(r)); });
+        participants.delete(me);
+        threadTitle = participants.size > 0 ? [...participants].map(p => '<span style="background:#ddd6fe;color:#5b21b6;padding:1px 6px;border-radius:4px;font-weight:600">@' + p + '</span>').join(' ') : 'Broadcast';
+      }
+
+      // Render cascading messages
+      const msgsHtml = thread.messages.map((m, idx) => {
+        const isMine = m.sender === me;
+        const time = new Date(m.ts * 1000);
+        const timeStr = time.toLocaleString('ro-RO', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+        const isFirst = idx === 0;
+        const indent = isFirst ? 0 : 16;
+        const bg = isMine ? '#ede9fe' : '#f3f4f6';
+        const borderL = isFirst ? '' : `border-left:3px solid ${isMine ? '#c4b5fd' : '#d1d5db'};`;
+        return `<div style="margin-left:${indent}px;margin-top:${isFirst ? 0 : 6}px;${borderL}padding:${exp?'10px 14px':'8px 12px'};background:${bg};border-radius:${isFirst ? '12px' : '0 12px 12px 0'}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+            <span style="font-size:${exp?'12px':'10px'};font-weight:700;color:${m.color||'#7c3aed'}">${isMine ? 'Tu' : (m.sender_name||m.sender)}</span>
+            <span style="font-size:${exp?'10px':'8px'};color:#9ca3af">${timeStr}</span>
+          </div>
+          <div style="font-size:${exp?'14px':'12px'};color:#1e1b4b;line-height:1.5;word-break:break-word">${_gchatFormatText(m.text)}</div>
+        </div>`;
+      }).join('');
+
+      // Offer button
+      const offerRef = first.offer_ref || last.offer_ref;
+      const offerBtn = offerRef
+        ? `<div style="margin-top:10px"><button onclick="openSavedOffer('${offerRef}')" style="background:#fef3c7;color:#92400e;border:1.5px solid #fcd34d;border-radius:8px;padding:${exp?'8px 16px':'6px 14px'};font-size:${exp?'12px':'11px'};font-weight:700;cursor:pointer">&#x1F4C4; Deschide oferta #${offerRef}</button></div>`
         : '';
-      const replyBtn = !isMine
-        ? `<button onclick="replyToMessage('${m.sender}','${m.offer_ref||''}')" style="background:#ede9fe;color:#7c3aed;border:none;border-radius:6px;padding:5px 12px;font-size:10px;font-weight:700;cursor:pointer;margin-top:6px">&#8617; Raspunde</button>`
+
+      // Reply button
+      const lastSender = last.sender !== me ? last.sender : (first.sender !== me ? first.sender : null);
+      const replyBtn = lastSender
+        ? `<button onclick="replyToMessage('${lastSender}','${offerRef||''}')" style="background:#ede9fe;color:#7c3aed;border:none;border-radius:6px;padding:${exp?'7px 16px':'5px 12px'};font-size:${exp?'12px':'10px'};font-weight:700;cursor:pointer;margin-top:8px">&#8617; Raspunde</button>`
         : '';
-      const exp = _gchatExpanded;
+
       box.innerHTML = `
-        <div style="padding:${exp?'20px':'14px'}">
+        <div style="padding:${exp?'18px':'12px'}">
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:${exp?'14px':'10px'}">
             <button onclick="loadInbox();renderInbox(_inboxMessages,document.getElementById('inbox-filter').value)" style="background:none;border:none;font-size:${exp?'20px':'16px'};cursor:pointer;color:#7c3aed;padding:0">&#8592;</button>
-            <span style="font-size:${exp?'16px':'13px'};font-weight:800;color:#1e1b4b">Mesaj</span>
+            <span style="font-size:${exp?'15px':'12px'};font-weight:800;color:#1e1b4b">Conversatie</span>
+            <span style="font-size:${exp?'13px':'11px'}">${threadTitle}</span>
+            <span style="font-size:${exp?'10px':'9px'};color:#9ca3af;margin-left:auto">${thread.messages.length} mesaj${thread.messages.length!==1?'e':''}</span>
           </div>
-          <div style="background:#f9fafb;border-radius:${exp?'14px':'10px'};padding:${exp?'18px 20px':'12px 14px'};border:1px solid #ede9fe">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:${exp?'10px':'6px'}">
-              <span style="font-size:${exp?'15px':'12px'};font-weight:700;color:${m.color||'#7c3aed'}">${isMine ? 'Tu' : (m.sender_name||m.sender)}</span>
-              <span style="font-size:${exp?'11px':'9px'};color:#9ca3af">${timeStr}</span>
-            </div>
-            <div style="font-size:${exp?'13px':'10px'};color:#6b7280;margin-bottom:${exp?'12px':'8px'}">Catre: ${recipStr}</div>
-            <div style="font-size:${exp?'15px':'12px'};color:#1e1b4b;line-height:${exp?'1.7':'1.5'};word-break:break-word">${_gchatFormatText(m.text)}</div>
-            ${offerBtn}
-            ${replyBtn}
-          </div>
+          ${msgsHtml}
+          ${offerBtn}
+          ${replyBtn}
         </div>`;
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // Legacy compat
+    function openInboxMessage(msgId) {
+      const m = _inboxMessages.find(x => x.id === msgId);
+      if (!m) return;
+      // Find the thread this message belongs to and open it
+      const threads = _buildThreads(_inboxMessages);
+      for (const t of threads) {
+        if (t.messages.some(x => x.id === msgId)) {
+          openThread(encodeURIComponent(t.key));
+          return;
+        }
+      }
     }
 
     function replyToMessage(sender, offerRef) {
