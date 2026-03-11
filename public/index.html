@@ -2233,12 +2233,15 @@
             <label style="font-size:10px;color:#6b7280;display:block;margin-bottom:2px">Cantitate</label>
             <input id="cp-qty" type="number" min="1" value="1" style="width:100%;padding:6px 10px;border:1.5px solid #d1d5db;border-radius:6px;font-size:12px">
           </div>
-          <div style="flex:1;min-width:140px">
-            <label style="font-size:10px;color:#6b7280;display:block;margin-bottom:2px">Imagine (optional)</label>
-            <input id="cp-image" type="file" accept="image/*" style="font-size:11px" onchange="previewCustomImage(this)">
-          </div>
-          <div id="cp-img-preview" style="display:none;width:50px;height:50px;border-radius:6px;overflow:hidden;border:1px solid #e0d8f8">
-            <img id="cp-img-tag" style="width:100%;height:100%;object-fit:contain" />
+          <div style="flex:1.2;min-width:160px">
+            <label style="font-size:10px;color:#6b7280;display:block;margin-bottom:2px">Imagine (fisier, screenshot sau drag&amp;drop)</label>
+            <div id="cp-dropzone" onclick="document.getElementById('cp-image').click()" style="border:2px dashed #c4b5fd;border-radius:8px;padding:8px 10px;text-align:center;cursor:pointer;background:#faf8ff;min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;transition:border-color .2s,background .2s">
+              <div id="cp-img-preview" style="display:none;width:48px;height:48px;border-radius:6px;overflow:hidden;border:1px solid #e0d8f8;flex-shrink:0">
+                <img id="cp-img-tag" style="width:100%;height:100%;object-fit:contain" />
+              </div>
+              <span id="cp-dropzone-text" style="font-size:10px;color:#9ca3af">&#x1F4F7; Click, paste (Ctrl+V) sau trage o imagine</span>
+            </div>
+            <input id="cp-image" type="file" accept="image/*" style="display:none" onchange="previewCustomImage(this)">
           </div>
           <button onclick="addCustomProduct()" style="background:#7c3aed;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Adauga</button>
         </div>
@@ -2339,14 +2342,18 @@
     </div>
 
     <!-- ── General Chat Floating Panel ── -->
-    <button id="gchat-toggle" onclick="toggleGeneralChat()" style="position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4c1d95);color:#fff;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.35);z-index:8000;display:flex;align-items:center;justify-content:center;transition:transform .2s" title="Chat general">&#x1F4AC;<span id="gchat-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border-radius:50%;min-width:18px;height:18px;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 1px 4px rgba(0,0,0,.3)">0</span></button>
+    <div id="gchat-toggle" style="position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4c1d95);color:#fff;border:none;font-size:22px;cursor:grab;box-shadow:0 4px 20px rgba(124,58,237,0.35);z-index:8000;display:flex;align-items:center;justify-content:center;user-select:none;touch-action:none" title="Chat general">&#x1F4AC;<span id="gchat-badge" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border-radius:50%;min-width:18px;height:18px;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 1px 4px rgba(0,0,0,.3)">0</span></div>
 
-    <div id="gchat-panel" style="display:none;position:fixed;bottom:24px;right:24px;width:380px;max-height:520px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(124,58,237,0.22);z-index:8100;display:none;flex-direction:column;overflow:hidden;border:1.5px solid #ede9fe">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px 10px;background:linear-gradient(135deg,#1e1b4b,#4c1d95);flex-shrink:0">
+    <div id="gchat-panel" style="display:none;position:fixed;bottom:24px;right:24px;width:380px;max-height:560px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(124,58,237,0.22);z-index:8100;flex-direction:column;overflow:hidden;border:1.5px solid #ede9fe">
+      <div id="gchat-header" style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px 10px;background:linear-gradient(135deg,#1e1b4b,#4c1d95);flex-shrink:0;cursor:grab;user-select:none">
         <span style="font-size:13px;font-weight:800;color:#fff;letter-spacing:.03em">&#x1F4AC; Chat general</span>
         <button onclick="toggleGeneralChat()" style="background:none;border:none;font-size:18px;color:rgba(255,255,255,0.7);cursor:pointer;line-height:1">&#x2715;</button>
       </div>
-      <div id="gchat-messages" style="flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-height:200px;max-height:360px;background:#faf8ff"></div>
+      <div style="padding:6px 14px 4px;border-bottom:1px solid #f3f0ff;flex-shrink:0;background:#fff;display:flex;gap:6px">
+        <input id="gchat-search" placeholder="&#x1F50D; Cauta oferta sau utilizator..." style="flex:1;padding:6px 10px;border-radius:8px;border:1.5px solid #e0d8f8;font-size:11px;color:#1e1b4b;outline:none;background:#faf8ff" oninput="gchatSearchTag(this.value)">
+      </div>
+      <div id="gchat-search-results" style="display:none;max-height:140px;overflow-y:auto;border-bottom:1px solid #f3f0ff;flex-shrink:0;background:#fff"></div>
+      <div id="gchat-messages" style="flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-height:200px;max-height:320px;background:#faf8ff"></div>
       <div id="gchat-suggestions" style="display:none;position:absolute;bottom:60px;left:14px;right:14px;background:#fff;border:1.5px solid #e0d8f8;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:150px;overflow-y:auto;z-index:10"></div>
       <div style="padding:10px 14px;border-top:1px solid #ede9fe;display:flex;gap:6px;flex-shrink:0;background:#fff">
         <input id="gchat-input" placeholder="Scrie... @user #oferta" style="flex:1;padding:8px 12px;border-radius:10px;border:1.5px solid #e0d8f8;font-size:12px;color:#1e1b4b;outline:none" onkeydown="gchatKeydown(event)" oninput="gchatAutocomplete(this)">
@@ -2988,22 +2995,68 @@
       form.style.display = form.style.display === 'none' ? '' : 'none';
     }
 
-    function previewCustomImage(input) {
+    function _setCustomImage(dataUrl) {
+      _cpImageData = dataUrl;
       const preview = document.getElementById('cp-img-preview');
       const img = document.getElementById('cp-img-tag');
+      const text = document.getElementById('cp-dropzone-text');
+      img.src = dataUrl;
+      preview.style.display = '';
+      if (text) text.style.display = 'none';
+    }
+
+    function _clearCustomImage() {
+      _cpImageData = null;
+      document.getElementById('cp-img-preview').style.display = 'none';
+      const text = document.getElementById('cp-dropzone-text');
+      if (text) text.style.display = '';
+    }
+
+    function previewCustomImage(input) {
       if (input.files && input.files[0]) {
         const reader = new FileReader();
-        reader.onload = e => {
-          _cpImageData = e.target.result;
-          img.src = _cpImageData;
-          preview.style.display = '';
-        };
+        reader.onload = e => _setCustomImage(e.target.result);
         reader.readAsDataURL(input.files[0]);
       } else {
-        _cpImageData = null;
-        preview.style.display = 'none';
+        _clearCustomImage();
       }
     }
+
+    // Paste screenshot support (Ctrl+V anywhere on page when form is visible)
+    document.addEventListener('paste', e => {
+      const form = document.getElementById('custom-product-form');
+      if (!form || form.style.display === 'none') return;
+      const items = e.clipboardData && e.clipboardData.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.startsWith('image/')) {
+          e.preventDefault();
+          const file = items[i].getAsFile();
+          const reader = new FileReader();
+          reader.onload = ev => _setCustomImage(ev.target.result);
+          reader.readAsDataURL(file);
+          return;
+        }
+      }
+    });
+
+    // Drag & drop support on dropzone
+    (function() {
+      const dz = document.getElementById('cp-dropzone');
+      if (!dz) return;
+      dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor = '#7c3aed'; dz.style.background = '#ede9fe'; });
+      dz.addEventListener('dragleave', e => { dz.style.borderColor = '#c4b5fd'; dz.style.background = '#faf8ff'; });
+      dz.addEventListener('drop', e => {
+        e.preventDefault();
+        dz.style.borderColor = '#c4b5fd'; dz.style.background = '#faf8ff';
+        const file = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = ev => _setCustomImage(ev.target.result);
+          reader.readAsDataURL(file);
+        }
+      });
+    })();
 
     function addCustomProduct() {
       const code = (document.getElementById('cp-code').value || '').trim();
@@ -3033,8 +3086,7 @@
       document.getElementById('cp-price').value = '';
       document.getElementById('cp-qty').value = '1';
       document.getElementById('cp-image').value = '';
-      document.getElementById('cp-img-preview').style.display = 'none';
-      _cpImageData = null;
+      _clearCustomImage();
       document.getElementById('custom-product-form').style.display = 'none';
     }
 
@@ -5702,14 +5754,107 @@ else { setTimeout(_renderTotals, 100); }
     let _gchatOffers = [];
     let _gchatLastCount = parseInt(localStorage.getItem('gchat_seen') || '0');
 
+    // ── Draggable chat button ──
+    (function() {
+      const btn = document.getElementById('gchat-toggle');
+      if (!btn) return;
+      let isDragging = false, wasDragged = false, startX, startY, startLeft, startTop;
+
+      // Restore saved position
+      const saved = localStorage.getItem('gchat_pos');
+      if (saved) {
+        try {
+          const pos = JSON.parse(saved);
+          btn.style.right = 'auto'; btn.style.bottom = 'auto';
+          btn.style.left = Math.min(pos.x, window.innerWidth - 60) + 'px';
+          btn.style.top = Math.min(pos.y, window.innerHeight - 60) + 'px';
+        } catch(e) {}
+      }
+
+      function onStart(cx, cy) {
+        isDragging = true; wasDragged = false;
+        const rect = btn.getBoundingClientRect();
+        startX = cx; startY = cy;
+        startLeft = rect.left; startTop = rect.top;
+        btn.style.cursor = 'grabbing';
+        btn.style.transition = 'none';
+      }
+      function onMove(cx, cy) {
+        if (!isDragging) return;
+        const dx = cx - startX, dy = cy - startY;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) wasDragged = true;
+        let nx = startLeft + dx, ny = startTop + dy;
+        nx = Math.max(0, Math.min(nx, window.innerWidth - 56));
+        ny = Math.max(0, Math.min(ny, window.innerHeight - 56));
+        btn.style.right = 'auto'; btn.style.bottom = 'auto';
+        btn.style.left = nx + 'px'; btn.style.top = ny + 'px';
+      }
+      function onEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        btn.style.cursor = 'grab';
+        btn.style.transition = '';
+        const rect = btn.getBoundingClientRect();
+        localStorage.setItem('gchat_pos', JSON.stringify({x: rect.left, y: rect.top}));
+        if (!wasDragged) toggleGeneralChat();
+      }
+
+      // Mouse events
+      btn.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX, e.clientY); });
+      document.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
+      document.addEventListener('mouseup', onEnd);
+      // Touch events
+      btn.addEventListener('touchstart', e => { const t = e.touches[0]; onStart(t.clientX, t.clientY); }, {passive: true});
+      document.addEventListener('touchmove', e => { if (isDragging) { const t = e.touches[0]; onMove(t.clientX, t.clientY); } }, {passive: true});
+      document.addEventListener('touchend', onEnd);
+    })();
+
+    // ── Draggable chat panel (by header) ──
+    (function() {
+      const panel = document.getElementById('gchat-panel');
+      const hdr = document.getElementById('gchat-header');
+      if (!panel || !hdr) return;
+      let isDragging = false, startX, startY, startLeft, startTop;
+
+      function onStart(cx, cy) {
+        isDragging = true;
+        const rect = panel.getBoundingClientRect();
+        startX = cx; startY = cy;
+        startLeft = rect.left; startTop = rect.top;
+        hdr.style.cursor = 'grabbing';
+      }
+      function onMove(cx, cy) {
+        if (!isDragging) return;
+        let nx = startLeft + (cx - startX), ny = startTop + (cy - startY);
+        nx = Math.max(0, Math.min(nx, window.innerWidth - 200));
+        ny = Math.max(0, Math.min(ny, window.innerHeight - 100));
+        panel.style.right = 'auto'; panel.style.bottom = 'auto';
+        panel.style.left = nx + 'px'; panel.style.top = ny + 'px';
+      }
+      function onEnd() { isDragging = false; hdr.style.cursor = 'grab'; }
+
+      hdr.addEventListener('mousedown', e => { if (e.target.tagName === 'BUTTON') return; e.preventDefault(); onStart(e.clientX, e.clientY); });
+      document.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
+      document.addEventListener('mouseup', onEnd);
+      hdr.addEventListener('touchstart', e => { if (e.target.tagName === 'BUTTON') return; const t = e.touches[0]; onStart(t.clientX, t.clientY); }, {passive: true});
+      document.addEventListener('touchmove', e => { if (isDragging) { const t = e.touches[0]; onMove(t.clientX, t.clientY); } }, {passive: true});
+      document.addEventListener('touchend', onEnd);
+    })();
+
     function toggleGeneralChat() {
       _gchatOpen = !_gchatOpen;
       const panel = document.getElementById('gchat-panel');
       const btn = document.getElementById('gchat-toggle');
       if (_gchatOpen) {
+        // Position panel near the button
+        const btnRect = btn.getBoundingClientRect();
+        panel.style.right = 'auto'; panel.style.bottom = 'auto';
+        panel.style.left = Math.max(0, Math.min(btnRect.left - 330, window.innerWidth - 390)) + 'px';
+        panel.style.top = Math.max(0, btnRect.top - 530) + 'px';
         panel.style.display = 'flex';
         btn.style.display = 'none';
         loadGeneralChat();
+        setTimeout(() => document.getElementById('gchat-input').focus(), 200);
       } else {
         panel.style.display = 'none';
         btn.style.display = 'flex';
@@ -5724,7 +5869,6 @@ else { setTimeout(_renderTotals, 100); }
         _gchatUsers = d.users || [];
         _gchatOffers = _serverOffers || [];
         renderGchatMessages(d.messages || []);
-        // Mark as seen
         localStorage.setItem('gchat_seen', String((d.messages || []).length));
         _gchatLastCount = (d.messages || []).length;
         updateGchatBadge(0);
@@ -5752,11 +5896,8 @@ else { setTimeout(_renderTotals, 100); }
     }
 
     function _gchatFormatText(text) {
-      // Escape HTML
       let t = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      // Highlight @mentions
       t = t.replace(/@(\w+)/g, '<span style="background:#ddd6fe;color:#5b21b6;padding:0 4px;border-radius:4px;font-weight:600">@$1</span>');
-      // Highlight #offers
       t = t.replace(/#(KZ-[\w-]+)/g, '<span style="background:#fef3c7;color:#92400e;padding:0 4px;border-radius:4px;font-weight:600;cursor:pointer" onclick="openSavedOffer(\'$1\')">#$1</span>');
       return t;
     }
@@ -5790,7 +5931,6 @@ else { setTimeout(_renderTotals, 100); }
       const textBefore = val.substring(0, cursorPos);
       const sugBox = document.getElementById('gchat-suggestions');
 
-      // Check for @mention
       const atMatch = textBefore.match(/@(\w*)$/);
       if (atMatch) {
         const q = atMatch[1].toLowerCase();
@@ -5806,7 +5946,6 @@ else { setTimeout(_renderTotals, 100); }
         }
       }
 
-      // Check for #offer
       const hashMatch = textBefore.match(/#(\w*)$/);
       if (hashMatch) {
         const q = hashMatch[1].toLowerCase();
@@ -5833,7 +5972,6 @@ else { setTimeout(_renderTotals, 100); }
       const val = inp.value;
       const textBefore = val.substring(0, cursorPos);
       const textAfter = val.substring(cursorPos);
-      // Find the start of the @/# token
       const regex = prefix === '@' ? /@\w*$/ : /#\w*$/;
       const cleaned = textBefore.replace(regex, '');
       inp.value = cleaned + text + textAfter;
@@ -5841,6 +5979,59 @@ else { setTimeout(_renderTotals, 100); }
       const newPos = cleaned.length + text.length;
       inp.setSelectionRange(newPos, newPos);
       document.getElementById('gchat-suggestions').style.display = 'none';
+    }
+
+    // ── Chat search bar (search offers & users to tag) ──
+    function gchatSearchTag(q) {
+      const box = document.getElementById('gchat-search-results');
+      if (!q || q.length < 2) { box.style.display = 'none'; box.innerHTML = ''; return; }
+      const ql = q.toLowerCase();
+      let html = '';
+
+      // Search users
+      const userMatches = _gchatUsers.filter(u => u.username.toLowerCase().includes(ql) || (u.name||'').toLowerCase().includes(ql));
+      if (userMatches.length > 0) {
+        html += '<div style="padding:4px 12px;font-size:9px;font-weight:800;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;background:#f9fafb">Utilizatori</div>';
+        userMatches.slice(0, 5).forEach(u => {
+          html += `<div style="padding:6px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #f3f0ff;display:flex;align-items:center;gap:6px" onclick="gchatInsertFromSearch('@${u.username} ')">
+            <span style="width:8px;height:8px;border-radius:50%;background:#7c3aed;flex-shrink:0"></span>
+            <span style="font-weight:700;color:#5b21b6">@${u.username}</span>
+            <span style="color:#9ca3af;font-size:11px">${u.name||''}</span>
+          </div>`;
+        });
+      }
+
+      // Search offers
+      const offerMatches = (_serverOffers || []).filter(o =>
+        (o.num||'').toLowerCase().includes(ql) || (o.client||'').toLowerCase().includes(ql) ||
+        (o.phone||'').toLowerCase().includes(ql) || (o.email||'').toLowerCase().includes(ql)
+      );
+      if (offerMatches.length > 0) {
+        html += '<div style="padding:4px 12px;font-size:9px;font-weight:800;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;background:#f9fafb">Oferte</div>';
+        offerMatches.slice(0, 8).forEach(o => {
+          const total = o.total ? formatPrice(o.total) : '';
+          html += `<div style="padding:6px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #f3f0ff;display:flex;align-items:center;gap:6px" onclick="gchatInsertFromSearch('#${o.num} ')">
+            <span style="width:8px;height:8px;border-radius:50%;background:#d97706;flex-shrink:0"></span>
+            <span style="font-weight:700;color:#92400e">#${o.num}</span>
+            <span style="color:#6b7280;font-size:11px">${o.client||'—'}</span>
+            <span style="color:#9ca3af;font-size:10px;margin-left:auto">${total}</span>
+          </div>`;
+        });
+      }
+
+      if (!html) {
+        html = '<div style="padding:12px;text-align:center;color:#9ca3af;font-size:11px">Niciun rezultat</div>';
+      }
+      box.innerHTML = html;
+      box.style.display = '';
+    }
+
+    function gchatInsertFromSearch(tag) {
+      const inp = document.getElementById('gchat-input');
+      inp.value = (inp.value ? inp.value + ' ' : '') + tag;
+      inp.focus();
+      document.getElementById('gchat-search').value = '';
+      document.getElementById('gchat-search-results').style.display = 'none';
     }
 
     function updateGchatBadge(count) {
@@ -5853,6 +6044,8 @@ else { setTimeout(_renderTotals, 100); }
 
     // Poll general chat for new messages every 30s
     setInterval(async () => {
+      const a = authLoad();
+      if (!a || !a.token) return;
       if (_gchatOpen) { loadGeneralChat(); return; }
       try {
         const r = await fetch('/api/chat/get', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
