@@ -413,6 +413,7 @@ def _offer_summary(o):
         'date':           o.get('date', ''),
         'client':         o.get('client', ''),
         'phone':          o.get('phone', ''),
+        'email':          o.get('email', ''),
         'total':          o.get('total'),
         'discount':       o.get('discount', 0),
         'owner_id':       o.get('owner_id', ''),

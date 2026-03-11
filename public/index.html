@@ -3308,10 +3308,11 @@ tr:nth-child(even) { background:#faf5ff; }
     // ── Offer window builder ──────────────────────────────────────────────
     function _openOfferWindow(offerData, savedState) {
       // offerData: {num, date, ts, products[{code,category,kuziini_price,all_prices,image_url,qty,baseSellPrice}]}
-      // savedState: {client,phone,notes,discount} or null for new
+      // savedState: {client,phone,email,notes,discount} or null for new
 
       const initClient   = (savedState && savedState.client)   || '';
       const initPhone    = (savedState && savedState.phone)    || '';
+      const initEmail    = (savedState && savedState.email)    || '';
       const initNotes    = (savedState && savedState.notes)    || '';
       const initDiscount = (savedState && savedState.discount) || 0;
       const agentId      = currentUserId();
@@ -3526,12 +3527,16 @@ thead th.right { text-align: right; }
 
   <div class="client-section">
     <div class="client-field">
-      <span class="client-label">Client</span>
+      <span class="client-label">Client *</span>
       <input id="field-client" class="client-input" placeholder="Numele clientului..." value="${initClient.replace(/"/g,'&quot;')}" />
     </div>
     <div class="client-field">
-      <span class="client-label">Telefon / Email</span>
+      <span class="client-label">Telefon</span>
       <input id="field-phone" class="client-input" placeholder="07XX XXX XXX" value="${initPhone.replace(/"/g,'&quot;')}" />
+    </div>
+    <div class="client-field">
+      <span class="client-label">Email</span>
+      <input id="field-email" class="client-input" type="email" placeholder="client@exemplu.ro" value="${initEmail.replace(/"/g,'&quot;')}" />
     </div>
     <div class="client-field">
       <span class="client-label">Observatii</span>
@@ -3673,6 +3678,7 @@ function _getState() {
     id: _oData.num, num: _oData.num, date: _oData.date, ts: _oData.ts,
     client: (document.getElementById('field-client') || {}).value || '',
     phone:  (document.getElementById('field-phone')  || {}).value || '',
+    email:  (document.getElementById('field-email')  || {}).value || '',
     notes:  (document.getElementById('field-notes')  || {}).value || '',
     discount: _disc,
     products: _oData.products,
@@ -3717,14 +3723,19 @@ function _logAct(action, data) {
   } catch(e) {}
 }
 
-async function saveAndToast() {
+function _validateClientData() {
   const client = (document.getElementById('field-client') || {}).value || '';
-  const phone  = (document.getElementById('field-phone')  || {}).value || '';
-  if (!client.trim() && !phone.trim()) {
-    alert('Completati cel putin numele clientului sau telefonul pentru a salva oferta.');
+  if (!client.trim()) {
+    alert('Completati numele clientului pentru a putea salva, exporta sau printa oferta.');
     document.getElementById('field-client').focus();
-    return;
+    return false;
   }
+  return true;
+}
+
+async function saveAndToast() {
+  if (!_validateClientData()) return;
+  const client = (document.getElementById('field-client') || {}).value || '';
   if (await _saveToStorage()) {
     _logAct('offer_save', {offer_id: _oData.num, client: client.trim()});
     const t = document.getElementById('saved-toast');
@@ -3734,6 +3745,7 @@ async function saveAndToast() {
 }
 
 async function doPrint() {
+  if (!_validateClientData()) return;
   await _saveToStorage();
   _logAct('export_pdf', {offer_id: _oData.num});
   window.print();
@@ -3741,8 +3753,7 @@ async function doPrint() {
 
 async function closeOffer() {
   const client = (document.getElementById('field-client') || {}).value || '';
-  const phone  = (document.getElementById('field-phone')  || {}).value || '';
-  const hasClient = client.trim() || phone.trim();
+  const hasClient = client.trim();
   if (hasClient && confirm('Salvezi aceasta oferta in lista "Ofertele mele"?')) {
     await _saveToStorage();
   }
@@ -3750,6 +3761,7 @@ async function closeOffer() {
 }
 
 function exportExcel() {
+  if (!_validateClientData()) return;
   _saveToStorage();
   _logAct('export_excel', {offer_id: _oData.num});
   const state = _getState();
@@ -4138,7 +4150,7 @@ else { setTimeout(_renderTotals, 100); }
     function _offersTableHtml(items, me, showShare, showDelete) {
       if (items.length === 0) return '';
       const thead = '<table class="report-table"><thead><tr>'
-        + '<th>Nr. Oferta</th><th>Data</th><th>Client</th><th>Telefon/Email</th>'
+        + '<th>Nr. Oferta</th><th>Data</th><th>Client</th><th>Telefon</th><th>Email</th>'
         + '<th style="text-align:center">Buc.</th>'
         + '<th style="text-align:right">Total</th><th></th>'
         + '</tr></thead><tbody>';
@@ -4160,6 +4172,7 @@ else { setTimeout(_renderTotals, 100); }
           <td style="font-size:11px;color:#6b7280;white-space:nowrap">${o.date || ''}</td>
           <td style="font-size:12px;font-weight:600">${o.client || '—'}</td>
           <td style="font-size:11px;color:#6b7280">${o.phone || '—'}</td>
+          <td style="font-size:11px;color:#6b7280">${o.email || '—'}</td>
           <td style="text-align:center;font-size:12px">${o.products_qty || o.products_count || 0}</td>
           <td style="text-align:right;font-weight:700;white-space:nowrap">${o.total ? formatPrice(o.total) : '—'}</td>
           <td style="white-space:nowrap;display:flex;gap:4px;align-items:center;flex-wrap:wrap">
@@ -4181,6 +4194,7 @@ else { setTimeout(_renderTotals, 100); }
       const matches = o =>
         (o.client || '').toLowerCase().includes(q) ||
         (o.phone  || '').toLowerCase().includes(q) ||
+        (o.email  || '').toLowerCase().includes(q) ||
         (o.num    || '').toLowerCase().includes(q) ||
         (o.product_codes || []).some(c => c.toLowerCase().includes(q));
 
@@ -4375,7 +4389,7 @@ else { setTimeout(_renderTotals, 100); }
         const saved = d.offer;
         if (!saved || !saved.products) return;
         const offerData = {num: saved.num, date: saved.date, ts: saved.ts, products: saved.products};
-        const savedState = {client: saved.client||'', phone: saved.phone||'', notes: saved.notes||'', discount: saved.discount||0, num: saved.num, date: saved.date, ts: saved.ts};
+        const savedState = {client: saved.client||'', phone: saved.phone||'', email: saved.email||'', notes: saved.notes||'', discount: saved.discount||0, num: saved.num, date: saved.date, ts: saved.ts};
         _openOfferWindow(offerData, savedState);
       } catch(e) { alert('Eroare la deschiderea ofertei.'); }
     }
