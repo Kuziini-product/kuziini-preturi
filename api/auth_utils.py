@@ -454,6 +454,21 @@ def share_offer(oid, requester, session, target_username):
     _list_prepend(f'offers:shared:{target["username"]}', oid)
     return None
 
+def get_offer_chat(oid):
+    raw = _rc('LRANGE', f'offer_chat:{oid}', 0, -1) or []
+    messages = []
+    for m in raw:
+        try: messages.append(json.loads(m))
+        except: pass
+    return messages
+
+def add_offer_chat(oid, username, name, text):
+    import time as _t
+    msg = {'username': username, 'name': name, 'text': text, 'ts': int(_t.time())}
+    _rc('RPUSH', f'offer_chat:{oid}', json.dumps(msg, ensure_ascii=False))
+    _rc('LTRIM', f'offer_chat:{oid}', -50, -1)
+    return get_offer_chat(oid)
+
 def delete_offer(oid, username, session):
     o = _jget(f'offer:{oid}')
     if not o:

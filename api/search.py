@@ -313,8 +313,10 @@ class handler(BaseHTTPRequestHandler):
             session = self._require_auth()
             if not session:
                 return
+            user = auth_utils.get_user(session['username'])
+            name = user.get('name', session['username']) if user else session['username']
             self._json({'username': session['username'], 'role': session['role'],
-                        'user_id': session.get('user_id', ''),
+                        'name': name, 'user_id': session.get('user_id', ''),
                         'permissions': session.get('permissions', {})})
 
         # ── Offers ────────────────────────────────────────────────────────
@@ -492,6 +494,32 @@ class handler(BaseHTTPRequestHandler):
                 return
             report = auth_utils.get_activity_report()
             self._json(report)
+
+        elif path == '/api/offers/chat/get':
+            session = self._require_auth()
+            if not session: return
+            offer_id = (body.get('offer_id') or '').strip()
+            if not offer_id:
+                self._json({'error': 'offer_id obligatoriu'}, 400); return
+            o, err = auth_utils.get_offer_full(offer_id, session['username'], session)
+            if err:
+                self._json({'error': err}, 403); return
+            self._json({'messages': auth_utils.get_offer_chat(offer_id)})
+
+        elif path == '/api/offers/chat/send':
+            session = self._require_auth()
+            if not session: return
+            offer_id = (body.get('offer_id') or '').strip()
+            text = (body.get('text') or '').strip()
+            if not offer_id or not text:
+                self._json({'error': 'offer_id si text obligatorii'}, 400); return
+            o, err = auth_utils.get_offer_full(offer_id, session['username'], session)
+            if err:
+                self._json({'error': err}, 403); return
+            u = auth_utils.get_user(session['username'])
+            name = u.get('name', session['username']) if u else session['username']
+            messages = auth_utils.add_offer_chat(offer_id, session['username'], name, text)
+            self._json({'ok': True, 'messages': messages})
 
         else:
             self._json({'error': 'Not found'}, 404)

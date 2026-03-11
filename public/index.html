@@ -1261,6 +1261,18 @@
     }
     .offer-del-btn:hover { background: #fca5a5; }
 
+    /* ── Offers tabs ── */
+    .offers-tabs-row { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+    .offers-tab { padding:6px 14px; border-radius:20px; border:1.5px solid #e0d8f8; background:#f5f3ff; color:#7c3aed; font-size:12px; font-weight:700; cursor:pointer; transition:background .15s; }
+    .offers-tab.active { background:#7c3aed; color:#fff; border-color:#7c3aed; }
+    .offers-tab:hover:not(.active) { background:#ede9fe; }
+    /* ── Offers chat button ── */
+    .offer-chat-btn { background:#ede9fe; color:#7c3aed; border:none; border-radius:8px; padding:5px 9px; font-size:12px; cursor:pointer; margin-left:2px; }
+    .offer-chat-btn:hover { background:#ddd6fe; }
+    /* ── Chat modal messages ── */
+    .chat-bubble-me { background:#7c3aed; color:#fff; border-radius:14px 14px 2px 14px; padding:8px 12px; font-size:13px; max-width:80%; word-break:break-word; }
+    .chat-bubble-other { background:#f3f4f6; color:#1e1b4b; border-radius:14px 14px 14px 2px; padding:8px 12px; font-size:13px; max-width:80%; word-break:break-word; }
+
     /* ── Reports Button ── */
     .reports-btn {
       display: inline-block;
@@ -2149,9 +2161,34 @@
     <!-- ── Offers Section ── -->
     <div class="offers-section" id="offers-section">
       <div class="offers-title">Ofertele mele</div>
+      <div class="offers-tabs-row">
+        <button class="offers-tab active" id="otab-mine"   onclick="switchOffersTab('mine')">Ale mele</button>
+        <button class="offers-tab"        id="otab-shared" onclick="switchOffersTab('shared')">&#x1F4E8; Partajate <span id="otab-shared-badge" style="display:none;background:#fef08a;color:#92400e;border-radius:8px;padding:0 5px;font-size:10px;margin-left:2px"></span></button>
+        <button class="offers-tab"        id="otab-all"    onclick="switchOffersTab('all')" style="display:none">&#x1F465; Toate</button>
+      </div>
+      <div id="offers-user-filter" style="display:none;margin-bottom:8px">
+        <select id="offers-user-select" onchange="renderOffersList('')" style="font-size:12px;padding:5px 10px;border-radius:8px;border:1.5px solid #e0d8f8;color:#1e1b4b;background:#faf8ff">
+          <option value="">Toti utilizatorii</option>
+        </select>
+      </div>
       <input class="offers-search" id="offers-search" placeholder="Cauta dupa client, telefon, nr. oferta sau cod produs..."
              oninput="renderOffersList(this.value)" />
       <div id="offers-body"></div>
+    </div>
+
+    <!-- ── Chat modal ── -->
+    <div id="chat-overlay" style="display:none;position:fixed;inset:0;background:rgba(30,27,75,0.55);backdrop-filter:blur(4px);z-index:9100;align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:18px;max-width:420px;width:94%;box-shadow:0 8px 40px rgba(124,58,237,0.22);display:flex;flex-direction:column;max-height:85vh;overflow:hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px 12px;border-bottom:1px solid #ede9fe;flex-shrink:0">
+          <span style="font-size:14px;font-weight:800;color:#1e1b4b">&#x1F4AC; Chat oferta <span id="chat-offer-num" style="color:#7c3aed"></span></span>
+          <button onclick="closeChatModal()" style="background:none;border:none;font-size:22px;color:#9ca3af;cursor:pointer;line-height:1">&#x2715;</button>
+        </div>
+        <div id="chat-messages" style="flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:8px;min-height:100px"></div>
+        <div style="padding:12px 16px;border-top:1px solid #ede9fe;display:flex;gap:8px;flex-shrink:0">
+          <input id="chat-input" placeholder="Scrie un mesaj..." style="flex:1;padding:8px 12px;border-radius:10px;border:1.5px solid #e0d8f8;font-size:13px;color:#1e1b4b;outline:none" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg()}">
+          <button onclick="sendChatMsg()" style="padding:8px 16px;border-radius:10px;border:none;background:#7c3aed;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Trimite</button>
+        </div>
+      </div>
     </div>
 
     <!-- ── Reports Button ── -->
@@ -3897,6 +3934,9 @@ else { setTimeout(_renderTotals, 100); }
       // Offers section button
       const offBtn = document.querySelector('.offers-btn');
       if (offBtn) offBtn.style.display = '';  // always visible if logged in
+      // Show "Toate" offers tab only for global/admin
+      const tabAll = document.getElementById('otab-all');
+      if (tabAll) tabAll.style.display = hasPerm('offers', 'global') ? '' : 'none';
       // Vendor cards
       ['samsung','emag','flanco','altex'].forEach(v => {
         const card = document.getElementById('card-' + v);
@@ -3959,15 +3999,21 @@ else { setTimeout(_renderTotals, 100); }
       document.getElementById('admin-btn').style.display = a.role === 'admin' ? '' : 'none';
     }
 
-    function initAuth() {
+    async function initAuth() {
       const a = authLoad();
       if (!a || !a.token) {
         document.getElementById('login-overlay').style.display = 'flex';
-      } else {
-        updateUserBadge();
-        applyPermGating();
-        loadOffersFromServer();
+        return;
       }
+      // Refresh session from server — ensures role/permissions/name are current
+      try {
+        const r = await fetch('/api/auth/me', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
+        if (r.status === 401) { authClear(); document.getElementById('login-overlay').style.display = 'flex'; return; }
+        if (r.ok) { const d = await r.json(); authSave({...a, role: d.role, name: d.name || a.name, user_id: d.user_id || a.user_id || '', permissions: d.permissions}); }
+      } catch(e) {}
+      updateUserBadge();
+      applyPermGating();
+      loadOffersFromServer();
     }
 
     // Migrate old localStorage offers to server on first login
@@ -4035,6 +4081,34 @@ else { setTimeout(_renderTotals, 100); }
         bellWrap.style.display = 'none';
         bellIcon.classList.remove('ringing');
       }
+      // Update badge on "Partajate" tab
+      const sharedBadge = document.getElementById('otab-shared-badge');
+      if (sharedBadge) { sharedBadge.textContent = unseen.length; sharedBadge.style.display = unseen.length > 0 ? '' : 'none'; }
+    }
+
+    let _offersCurrentTab = 'mine';
+
+    function switchOffersTab(tab) {
+      _offersCurrentTab = tab;
+      ['mine','shared','all'].forEach(t => {
+        const btn = document.getElementById('otab-' + t);
+        if (btn) btn.classList.toggle('active', t === tab);
+      });
+      const filterDiv = document.getElementById('offers-user-filter');
+      if (filterDiv) filterDiv.style.display = tab === 'all' ? '' : 'none';
+      if (tab === 'all') _populateOffersUserFilter();
+      if (tab === 'shared') _markAllSharedSeen();
+      renderOffersList(document.getElementById('offers-search')?.value || '');
+    }
+
+    function _populateOffersUserFilter() {
+      const sel = document.getElementById('offers-user-select');
+      if (!sel) return;
+      const cur = sel.value;
+      while (sel.options.length > 1) sel.remove(1);
+      const users = [...new Set(_serverOffers.map(o => o.owner_id).filter(Boolean))].sort();
+      users.forEach(u => { const o = document.createElement('option'); o.value = u; o.textContent = u; sel.appendChild(o); });
+      if (cur) sel.value = cur;
     }
 
     function loadOffersSection() {
@@ -4053,7 +4127,7 @@ else { setTimeout(_renderTotals, 100); }
       _updateBell(me);
     }
 
-    function _offersTableHtml(items, me, showShare) {
+    function _offersTableHtml(items, me, showShare, showDelete) {
       if (items.length === 0) return '';
       const thead = '<table class="report-table"><thead><tr>'
         + '<th>Nr. Oferta</th><th>Data</th><th>Client</th><th>Telefon/Email</th>'
@@ -4064,6 +4138,10 @@ else { setTimeout(_renderTotals, 100); }
       items.forEach(o => {
         const discTxt = o.discount > 0 ? `<br><span style="font-size:10px;color:#7c3aed">-${o.discount}%</span>` : '';
         const ownerTag = showShare ? '' : `<span style="font-size:9px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;padding:1px 6px;border-radius:4px;margin-left:4px">de la: ${o.owner_id}</span>`;
+        const isShared = (o.shared_with || []).length > 0;
+        const chatBtn = isShared
+          ? `<button class="offer-chat-btn" onclick="openChatModal('${o.id}','${o.num}')" title="Chat">&#x1F4AC;</button>`
+          : '';
         rows += `<tr>
           <td><span class="cart-code">${o.num}</span>${discTxt}${ownerTag}</td>
           <td style="font-size:11px;color:#6b7280;white-space:nowrap">${o.date || ''}</td>
@@ -4071,10 +4149,11 @@ else { setTimeout(_renderTotals, 100); }
           <td style="font-size:11px;color:#6b7280">${o.phone || '—'}</td>
           <td style="text-align:center;font-size:12px">${o.products_qty || o.products_count || 0}</td>
           <td style="text-align:right;font-weight:700;white-space:nowrap">${o.total ? formatPrice(o.total) : '—'}</td>
-          <td style="white-space:nowrap;display:flex;gap:4px;align-items:center">
+          <td style="white-space:nowrap;display:flex;gap:4px;align-items:center;flex-wrap:wrap">
             <button class="offer-open-btn" onclick="openSavedOffer('${o.id}')">Deschide</button>
+            ${chatBtn}
             ${showShare ? `<button class="offer-open-btn" style="background:#e0f2fe;color:#0369a1" onclick="shareOfferPrompt('${o.id}')">Partajeaza</button>` : ''}
-            ${showShare ? `<button class="offer-del-btn" onclick="deleteOffer('${o.id}')">&#x2715;</button>` : ''}
+            ${(showShare || showDelete) ? `<button class="offer-del-btn" onclick="deleteOffer('${o.id}')">&#x2715;</button>` : ''}
           </td>
         </tr>`;
       });
@@ -4092,59 +4171,107 @@ else { setTimeout(_renderTotals, 100); }
         (o.num    || '').toLowerCase().includes(q) ||
         (o.product_codes || []).some(c => c.toLowerCase().includes(q));
 
-      const allItems = q ? _serverOffers.filter(matches) : _serverOffers;
-
-      // Own = I am the owner; Shared = explicitly in shared_with list (works for ALL roles incl. admin)
-      const ownItems    = allItems.filter(o => o.owner_id === me);
-      const sharedItems = allItems.filter(o => (o.shared_with || []).includes(me));
+      const pool = q ? _serverOffers.filter(matches) : _serverOffers;
+      const sharedAll = pool.filter(o => (o.shared_with || []).includes(me));
       const seen = _seenShared();
 
-      // For admin/global users: offers that are neither mine nor shared with me
-      const ownAndSharedIds = new Set([...ownItems, ...sharedItems].map(o => o.id));
-      const teamItems = hasPerm('offers', 'global')
-        ? allItems.filter(o => !ownAndSharedIds.has(o.id))
-        : [];
+      // Update shared badge on tab button
+      const unseen = sharedAll.filter(o => !seen.includes(o.id));
+      const sharedBadge = document.getElementById('otab-shared-badge');
+      if (sharedBadge) { sharedBadge.textContent = unseen.length; sharedBadge.style.display = unseen.length > 0 ? '' : 'none'; }
 
-      if (allItems.length === 0) {
-        body.innerHTML = `<div style="text-align:center;padding:28px;color:#9ca3af;font-size:13px;">
-          ${q ? 'Nicio oferta gasita pentru &quot;' + filter + '&quot;.' : 'Nu ai salvat inca nicio oferta.'}
-        </div>`;
-        return;
-      }
+      let items, html = '', emptyMsg = '';
 
-      let html = '';
+      if (_offersCurrentTab === 'mine') {
+        items = pool.filter(o => o.owner_id === me);
+        emptyMsg = q ? `Nicio oferta gasita pentru "${filter}".` : 'Nu ai salvat inca nicio oferta.';
+        if (items.length === 0) { body.innerHTML = `<div style="text-align:center;padding:28px;color:#9ca3af;font-size:13px">${emptyMsg}</div>`; return; }
+        html = _offersTableHtml(items, me, true, true);
 
-      // ── Own offers ────────────────────────────────────────────────────
-      if (ownItems.length > 0) {
-        html += `<div class="offers-own-hdr">Ofertele mele (${ownItems.length})</div>`;
-        html += _offersTableHtml(ownItems, me, true);
-      }
+      } else if (_offersCurrentTab === 'shared') {
+        items = sharedAll;
+        emptyMsg = q ? `Nicio oferta partajata gasita pentru "${filter}".` : 'Nu ai oferte partajate cu tine.';
+        if (items.length === 0) { body.innerHTML = `<div style="text-align:center;padding:28px;color:#9ca3af;font-size:13px">${emptyMsg}</div>`; return; }
+        html = `<div style="background:#f0fdf4;border-radius:12px;padding:2px 6px 6px;border:1px solid #bbf7d0">`;
+        html += _offersTableHtml(items, me, false, false);
+        html += '</div>';
 
-      // ── Shared with me ────────────────────────────────────────────────
-      if (sharedItems.length > 0) {
-        const newCount = sharedItems.filter(o => !seen.includes(o.id)).length;
-        const newBadge = newCount > 0
-          ? `<span style="background:#fef08a;color:#92400e;border-radius:8px;padding:1px 8px;font-size:10px;margin-left:6px">&#x1F514; ${newCount} noi</span>`
-          : '';
-        html += `<div class="offers-shared-hdr" style="margin-top:${ownItems.length>0?'22px':'0'}">
-          &#x1F4E8; Partajate cu mine (${sharedItems.length})${newBadge}
-        </div>`;
-        html += `<div style="background:#f0fdf4;border-radius:12px;padding:2px 6px 6px;border:1px solid #bbf7d0">`;
-        html += _offersTableHtml(sharedItems, me, false);
-        html += `</div>`;
-      }
-
-      // ── Team offers (admin / global access) ───────────────────────────
-      if (teamItems.length > 0) {
-        html += `<div class="offers-shared-hdr" style="margin-top:22px;color:#0369a1">
-          &#x1F465; Oferte echipa (${teamItems.length})
-        </div>`;
-        html += `<div style="background:#f0f9ff;border-radius:12px;padding:2px 6px 6px;border:1px solid #bae6fd">`;
-        html += _offersTableHtml(teamItems, me, false);
-        html += `</div>`;
+      } else { // 'all' — admin / global
+        const userFilter = document.getElementById('offers-user-select')?.value || '';
+        items = userFilter ? pool.filter(o => o.owner_id === userFilter) : pool;
+        emptyMsg = pool.length === 0 ? 'Nu exista oferte.' : `Nicio oferta pentru "${userFilter}".`;
+        if (items.length === 0) { body.innerHTML = `<div style="text-align:center;padding:28px;color:#9ca3af;font-size:13px">${emptyMsg}</div>`; return; }
+        // Group by owner
+        const byOwner = {};
+        items.forEach(o => { (byOwner[o.owner_id] = byOwner[o.owner_id] || []).push(o); });
+        Object.entries(byOwner).forEach(([owner, ofrs]) => {
+          html += `<div style="font-size:11px;font-weight:800;color:#0369a1;margin:${html?'18px':'0'} 0 6px;text-transform:uppercase;letter-spacing:.05em">&#x1F464; ${owner} (${ofrs.length})</div>`;
+          html += `<div style="background:#f0f9ff;border-radius:12px;padding:2px 6px 6px;border:1px solid #bae6fd;margin-bottom:4px">`;
+          html += _offersTableHtml(ofrs, me, true, true);
+          html += '</div>';
+        });
       }
 
       body.innerHTML = html;
+    }
+
+    // ── Chat ───────────────────────────────────────────────────────────────
+    let _chatOfferId = null;
+
+    async function openChatModal(offerId, offerNum) {
+      _chatOfferId = offerId;
+      document.getElementById('chat-offer-num').textContent = offerNum;
+      document.getElementById('chat-messages').innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:12px;padding:20px">Se incarca...</div>';
+      document.getElementById('chat-overlay').style.display = 'flex';
+      await _loadChatMessages();
+      document.getElementById('chat-input').focus();
+    }
+
+    function closeChatModal() {
+      document.getElementById('chat-overlay').style.display = 'none';
+      _chatOfferId = null;
+    }
+
+    async function _loadChatMessages() {
+      try {
+        const r = await fetch('/api/offers/chat/get', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({offer_id: _chatOfferId})});
+        if (!r.ok) return;
+        const d = await r.json();
+        _renderChatMessages(d.messages || []);
+      } catch(e) {}
+    }
+
+    function _escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function _renderChatMessages(messages) {
+      const me = currentUsername();
+      const el = document.getElementById('chat-messages');
+      if (messages.length === 0) {
+        el.innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:12px;padding:20px">Niciun mesaj inca. Fii primul!</div>';
+        return;
+      }
+      el.innerHTML = messages.map(m => {
+        const isMe = m.username === me;
+        const ts = m.ts ? new Date(m.ts * 1000).toLocaleString('ro', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+        return `<div style="display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'}">
+          <div class="${isMe?'chat-bubble-me':'chat-bubble-other'}">${_escHtml(m.text)}</div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:2px;padding:0 4px">${_escHtml(m.name||m.username)} · ${ts}</div>
+        </div>`;
+      }).join('');
+      el.scrollTop = el.scrollHeight;
+    }
+
+    async function sendChatMsg() {
+      const input = document.getElementById('chat-input');
+      const text = (input.value || '').trim();
+      if (!text || !_chatOfferId) return;
+      input.value = '';
+      try {
+        const r = await fetch('/api/offers/chat/send', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({offer_id: _chatOfferId, text})});
+        if (!r.ok) return;
+        const d = await r.json();
+        _renderChatMessages(d.messages || []);
+      } catch(e) {}
     }
 
     async function deleteOffer(id) {
