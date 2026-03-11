@@ -88,6 +88,50 @@ class handler(BaseHTTPRequestHandler):
         elif path == '/api/test_redis':
             self._json(cache_test())
 
+        elif path == '/api/test_altex':
+            # Debug: test Altex connectivity from Vercel
+            import requests as _rq
+            code = params.get('code', ['HW-B400F'])[0]
+            results = {}
+            hdrs = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+                'Accept': 'application/json',
+                'Origin': 'https://altex.ro',
+                'Referer': f'https://altex.ro/cauta/?q={code}',
+            }
+            # Test 1: lcdn API
+            try:
+                r = _rq.get(f'https://lcdn.altex.ro/api/v2/catalog/search/{code}?size=5', headers=hdrs, timeout=12)
+                results['lcdn'] = {'status': r.status_code, 'len': len(r.text), 'preview': r.text[:500]}
+            except Exception as e:
+                results['lcdn'] = {'error': str(e)}
+            # Test 2: altex.ro homepage
+            try:
+                r2 = _rq.get('https://altex.ro/', headers={'User-Agent': hdrs['User-Agent']}, timeout=12)
+                results['homepage'] = {'status': r2.status_code, 'len': len(r2.text)}
+                import re as _re
+                m = _re.search(r'"buildId":"([^"]+)"', r2.text)
+                if m:
+                    results['homepage']['buildId'] = m.group(1)
+            except Exception as e:
+                results['homepage'] = {'error': str(e)}
+            # Test 3: direct product page
+            try:
+                r3 = _rq.get(f'https://altex.ro/produs/cpd/{code}/', headers={'User-Agent': hdrs['User-Agent'], 'Accept': 'text/html'}, timeout=12)
+                results['product_page'] = {'status': r3.status_code, 'len': len(r3.text), 'preview': r3.text[:300]}
+            except Exception as e:
+                results['product_page'] = {'error': str(e)}
+            # Test 4: lcdn with session cookies from homepage
+            try:
+                s = _rq.Session()
+                s.headers.update({'User-Agent': hdrs['User-Agent']})
+                s.get('https://altex.ro/', timeout=10)
+                r4 = s.get(f'https://lcdn.altex.ro/api/v2/catalog/search/{code}?size=5', headers={'Accept': 'application/json', 'Origin': 'https://altex.ro', 'Referer': f'https://altex.ro/cauta/?q={code}'}, timeout=12)
+                results['lcdn_with_cookies'] = {'status': r4.status_code, 'len': len(r4.text), 'preview': r4.text[:500]}
+            except Exception as e:
+                results['lcdn_with_cookies'] = {'error': str(e)}
+            self._json(results)
+
         elif path == '/api/test_excel':
             t0 = time.time()
             products = load_products()
