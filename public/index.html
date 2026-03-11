@@ -1925,6 +1925,7 @@
       <div class="user-badge" id="user-badge">
         <span class="user-badge-name" id="user-badge-name"></span>
         <span class="user-badge-role" id="user-badge-role"></span>
+        <span id="chat-badge-header" style="display:none;background:#dc2626;color:#fff;border-radius:12px;padding:2px 8px;font-size:11px;font-weight:800;cursor:pointer" onclick="loadOffersSection()" title="Mesaje necitite">&#x1F4AC; <span id="chat-badge-header-count">0</span></span>
         <button class="user-badge-btn ubtn-admin" id="admin-btn" onclick="openAdminModal()" style="display:none">Utilizatori</button>
         <button class="user-badge-btn ubtn-logout" onclick="doLogout()">Deconectare</button>
       </div>
@@ -2156,8 +2157,9 @@
     </div>
 
     <!-- ── Offers Button ── -->
-    <button class="offers-btn" onclick="loadOffersSection()">
+    <button class="offers-btn" onclick="loadOffersSection()" style="position:relative">
       Ofertele mele <span class="offers-badge" id="offers-count">0</span><span class="bell-wrap" id="offers-bell" style="display:none"><span class="bell-icon ringing" id="bell-icon">&#x1F514;</span> <span id="offers-bell-count">0</span> noi</span>
+      <span id="chat-badge-btn" style="display:none;position:absolute;top:-7px;right:-7px;background:#dc2626;color:#fff;border-radius:50%;min-width:18px;height:18px;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 1px 4px rgba(0,0,0,.3)">0</span>
     </button>
 
     <!-- ── Offers Section ── -->
@@ -4043,6 +4045,7 @@ else { setTimeout(_renderTotals, 100); }
         const d = await r.json();
         _serverOffers = d.offers || [];
         updateOffersBadge();
+        _updateChatBadges();
         const section = document.getElementById('offers-section');
         if (section.classList.contains('visible')) {
           _markAllSharedSeen();
@@ -4232,6 +4235,17 @@ else { setTimeout(_renderTotals, 100); }
     function _setChatSeen(oid, n) { const s = _chatSeen(); s[oid] = n; localStorage.setItem('kuziini_chat_seen', JSON.stringify(s)); }
     function _chatUnread(oid, total) { return Math.max(0, total - (_chatSeen()[oid] || 0)); }
 
+    function _updateChatBadges() {
+      const total = _serverOffers.reduce((sum, o) => sum + _chatUnread(o.id, o.chat_count || 0), 0);
+      // Badge pe butonul "Ofertele mele"
+      const btnBadge = document.getElementById('chat-badge-btn');
+      if (btnBadge) { btnBadge.textContent = total; btnBadge.style.display = total > 0 ? 'inline-flex' : 'none'; }
+      // Badge in header (user-badge area)
+      const hdrBadge  = document.getElementById('chat-badge-header');
+      const hdrCount  = document.getElementById('chat-badge-header-count');
+      if (hdrBadge && hdrCount) { hdrCount.textContent = total; hdrBadge.style.display = total > 0 ? '' : 'none'; }
+    }
+
     async function openChatModal(offerId, offerNum) {
       _chatOfferId = offerId;
       document.getElementById('chat-offer-num').textContent = offerNum;
@@ -4253,6 +4267,7 @@ else { setTimeout(_renderTotals, 100); }
         const d = await r.json();
         const msgs = d.messages || [];
         _setChatSeen(_chatOfferId, msgs.length);  // mark all as seen
+        _updateChatBadges();
         _renderChatMessages(msgs);
         // Refresh offer list to update badge
         renderOffersList(document.getElementById('offers-search')?.value || '');
@@ -4290,6 +4305,7 @@ else { setTimeout(_renderTotals, 100); }
         const d = await r.json();
         const msgs = d.messages || [];
         _setChatSeen(_chatOfferId, msgs.length);
+        _updateChatBadges();
         _renderChatMessages(msgs);
       } catch(e) {}
     }
