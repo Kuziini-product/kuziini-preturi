@@ -36,6 +36,27 @@ class handler(BaseHTTPRequestHandler):
 
             # Single vendor mode: /api/search?code=X&vendor=samsung
             if vendor:
+                # Check cache first - return cached vendor price if available
+                if cache_configured():
+                    cached = get_cached_price(code)
+                    if cached and cached.get('prices', {}).get(vendor) is not None:
+                        products = load_products()
+                        kp = None
+                        cat = ''
+                        if code in products:
+                            kp = products[code]['price']
+                            cat = products[code]['category']
+                        self._json({
+                            'code': code,
+                            'vendor': vendor,
+                            'category': cat,
+                            'kuziini_price': round(kp, 2) if kp else None,
+                            'price': cached['prices'][vendor],
+                            'url': cached.get('urls', {}).get(vendor, ''),
+                            'image_url': cached.get('image_url'),
+                            'cached': True,
+                        })
+                        return
                 result = search_single_vendor(code, vendor)
                 self._json(result)
                 return
