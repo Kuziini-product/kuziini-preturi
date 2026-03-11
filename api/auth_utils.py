@@ -581,3 +581,48 @@ def delete_offer(oid, username, session):
     for u in o.get('shared_with', []):
         _list_remove(f'offers:shared:{u}', oid)
     return None
+
+
+# ── General Chat ──────────────────────────────────────────────────────────
+
+def get_general_chat(limit=100):
+    raw = _rc('LRANGE', 'general_chat', -limit, -1) or []
+    messages = []
+    for m in raw:
+        try: messages.append(json.loads(m))
+        except: pass
+    authors = list({m['username'] for m in messages if m.get('username')})
+    color_map = _user_color_map(authors)
+    for m in messages:
+        m['color'] = color_map.get(m.get('username', ''), '#7c3aed')
+    return messages
+
+
+def add_general_chat(username, name, text):
+    import time as _t
+    msg = {'username': username, 'name': name, 'text': text, 'ts': int(_t.time())}
+    _rc('RPUSH', 'general_chat', json.dumps(msg, ensure_ascii=False))
+    _rc('LTRIM', 'general_chat', -200, -1)
+    return get_general_chat()
+
+
+def get_all_usernames():
+    raw = _rc('HGETALL', 'users') or {}
+    result = []
+    keys = list(raw.keys()) if isinstance(raw, dict) else raw
+    if isinstance(raw, dict):
+        for uname, data in raw.items():
+            try:
+                u = json.loads(data)
+                result.append({'username': uname, 'name': u.get('name', uname)})
+            except:
+                result.append({'username': uname, 'name': uname})
+    elif isinstance(raw, list):
+        for i in range(0, len(raw), 2):
+            uname = raw[i]
+            try:
+                u = json.loads(raw[i+1])
+                result.append({'username': uname, 'name': u.get('name', uname)})
+            except:
+                result.append({'username': uname, 'name': uname})
+    return result

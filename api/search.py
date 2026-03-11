@@ -601,5 +601,23 @@ class handler(BaseHTTPRequestHandler):
             messages = auth_utils.add_offer_chat(offer_id, session['username'], name, text)
             self._json({'ok': True, 'messages': messages})
 
+        elif path == '/api/chat/get':
+            session = self._require_auth()
+            if not session: return
+            messages = auth_utils.get_general_chat()
+            users = auth_utils.get_all_usernames()
+            self._json({'messages': messages, 'users': users})
+
+        elif path == '/api/chat/send':
+            session = self._require_auth()
+            if not session: return
+            text = (body.get('text') or '').strip()
+            if not text:
+                self._json({'error': 'text obligatoriu'}, 400); return
+            u = auth_utils.get_user(session['username'])
+            name = u.get('name', session['username']) if u else session['username']
+            messages = auth_utils.add_general_chat(session['username'], name, text)
+            self._json({'ok': True, 'messages': messages})
+
         else:
             self._json({'error': 'Not found'}, 404)
