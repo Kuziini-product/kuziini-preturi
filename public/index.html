@@ -1779,6 +1779,7 @@
             <div>
               <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Pret achizitie</div>
               <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" id="nu-show-kz"> Vizibil pret Kuziini</label>
+              <label style="display:flex;align-items:center;gap:5px;margin-top:4px"><input type="checkbox" id="nu-allow-disc"> Permite discount</label>
             </div>
           </div>
         </div>
@@ -1838,8 +1839,9 @@
           </div>
           <div>
             <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Pret achizitie</div>
-            <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" id="edit-show-kz"> Vizibil pret Kuziini</label>
-          </div>
+              <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" id="edit-show-kz"> Vizibil pret Kuziini</label>
+              <label style="display:flex;align-items:center;gap:5px;margin-top:4px"><input type="checkbox" id="edit-allow-disc"> Permite discount</label>
+            </div>
         </div>
         <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
           <button onclick="adminSavePermissions()" class="admin-add-btn">Salveaza permisiuni</button>
@@ -2133,9 +2135,9 @@
           <thead>
             <tr>
               <th>Produs</th>
-              <th id="cart-th-kz" style="text-align:right">Pret Kuziini</th>
-              <th style="text-align:right">Cel mai ieftin</th>
-              <th style="text-align:right">Diferenta</th>
+              <th id="cart-th-kz"    style="text-align:right">Pret Kuziini</th>
+              <th id="cart-th-cheap" style="text-align:right">Cel mai ieftin</th>
+              <th id="cart-th-diff"  style="text-align:right">Diferenta</th>
               <th style="text-align:center">Cant.</th>
               <th style="text-align:right">Subtotal</th>
               <th></th>
@@ -2787,8 +2789,8 @@
         const opt = document.createElement('option');
         opt.value = p.code;
         const inchStr = p.inches ? p.inches + '"' : '';
-        const priceStr = formatPrice(p.price);
-        opt.textContent = `${p.code}  |  ${p.category}  |  ${inchStr}  |  ${priceStr}`;
+        const priceStr = hasPerm('show_kz_price') ? '  |  ' + formatPrice(p.price) : '';
+        opt.textContent = `${p.code}  |  ${p.category}${inchStr ? '  |  ' + inchStr : ''}${priceStr}`;
         dropdown.appendChild(opt);
       });
 
@@ -2916,8 +2918,8 @@
         qty: 1,
       };
 
-      // Alert if Kuziini is more expensive
-      if (cheapestPrice && data.kuziini_price > cheapestPrice) {
+      // Alert if Kuziini is more expensive (only if user can see kz price)
+      if (hasPerm('show_kz_price') && cheapestPrice && data.kuziini_price > cheapestPrice) {
         const diff = data.kuziini_price - cheapestPrice;
         if (!confirm(
           `Atentie! Pretul Kuziini (${formatPrice(data.kuziini_price)}) este mai mare decat ${cheapestVendor} (${formatPrice(cheapestPrice)}).\n\nDiferenta: +${formatPrice(diff)}\n\nAdaugi in cos?`
@@ -3225,8 +3227,8 @@ tr:nth-child(even) { background:#faf5ff; }
         html += `<tr onclick="showCartImage('${item.code}')" style="cursor:pointer">
           <td><span class="cart-code">${item.code}</span><br><span class="cart-cat">${item.category}</span></td>
           ${hasPerm('show_kz_price') ? `<td class="cart-price">${kzStr}</td>` : ''}
-          <td class="cart-price">${cheapStr}</td>
-          <td class="cart-diff ${diffClass}">${diffStr}${alertTag}${sellingStr}</td>
+          ${hasPerm('show_kz_price') ? `<td class="cart-price">${cheapStr}</td>` : ''}
+          ${hasPerm('show_kz_price') ? `<td class="cart-diff ${diffClass}">${diffStr}${alertTag}${sellingStr}</td>` : ''}
           <td>
             <div class="cart-qty">
               <button onclick="changeQty('${item.code}', -1)">−</button>
@@ -3551,7 +3553,7 @@ thead th.right { text-align: right; }
   </div>
 
   <!-- Discount section -->
-  <div class="disc-section">
+  <div class="disc-section" ${hasPerm('allow_discount') ? '' : 'style="display:none"'}>
     <span class="disc-label">Discount global:</span>
     <input id="disc-input" class="disc-input" type="number" min="0" max="99" step="0.5" value="${initDiscount}" />
     <span class="disc-pct">%</span>
@@ -3903,15 +3905,16 @@ else { setTimeout(_renderTotals, 100); }
       if (category === 'exports') return (p.exports || []).includes(value);
       if (category === 'vendors') return (p.vendors || ['samsung','emag','flanco','altex']).includes(value);
       if (category === 'show_kz_price') return p.show_kz_price === true;
+      if (category === 'allow_discount') return p.allow_discount === true;
       return false;
     }
 
     // Presets used in the admin panel (mirrors Python ROLE_PRESETS)
     const ROLE_PRESETS = {
-      admin:   { offers:'global', reports:['prices','history','stats','events'], exports:['excel','pdf_offer','pdf_specs'], vendors:['samsung','emag','flanco','altex'], show_kz_price:true  },
-      manager: { offers:'global', reports:['prices','history','stats'],          exports:['excel','pdf_offer'],            vendors:['samsung','emag','flanco','altex'], show_kz_price:true  },
-      agent:   { offers:'own',    reports:['stats'],                             exports:['excel','pdf_offer'],            vendors:['samsung','emag','flanco','altex'], show_kz_price:false },
-      viewer:  { offers:'own',    reports:['stats'],                             exports:[],                               vendors:['samsung','emag','flanco','altex'], show_kz_price:false },
+      admin:   { offers:'global', reports:['prices','history','stats','events'], exports:['excel','pdf_offer','pdf_specs'], vendors:['samsung','emag','flanco','altex'], show_kz_price:true,  allow_discount:true  },
+      manager: { offers:'global', reports:['prices','history','stats'],          exports:['excel','pdf_offer'],            vendors:['samsung','emag','flanco','altex'], show_kz_price:true,  allow_discount:true  },
+      agent:   { offers:'own',    reports:['stats'],                             exports:['excel','pdf_offer'],            vendors:['samsung','emag','flanco','altex'], show_kz_price:false, allow_discount:false },
+      viewer:  { offers:'own',    reports:['stats'],                             exports:[],                               vendors:['samsung','emag','flanco','altex'], show_kz_price:false, allow_discount:false },
     };
 
     function applyPermGating() {
@@ -3945,9 +3948,11 @@ else { setTimeout(_renderTotals, 100); }
       // Kuziini acquisition price section
       const kzSec = document.getElementById('kuziini-section');
       if (kzSec) kzSec.style.display = hasPerm('show_kz_price') ? '' : 'none';
-      // Cart table - Pret Kuziini column header
-      const cartThKz = document.getElementById('cart-th-kz');
-      if (cartThKz) cartThKz.style.display = hasPerm('show_kz_price') ? '' : 'none';
+      // Cart table columns — hide when kz price not permitted
+      const showKzPerm = hasPerm('show_kz_price');
+      document.getElementById('cart-th-kz')?.style.setProperty('display', showKzPerm ? '' : 'none');
+      document.getElementById('cart-th-cheap')?.style.setProperty('display', showKzPerm ? '' : 'none');
+      document.getElementById('cart-th-diff')?.style.setProperty('display', showKzPerm ? '' : 'none');
     }
 
     async function doLogin() {
@@ -4365,9 +4370,10 @@ else { setTimeout(_renderTotals, 100); }
       const offers    = document.querySelector(`input[name="${prefix}-offers"]:checked`)?.value || 'own';
       const reports   = [...document.querySelectorAll(`.${prefix}-rep:checked`)].map(el => el.value);
       const exports_  = [...document.querySelectorAll(`.${prefix}-exp:checked`)].map(el => el.value);
-      const vendors   = [...document.querySelectorAll(`.${prefix}-ven:checked`)].map(el => el.value);
-      const show_kz_price = document.getElementById(`${prefix}-show-kz`)?.checked || false;
-      return { offers, reports, exports: exports_, vendors, show_kz_price };
+      const vendors        = [...document.querySelectorAll(`.${prefix}-ven:checked`)].map(el => el.value);
+      const show_kz_price  = document.getElementById(`${prefix}-show-kz`)?.checked  || false;
+      const allow_discount = document.getElementById(`${prefix}-allow-disc`)?.checked || false;
+      return { offers, reports, exports: exports_, vendors, show_kz_price, allow_discount };
     }
 
     function _writePerms(prefix, perms) {
@@ -4380,6 +4386,8 @@ else { setTimeout(_renderTotals, 100); }
       document.querySelectorAll(`.${prefix}-ven`).forEach(cb => { cb.checked = (p.vendors || defaultVendors).includes(cb.value); });
       const kzCb = document.getElementById(`${prefix}-show-kz`);
       if (kzCb) kzCb.checked = p.show_kz_price === true;
+      const discCb = document.getElementById(`${prefix}-allow-disc`);
+      if (discCb) discCb.checked = p.allow_discount === true;
     }
 
     function applyRolePreset(prefix) {
