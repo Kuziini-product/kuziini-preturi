@@ -315,8 +315,10 @@ class handler(BaseHTTPRequestHandler):
                 return
             user = auth_utils.get_user(session['username'])
             name = user.get('name', session['username']) if user else session['username']
+            chat_color = user.get('chat_color', '#7c3aed') if user else '#7c3aed'
             self._json({'username': session['username'], 'role': session['role'],
                         'name': name, 'user_id': session.get('user_id', ''),
+                        'chat_color': chat_color,
                         'permissions': session.get('permissions', {})})
 
         # ── Offers ────────────────────────────────────────────────────────
@@ -432,6 +434,7 @@ class handler(BaseHTTPRequestHandler):
                 role=body.get('role'),
                 password=body.get('password'),
                 permissions=body.get('permissions'),
+                chat_color=body.get('chat_color'),
             )
             if err:
                 self._json({'error': err}, 400)
@@ -504,7 +507,9 @@ class handler(BaseHTTPRequestHandler):
             o, err = auth_utils.get_offer_full(offer_id, session['username'], session)
             if err:
                 self._json({'error': err}, 403); return
-            self._json({'messages': auth_utils.get_offer_chat(offer_id)})
+            messages = auth_utils.get_offer_chat(offer_id, o)
+            participants = auth_utils.get_offer_participants(o)
+            self._json({'messages': messages, 'participants': participants})
 
         elif path == '/api/offers/chat/send':
             session = self._require_auth()

@@ -33,6 +33,13 @@ import time
 
 _PEPPER = os.environ.get('KUZIINI_PEPPER', 'kuziini_kz_pepper')
 
+# Palette of chat colors assigned automatically to new users (cycles if more than 12 users)
+CHAT_COLOR_PALETTE = [
+    '#7c3aed', '#059669', '#dc2626', '#2563eb',
+    '#d97706', '#db2777', '#0891b2', '#65a30d',
+    '#7c2d12', '#1d4ed8', '#047857', '#9333ea',
+]
+
 # ── Role presets ──────────────────────────────────────────────────────────
 
 ROLE_PRESETS = {
@@ -141,6 +148,7 @@ def _safe(u):
         'name': u.get('name', u['username']),
         'role': u['role'],
         'user_id': u.get('user_id', ''),
+        'chat_color': u.get('chat_color', '#7c3aed'),
         'permissions': u.get('permissions', default_permissions(u['role'])),
         'created_at': u.get('created_at'),
     }
@@ -177,6 +185,7 @@ def create_user(username, password, role='agent', name=None, permissions=None):
     except (TypeError, ValueError):
         seq = 1
     user_id = f'KZ{seq:03d}'
+    chat_color = CHAT_COLOR_PALETTE[(seq - 1) % len(CHAT_COLOR_PALETTE)]
     user = {
         'username': uname,
         'name': name or uname,
@@ -184,13 +193,14 @@ def create_user(username, password, role='agent', name=None, permissions=None):
         'salt': salt,
         'role': role,
         'user_id': user_id,
+        'chat_color': chat_color,
         'permissions': perms,
         'created_at': time.time(),
     }
     _rc('HSET', 'users', uname, json.dumps(user, ensure_ascii=False))
     return _safe(user), None
 
-def update_user(username, name=None, role=None, password=None, permissions=None):
+def update_user(username, name=None, role=None, password=None, permissions=None, chat_color=None):
     u = get_user(username)
     if not u:
         return None, 'User inexistent'
@@ -207,6 +217,8 @@ def update_user(username, name=None, role=None, password=None, permissions=None)
             u['permissions'] = dict(ROLE_PRESETS['admin'])
         else:
             u['permissions'] = permissions
+    if chat_color:
+        u['chat_color'] = chat_color
     if password:
         u['password_hash'], u['salt'] = _hash_password(password)
     _rc('HSET', 'users', username.lower(), json.dumps(u, ensure_ascii=False))
@@ -463,13 +475,48 @@ def share_offer(oid, requester, session, target_username):
     _list_prepend(f'offers:shared:{target["username"]}', oid)
     return None
 
-def get_offer_chat(oid):
+def _user_color_map(usernames):
+    """Return {username: chat_color} for a list of usernames."""
+    colors = {}
+    for uname in usernames:
+        u = get_user(uname)
+        colors[uname] = u.get('chat_color', '#7c3aed') if u else '#7c3aed'
+    return colors
+
+def get_offer_chat(oid, offer=None):
     raw = _rc('LRANGE', f'offer_chat:{oid}', 0, -1) or []
     messages = []
     for m in raw:
         try: messages.append(json.loads(m))
         except: pass
+    # Enrich messages with chat_color from user profile
+    authors = list({m['username'] for m in messages if m.get('username')})
+    color_map = _user_color_map(authors)
+    for m in messages:
+        m['color'] = color_map.get(m.get('username', ''), '#7c3aed')
     return messages
+
+def get_offer_participants(offer):
+    """Return list of {username, name, color} for owner + shared_with."""
+    usernames = []
+    owner = offer.get('owner_id')
+    if owner:
+        usernames.append(owner)
+    for u in offer.get('shared_with', []):
+        if u not in usernames:
+            usernames.append(u)
+    participants = []
+    for uname in usernames:
+        u = get_user(uname)
+        if u:
+            participants.append({
+                'username': uname,
+                'name': u.get('name', uname),
+                'color': u.get('chat_color', '#7c3aed'),
+            })
+        else:
+            participants.append({'username': uname, 'name': uname, 'color': '#7c3aed'})
+    return participants
 
 def add_offer_chat(oid, username, name, text):
     import time as _t

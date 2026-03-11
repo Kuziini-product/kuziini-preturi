@@ -1269,9 +1269,7 @@
     /* ── Offers chat button ── */
     .offer-chat-btn { background:#ede9fe; color:#7c3aed; border:none; border-radius:8px; padding:5px 9px; font-size:12px; cursor:pointer; margin-left:2px; }
     .offer-chat-btn:hover { background:#ddd6fe; }
-    /* ── Chat modal messages ── */
-    .chat-bubble-me { background:#7c3aed; color:#fff; border-radius:14px 14px 2px 14px; padding:8px 12px; font-size:13px; max-width:80%; word-break:break-word; }
-    .chat-bubble-other { background:#f3f4f6; color:#1e1b4b; border-radius:14px 14px 14px 2px; padding:8px 12px; font-size:13px; max-width:80%; word-break:break-word; }
+    /* ── Chat modal messages ── (bubble styles are dynamic per user color) */
 
     /* ── Reports Button ── */
     .reports-btn {
@@ -1810,6 +1808,10 @@
               <option value="viewer">Vizualizare</option>
             </select>
           </div>
+          <div style="min-width:80px">
+            <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Culoare chat</div>
+            <input id="edit-chat-color" type="color" value="#7c3aed" style="width:44px;height:34px;border-radius:8px;border:1.5px solid #ede9fe;cursor:pointer;padding:2px">
+          </div>
         </div>
         <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:12px">
           <div>
@@ -2182,11 +2184,12 @@
 
     <!-- ── Chat modal ── -->
     <div id="chat-overlay" style="display:none;position:fixed;inset:0;background:rgba(30,27,75,0.55);backdrop-filter:blur(4px);z-index:9100;align-items:center;justify-content:center">
-      <div style="background:#fff;border-radius:18px;max-width:420px;width:94%;box-shadow:0 8px 40px rgba(124,58,237,0.22);display:flex;flex-direction:column;max-height:85vh;overflow:hidden">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px 12px;border-bottom:1px solid #ede9fe;flex-shrink:0">
+      <div style="background:#fff;border-radius:18px;max-width:440px;width:94%;box-shadow:0 8px 40px rgba(124,58,237,0.22);display:flex;flex-direction:column;max-height:85vh;overflow:hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px 10px;border-bottom:1px solid #ede9fe;flex-shrink:0">
           <span style="font-size:14px;font-weight:800;color:#1e1b4b">&#x1F4AC; Chat oferta <span id="chat-offer-num" style="color:#7c3aed"></span></span>
           <button onclick="closeChatModal()" style="background:none;border:none;font-size:22px;color:#9ca3af;cursor:pointer;line-height:1">&#x2715;</button>
         </div>
+        <div id="chat-participants" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px 18px;border-bottom:1px solid #f3f0ff;flex-shrink:0;min-height:36px"></div>
         <div id="chat-messages" style="flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:8px;min-height:100px"></div>
         <div style="padding:12px 16px;border-top:1px solid #ede9fe;display:flex;gap:8px;flex-shrink:0">
           <input id="chat-input" placeholder="Scrie un mesaj..." style="flex:1;padding:8px 12px;border-radius:10px;border:1.5px solid #e0d8f8;font-size:13px;color:#1e1b4b;outline:none" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg()}">
@@ -4028,7 +4031,7 @@ else { setTimeout(_renderTotals, 100); }
       try {
         const r = await fetch('/api/auth/me', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
         if (r.status === 401) { authClear(); document.getElementById('login-overlay').style.display = 'flex'; return; }
-        if (r.ok) { const d = await r.json(); authSave({...a, role: d.role, name: d.name || a.name, user_id: d.user_id || a.user_id || '', permissions: d.permissions}); }
+        if (r.ok) { const d = await r.json(); authSave({...a, role: d.role, name: d.name || a.name, user_id: d.user_id || a.user_id || '', chat_color: d.chat_color || a.chat_color || '#7c3aed', permissions: d.permissions}); }
       } catch(e) {}
       updateUserBadge();
       applyPermGating();
@@ -4282,6 +4285,7 @@ else { setTimeout(_renderTotals, 100); }
         const msgs = d.messages || [];
         _setChatSeen(_chatOfferId, msgs.length);  // mark all as seen
         _updateChatBadges();
+        _renderChatParticipants(d.participants || []);
         _renderChatMessages(msgs);
         // Refresh offer list to update badge
         renderOffersList(document.getElementById('offers-search')?.value || '');
@@ -4289,6 +4293,20 @@ else { setTimeout(_renderTotals, 100); }
     }
 
     function _escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function _renderChatParticipants(participants) {
+      const el = document.getElementById('chat-participants');
+      if (!el) return;
+      if (!participants.length) { el.style.display = 'none'; return; }
+      el.style.display = 'flex';
+      el.innerHTML = participants.map(p => {
+        const initials = (p.name || p.username).split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+        return `<span title="${_escHtml(p.name)}" style="display:inline-flex;align-items:center;gap:5px;background:${p.color}18;border:1.5px solid ${p.color};border-radius:20px;padding:2px 10px 2px 4px;font-size:11px;font-weight:700;color:${p.color}">
+          <span style="background:${p.color};color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0">${_escHtml(initials)}</span>
+          ${_escHtml(p.name || p.username)}
+        </span>`;
+      }).join('');
+    }
 
     function _renderChatMessages(messages) {
       const me = currentUsername();
@@ -4299,10 +4317,14 @@ else { setTimeout(_renderTotals, 100); }
       }
       el.innerHTML = messages.map(m => {
         const isMe = m.username === me;
+        const color = m.color || '#7c3aed';
         const ts = m.ts ? new Date(m.ts * 1000).toLocaleString('ro', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+        const bubbleStyle = isMe
+          ? `background:${color};color:#fff;border-radius:14px 14px 2px 14px;padding:8px 12px;font-size:13px;max-width:80%;word-break:break-word`
+          : `background:${color}18;color:#1e1b4b;border:1.5px solid ${color}40;border-radius:14px 14px 14px 2px;padding:8px 12px;font-size:13px;max-width:80%;word-break:break-word`;
         return `<div style="display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'}">
-          <div class="${isMe?'chat-bubble-me':'chat-bubble-other'}">${_escHtml(m.text)}</div>
-          <div style="font-size:10px;color:#9ca3af;margin-top:2px;padding:0 4px">${_escHtml(m.name||m.username)} · ${ts}</div>
+          <div style="${bubbleStyle}">${_escHtml(m.text)}</div>
+          <div style="font-size:10px;color:${color};opacity:0.8;margin-top:2px;padding:0 4px;font-weight:600">${_escHtml(m.name||m.username)} · ${ts}</div>
         </div>`;
       }).join('');
       el.scrollTop = el.scrollHeight;
@@ -4590,6 +4612,8 @@ else { setTimeout(_renderTotals, 100); }
       document.getElementById('edit-name').value = userData.name || '';
       const roleEl = document.getElementById('edit-role');
       if (roleEl) roleEl.value = userData.role || 'agent';
+      const colorEl = document.getElementById('edit-chat-color');
+      if (colorEl) colorEl.value = userData.chat_color || '#7c3aed';
       document.getElementById('edit-newpass').value = '';
       document.getElementById('edit-msg').style.display = 'none';
       _writePerms('edit', userData.permissions);
@@ -4607,10 +4631,12 @@ else { setTimeout(_renderTotals, 100); }
       const newpass = document.getElementById('edit-newpass').value || undefined;
       const name = (document.getElementById('edit-name').value || '').trim() || undefined;
       const role = document.getElementById('edit-role')?.value || undefined;
+      const chat_color = document.getElementById('edit-chat-color')?.value || undefined;
       const msg = document.getElementById('edit-msg');
       const body = { username, permissions };
       if (name) body.name = name;
       if (role) body.role = role;
+      if (chat_color) body.chat_color = chat_color;
       if (newpass) body.password = newpass;
       const r = await fetch('/api/users/update', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify(body)});
       const d = await r.json();
