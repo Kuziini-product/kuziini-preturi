@@ -2876,14 +2876,19 @@ def search_product(code, cron_mode=False):
         'altex':   f'https://altex.ro/cauta/?q={urllib.parse.quote(code)}',
     }
 
+    # Skip Altex and Flanco on Vercel cron (blocked by anti-bot, scraped locally via Playwright)
+    skip_vendors = []
+    if cron_mode and IS_VERCEL:
+        skip_vendors = ['altex', 'flanco']
+        log(f"  CRON: skipping {skip_vendors} (blocked on Vercel, scraped locally)")
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:
         fut_aggregator = ex.submit(scrape_price_aggregator, code)
-        futs = {
-            'samsung': ex.submit(scrape_samsung, code),
-            'emag':    ex.submit(scrape_emag,    code),
-            'flanco':  ex.submit(scrape_flanco,  code),
-            'altex':   ex.submit(scrape_altex,   code),
-        }
+        futs = {}
+        for v, func in [('samsung', scrape_samsung), ('emag', scrape_emag),
+                         ('flanco', scrape_flanco), ('altex', scrape_altex)]:
+            if v not in skip_vendors:
+                futs[v] = ex.submit(func, code)
 
         try:
             aggregator_prices = fut_aggregator.result(timeout=VENDOR_TIMEOUT)

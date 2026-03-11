@@ -100,6 +100,18 @@ class handler(BaseHTTPRequestHandler):
                 break
             try:
                 result = search_product(code, cron_mode=True)
+                # Merge with existing cache (preserve Altex from Playwright local scraper)
+                from cache import get_cached_price as _get_cached
+                existing = _get_cached(code)
+                if existing and existing.get('prices'):
+                    for v in ['altex', 'flanco']:
+                        ep = existing['prices'].get(v)
+                        if ep and not result.get('prices', {}).get(v):
+                            result.setdefault('prices', {})[v] = ep
+                            eu = existing.get('urls', {}).get(v)
+                            if eu:
+                                result.setdefault('urls', {})[v] = eu
+                            log(f"  CRON: {code} {v} preserved from cache: {ep}")
                 # Salveaza in Redis
                 set_cached_price(code, result)
                 # Salveaza in arhiva permanenta (prices + URLs, fara TTL)
@@ -114,9 +126,9 @@ class handler(BaseHTTPRequestHandler):
                 # Salveaza istoricul preturilor (snapshot zilnic)
                 if result.get('prices'):
                     save_price_history(code, result['prices'])
-                # Daca vendori lipsesc, incearca individual (poate threading-ul a cauzat timeout)
+                # Daca vendori lipsesc (doar emag - altex/flanco sunt blocate pe Vercel)
                 prices = result.get('prices', {})
-                missing = [v for v in ['emag', 'altex'] if not prices.get(v)]
+                missing = [v for v in ['emag'] if not prices.get(v)]
                 if missing:
                     elapsed2 = time.time() - start
                     log(f"  CRON: {code} missing={missing}, elapsed={round(elapsed2,1)}s, retrying...")
