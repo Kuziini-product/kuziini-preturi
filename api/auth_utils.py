@@ -400,8 +400,11 @@ def get_offer_full(oid, username, session):
 
 def _offer_summary(o):
     prods = o.get('products', [])
+    oid = o.get('num') or o.get('id')
+    try: chat_count = int(_rc('LLEN', f'offer_chat:{oid}') or 0)
+    except: chat_count = 0
     return {
-        'id':             o.get('num') or o.get('id'),
+        'id':             oid,
         'num':            o.get('num'),
         'date':           o.get('date', ''),
         'client':         o.get('client', ''),
@@ -413,6 +416,7 @@ def _offer_summary(o):
         'products_count': len(prods),
         'products_qty':   sum(p.get('qty', 1) for p in prods),
         'product_codes':  [p.get('code', '') for p in prods],
+        'chat_count':     chat_count,
     }
 
 def list_offers(username, session):

@@ -4139,8 +4139,13 @@ else { setTimeout(_renderTotals, 100); }
         const discTxt = o.discount > 0 ? `<br><span style="font-size:10px;color:#7c3aed">-${o.discount}%</span>` : '';
         const ownerTag = showShare ? '' : `<span style="font-size:9px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;padding:1px 6px;border-radius:4px;margin-left:4px">de la: ${o.owner_id}</span>`;
         const isShared = (o.shared_with || []).length > 0;
+        const chatTotal = o.chat_count || 0;
+        const chatNew = isShared ? _chatUnread(o.id, chatTotal) : 0;
+        const chatBadge = chatNew > 0
+          ? `<span style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;pointer-events:none">${chatNew}</span>`
+          : (chatTotal > 0 ? `<span style="position:absolute;top:-6px;right:-6px;background:#9ca3af;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;pointer-events:none">${chatTotal}</span>` : '');
         const chatBtn = isShared
-          ? `<button class="offer-chat-btn" onclick="openChatModal('${o.id}','${o.num}')" title="Chat">&#x1F4AC;</button>`
+          ? `<span style="position:relative;display:inline-block"><button class="offer-chat-btn" onclick="openChatModal('${o.id}','${o.num}')" title="Chat">&#x1F4AC;</button>${chatBadge}</span>`
           : '';
         rows += `<tr>
           <td><span class="cart-code">${o.num}</span>${discTxt}${ownerTag}</td>
@@ -4218,6 +4223,10 @@ else { setTimeout(_renderTotals, 100); }
     // ── Chat ───────────────────────────────────────────────────────────────
     let _chatOfferId = null;
 
+    function _chatSeen()          { try { return JSON.parse(localStorage.getItem('kuziini_chat_seen') || '{}'); } catch(e) { return {}; } }
+    function _setChatSeen(oid, n) { const s = _chatSeen(); s[oid] = n; localStorage.setItem('kuziini_chat_seen', JSON.stringify(s)); }
+    function _chatUnread(oid, total) { return Math.max(0, total - (_chatSeen()[oid] || 0)); }
+
     async function openChatModal(offerId, offerNum) {
       _chatOfferId = offerId;
       document.getElementById('chat-offer-num').textContent = offerNum;
@@ -4237,7 +4246,11 @@ else { setTimeout(_renderTotals, 100); }
         const r = await fetch('/api/offers/chat/get', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({offer_id: _chatOfferId})});
         if (!r.ok) return;
         const d = await r.json();
-        _renderChatMessages(d.messages || []);
+        const msgs = d.messages || [];
+        _setChatSeen(_chatOfferId, msgs.length);  // mark all as seen
+        _renderChatMessages(msgs);
+        // Refresh offer list to update badge
+        renderOffersList(document.getElementById('offers-search')?.value || '');
       } catch(e) {}
     }
 
@@ -4270,7 +4283,9 @@ else { setTimeout(_renderTotals, 100); }
         const r = await fetch('/api/offers/chat/send', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({offer_id: _chatOfferId, text})});
         if (!r.ok) return;
         const d = await r.json();
-        _renderChatMessages(d.messages || []);
+        const msgs = d.messages || [];
+        _setChatSeen(_chatOfferId, msgs.length);
+        _renderChatMessages(msgs);
       } catch(e) {}
     }
 
