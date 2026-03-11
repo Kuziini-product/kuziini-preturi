@@ -4057,64 +4057,61 @@ function exportExcel() {
   _saveToStorage();
   _logAct('export_excel', {offer_id: _oData.num});
   const state = _getState();
+  const fn = v => (v !== null && v !== undefined) ? v.toFixed(2) : '';
   let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
            + '<head><meta charset="UTF-8"></head><body>';
-  // Client info header
-  html += '<table style="margin-bottom:12px;font-size:13px">';
-  html += \`<tr><td><b>Oferta:</b> \${state.num}</td><td style="padding-left:30px"><b>Data:</b> \${state.date}</td></tr>\`;
-  html += \`<tr><td><b>Client:</b> \${state.client||'—'}</td><td style="padding-left:30px"><b>Tel:</b> \${state.phone||'—'}</td></tr>\`;
-  if (state.email) html += \`<tr><td colspan="2"><b>Email:</b> \${state.email}</td></tr>\`;
+  // Offer header (matches printable offer)
+  html += '<table style="margin-bottom:6px;font-size:13px;font-family:Segoe UI,Arial,sans-serif">';
+  html += \`<tr><td colspan="6" style="font-size:18px;font-weight:bold;color:#4c1d95;padding-bottom:4px">OFERTĂ COMERCIALĂ</td></tr>\`;
+  html += \`<tr><td colspan="3"><b>Oferta:</b> \${state.num}</td><td colspan="3"><b>Data:</b> \${state.date}</td></tr>\`;
+  html += \`<tr><td colspan="3"><b>Client:</b> \${state.client||'—'}</td><td colspan="3"><b>Tel:</b> \${state.phone||'—'}</td></tr>\`;
+  if (state.email) html += \`<tr><td colspan="6"><b>Email:</b> \${state.email}</td></tr>\`;
+  if (state.notes) html += \`<tr><td colspan="6"><b>Observatii:</b> \${state.notes}</td></tr>\`;
   html += '</table>';
-  html += '<table border="1" style="border-collapse:collapse">';
-  // Header row
-  html += '<tr style="background:#2B2A29;color:#fff;font-weight:bold;">'
-    + '<th>#</th><th>Cod Produs</th><th>Categorie</th><th>Cant.</th>'
-    + '<th>Pret Achizitie Kuziini (Lei)</th><th>Discount (%)</th><th>Pret cu Discount (Lei)</th>'
-    + '<th>Samsung.ro (Lei)</th><th>eMAG.ro (Lei)</th><th>Flanco.ro (Lei)</th><th>Altex.ro (Lei)</th>'
-    + '<th>Min. Piata (Lei)</th><th>Diferenta (Lei)</th><th>Diferenta (%)</th>'
+  // Products table (same columns as printable: #, Produs, Categorie, Cant., Pret Unitar, Subtotal)
+  const totalItems = state.products.reduce((s,p) => s + (p.qty||1), 0);
+  html += '<table border="1" style="border-collapse:collapse;font-family:Segoe UI,Arial,sans-serif;font-size:12px;width:100%">';
+  html += '<tr style="background:#1e1b4b;color:#fff;font-weight:bold;font-size:12px">'
+    + '<th style="padding:8px 6px;text-align:center">#</th>'
+    + '<th style="padding:8px 10px;text-align:left">Produs</th>'
+    + '<th style="padding:8px 10px;text-align:left">Categorie</th>'
+    + '<th style="padding:8px 6px;text-align:center">Cant.</th>'
+    + '<th style="padding:8px 10px;text-align:right">Pret Unitar (Lei)</th>'
+    + '<th style="padding:8px 10px;text-align:right">Subtotal (Lei)</th>'
     + '</tr>';
-
   state.products.forEach((item, i) => {
-    const discSell = item.baseSellPrice * (1 - _disc / 100);
-    const ap = item.all_prices || {};
-    const vals = [ap.samsung, ap.emag, ap.flanco, ap.altex].filter(v => v && v > 0);
-    const minM  = vals.length > 0 ? Math.min(...vals) : null;
-    const diffL = minM !== null ? (discSell - minM) : null;
-    const diffP = minM !== null && minM > 0 ? ((discSell - minM) / minM * 100) : null;
-    const fn = v => (v !== null && v !== undefined) ? v.toFixed(2) : '';
-    const rowBg = minM !== null ? (discSell > minM ? '#FEE2E2' : '#D1FAE5') : '#FFFFFF';
-    html += \`<tr style="background:\${rowBg}">
-      <td>\${i+1}</td>
-      <td><b>\${item.code}</b></td>
-      <td>\${item.category||''}</td>
-      <td>\${item.qty||1}</td>
-      <td>\${fn(item.kuziini_price)}</td>
-      <td>\${_disc > 0 ? _disc.toFixed(1)+'%' : '0%'}</td>
-      <td><b>\${fn(discSell)}</b></td>
-      <td>\${fn(ap.samsung)}</td>
-      <td>\${fn(ap.emag)}</td>
-      <td>\${fn(ap.flanco)}</td>
-      <td>\${fn(ap.altex)}</td>
-      <td>\${fn(minM)}</td>
-      <td style="color:\${diffL!==null&&diffL<0?'red':''}"><b>\${fn(diffL)}</b></td>
-      <td style="color:\${diffP!==null&&diffP<0?'red':''}"><b>\${diffP!==null?diffP.toFixed(1)+'%':''}</b></td>
+    const sell = item.baseSellPrice * (1 - _disc / 100);
+    const sub = sell * (item.qty || 1);
+    const bg = i % 2 === 0 ? '#fff' : '#f5f3ff';
+    html += \`<tr style="background:\${bg}">
+      <td style="padding:6px;text-align:center">\${i+1}</td>
+      <td style="padding:6px 10px;font-weight:bold">\${item.code}</td>
+      <td style="padding:6px 10px;color:#6b7280">\${item.category||''}</td>
+      <td style="padding:6px;text-align:center">\${item.qty||1}</td>
+      <td style="padding:6px 10px;text-align:right">\${fn(sell)}</td>
+      <td style="padding:6px 10px;text-align:right;font-weight:bold">\${fn(sub)}</td>
     </tr>\`;
   });
-  // Footer
-  const grandTotal = state.products.reduce((s, p) => s + p.baseSellPrice*(1-_disc/100)*(p.qty||1), 0);
-  html += \`<tr style="background:#2B2A29;color:#fff;font-weight:bold;">
-    <td colspan="3">Total produse: \${state.products.reduce((s,p)=>s+(p.qty||1),0)}</td>
-    <td></td><td></td><td></td>
-    <td><b>\${grandTotal.toFixed(2)}</b></td>
-    <td colspan="7"></td>
-  </tr>\`;
   html += '</table>';
+  // Totals section
+  const subtotalNoDisc = state.products.reduce((s, p) => s + p.baseSellPrice * (p.qty||1), 0);
+  const grandTotal = state.products.reduce((s, p) => s + p.baseSellPrice * (1 - _disc/100) * (p.qty||1), 0);
+  html += '<table style="margin-top:8px;font-family:Segoe UI,Arial,sans-serif;font-size:13px;width:100%">';
+  html += \`<tr><td style="text-align:right;padding:4px 10px">Subtotal (fara discount):</td><td style="text-align:right;padding:4px 10px;width:120px">\${fn(subtotalNoDisc)} Lei</td></tr>\`;
+  if (_disc > 0) {
+    const discAmount = subtotalNoDisc - grandTotal;
+    html += \`<tr style="color:#dc2626"><td style="text-align:right;padding:4px 10px">Discount \${_disc.toFixed(1)}%:</td><td style="text-align:right;padding:4px 10px">-\${fn(discAmount)} Lei</td></tr>\`;
+  }
+  html += \`<tr style="font-size:15px;font-weight:bold"><td style="text-align:right;padding:8px 10px;border-top:2px solid #1e1b4b">TOTAL OFERTĂ (cu TVA):</td><td style="text-align:right;padding:8px 10px;border-top:2px solid #1e1b4b;width:120px">\${fn(grandTotal)} Lei</td></tr>\`;
+  html += \`<tr><td style="text-align:right;padding:2px 10px;color:#6b7280;font-size:11px">\${totalItems} produs\${totalItems !== 1 ? 'e' : ''} · \${state.products.length} pozitii</td><td></td></tr>\`;
+  html += '</table>';
+  // Description
   if (state.description) {
-    html += \`<p style="margin-top:12px;font-size:12px"><b>Descriere:</b> \${state.description.replace(/\\n/g,'<br>')}</p>\`;
+    html += \`<p style="margin-top:12px;font-size:12px;font-family:Segoe UI,Arial,sans-serif"><b>Descriere / Note aditionale:</b><br>\${state.description.replace(/\\n/g,'<br>')}</p>\`;
   }
-  if (state.notes) {
-    html += \`<p style="margin-top:6px;font-size:12px"><b>Observatii:</b> \${state.notes}</p>\`;
-  }
+  // Footer
+  html += \`<p style="margin-top:16px;font-size:11px;color:#6b7280;font-family:Segoe UI,Arial,sans-serif"><b>Valabilitate oferta:</b> 7 zile calendaristice de la data emiterii. Preturile includ TVA. Stocul este limitat.</p>\`;
+  html += \`<p style="font-size:11px;color:#6b7280;font-family:Segoe UI,Arial,sans-serif;text-align:right"><b>Kuziini</b> · kuziini.ro · Oferta nr. \${state.num} · \${state.date}</p>\`;
   html += '</body></html>';
 
   const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
