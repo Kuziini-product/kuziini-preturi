@@ -3509,6 +3509,7 @@ thead th.right { text-align: right; }
   <button class="pbtn pbtn-save"  onclick="saveAndToast()">Salveaza</button>
   <button class="pbtn pbtn-excel" onclick="exportExcel()">Export Excel</button>
   <button class="pbtn pbtn-print" onclick="doPrint()">Print / PDF</button>
+  <button class="pbtn pbtn-wa"    onclick="sendWhatsApp()" style="background:#25d366;color:#fff">&#128323; WhatsApp</button>
   <button class="pbtn pbtn-close" onclick="closeOffer()">Inchide</button>
 </div>
 <div class="page-push"></div>
@@ -3823,6 +3824,34 @@ function exportExcel() {
   a.download = 'Oferta_Kuziini_' + ts + '.xls';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function sendWhatsApp() {
+  if (!_validateClientData()) return;
+  const state = _getState();
+  const disc = _disc > 0 ? \` (-\${_disc.toFixed(1)}%)\` : '';
+  const rows = state.products.map((p, i) => {
+    const price = (p.baseSellPrice * (1 - _disc/100)).toFixed(2);
+    const sub   = (p.baseSellPrice * (1 - _disc/100) * (p.qty||1)).toFixed(2);
+    return \`\${i+1}. \${p.code}\${p.category ? ' — ' + p.category : ''} | \${p.qty||1} buc × \${price} Lei = \${sub} Lei\`;
+  }).join('\\n');
+  const grandTotal = state.products.reduce((s, p) => s + p.baseSellPrice * (1 - _disc/100) * (p.qty||1), 0);
+  const msg = [
+    \`*Oferta Kuziini \${state.num}*\`,
+    \`Data: \${state.date}\`,
+    \`Client: \${state.client}\`,
+    state.phone ? \`Tel: \${state.phone}\` : '',
+    state.email ? \`Email: \${state.email}\` : '',
+    '',
+    '*Produse:*',
+    rows,
+    '',
+    \`*Total\${disc}: \${grandTotal.toFixed(2)} Lei*\`,
+    state.notes ? \`Observatii: \${state.notes}\` : '',
+  ].filter(l => l !== '').join('\\n');
+  const url = 'https://wa.me/?text=' + encodeURIComponent(msg);
+  _logAct('whatsapp_share', {offer_id: state.num, client: state.client});
+  window.open(url, '_blank');
 }
 
 // Apply saved discount on load (if reopening)

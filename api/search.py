@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from scraper import search_product, search_single_vendor, load_products, APP_VERSION, warmup_session, get_samsung_specs
 from cache import get_cached_price, get_cache_status, is_configured as cache_configured, test_connection as cache_test, get_price_history, get_all_history_codes, get_cron_events
 import auth_utils
+import whatsapp
 
 # Warmup on cold start
 warmup_session()
@@ -331,6 +332,13 @@ class handler(BaseHTTPRequestHandler):
             if err:
                 self._json({'error': err}, 403)
                 return
+            # WhatsApp notification to Madalin
+            try:
+                user = auth_utils.get_user(session['username'])
+                agent_name = user.get('name', session['username']) if user else session['username']
+                whatsapp.notify_madalin('offer_save', agent_name, session['username'], body)
+            except Exception:
+                pass
             self._json({'ok': True, 'offer_id': oid})
 
         elif path == '/api/offers/list':
@@ -489,6 +497,18 @@ class handler(BaseHTTPRequestHandler):
             data   = body.get('data') or {}
             if action:
                 auth_utils.log_activity(session['username'], action, data)
+            # WhatsApp notification for export actions
+            if action in ('export_excel', 'export_pdf'):
+                try:
+                    user = auth_utils.get_user(session['username'])
+                    agent_name = user.get('name', session['username']) if user else session['username']
+                    offer_id = data.get('offer_id')
+                    offer = None
+                    if offer_id:
+                        offer, _ = auth_utils.get_offer_full(offer_id, session['username'], session)
+                    whatsapp.notify_madalin(action, agent_name, session['username'], offer)
+                except Exception:
+                    pass
             self._json({'ok': True})
 
         elif path == '/api/activity/report':
