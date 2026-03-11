@@ -604,7 +604,7 @@ class handler(BaseHTTPRequestHandler):
         elif path == '/api/chat/get':
             session = self._require_auth()
             if not session: return
-            messages = auth_utils.get_inbox(session['username'])
+            messages = auth_utils.get_inbox(session['username'], session)
             users = auth_utils.get_all_usernames()
             self._json({'messages': messages, 'users': users})
 
@@ -626,8 +626,11 @@ class handler(BaseHTTPRequestHandler):
             session = self._require_auth()
             if not session: return
             msg_ids = body.get('ids') or []
+            offer_id = (body.get('offer_id') or '').strip()
             if msg_ids:
                 auth_utils.mark_inbox_read(session['username'], msg_ids)
+            if offer_id:
+                auth_utils.mark_offer_chat_seen(session['username'], offer_id)
             self._json({'ok': True})
 
         else:

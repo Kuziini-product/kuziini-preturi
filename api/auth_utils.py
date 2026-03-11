@@ -601,16 +601,63 @@ def _inbox_msgs(limit=200):
     return messages
 
 
-def get_inbox(username, limit=200):
-    """Get messages where user is sender or recipient (or broadcast)."""
+def get_inbox(username, session=None, limit=200):
+    """Get inbox + offer chat messages merged, sorted by time."""
+    # 1. Direct inbox messages
     msgs = _inbox_msgs(limit)
     result = []
     for m in msgs:
         recips = m.get('recipients') or []
         if m.get('sender') == username or username in recips or len(recips) == 0:
             m['is_read'] = username in (m.get('read_by') or []) or m.get('sender') == username
+            m['source'] = 'inbox'
             result.append(m)
+
+    # 2. Offer chat messages (from user's offers)
+    if session:
+        offer_list = list_offers(username, session)
+        seen_chat = _jget(f'inbox_offer_seen:{username}') or {}
+        for o_summary in offer_list:
+            oid = o_summary.get('id') or o_summary.get('num')
+            if not oid:
+                continue
+            chat_msgs = get_offer_chat(oid)
+            participants = []
+            full_offer = _jget(f'offer:{oid}')
+            if full_offer:
+                if full_offer.get('owner_id'):
+                    participants.append(full_offer['owner_id'])
+                participants.extend(full_offer.get('shared_with', []))
+            for cm in chat_msgs:
+                msg_id = f'ochat-{oid}-{cm.get("ts", 0)}-{cm.get("username", "")}'
+                seen_ts = seen_chat.get(oid, 0)
+                is_read = cm.get('username') == username or cm.get('ts', 0) <= seen_ts
+                recips = [p for p in participants if p != cm.get('username')]
+                result.append({
+                    'id': msg_id,
+                    'sender': cm.get('username', ''),
+                    'sender_name': cm.get('name', cm.get('username', '')),
+                    'recipients': recips,
+                    'offer_ref': o_summary.get('num') or oid,
+                    'text': cm.get('text', ''),
+                    'ts': cm.get('ts', 0),
+                    'read_by': [],
+                    'is_read': is_read,
+                    'color': cm.get('color', '#7c3aed'),
+                    'source': 'offer_chat',
+                })
+
+    # Sort by timestamp
+    result.sort(key=lambda m: m.get('ts', 0))
     return result
+
+
+def mark_offer_chat_seen(username, offer_id):
+    """Mark all offer chat messages as seen up to now."""
+    import time as _t
+    seen = _jget(f'inbox_offer_seen:{username}') or {}
+    seen[offer_id] = int(_t.time())
+    _jset(f'inbox_offer_seen:{username}', seen)
 
 
 def add_inbox_message(sender, sender_name, text, recipients=None, offer_ref=None):

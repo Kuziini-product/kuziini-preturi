@@ -5981,7 +5981,9 @@ else { setTimeout(_renderTotals, 100); }
       // Mark as read
       if (!m.is_read) {
         m.is_read = true;
-        fetch('/api/chat/read', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({ids: [msgId]})}).catch(()=>{});
+        const readBody = {ids: [msgId]};
+        if (m.source === 'offer_chat' && m.offer_ref) readBody.offer_id = m.offer_ref;
+        fetch('/api/chat/read', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify(readBody)}).catch(()=>{});
         updateGchatBadge(_inboxMessages.filter(x => !x.is_read).length);
         const unreadTab = document.getElementById('inbox-unread-tab');
         const unreadCount = _inboxMessages.filter(x => !x.is_read).length;
