@@ -1221,6 +1221,17 @@
       60%     { transform: rotate(-5deg); }
       75%     { transform: rotate(3deg); }
     }
+    /* Inbox expanded mode */
+    .inbox-expanded #inbox-messages > div { padding: 14px 20px !important; }
+    .inbox-expanded #inbox-messages > div > div > div:first-child span:first-child { font-size: 13px !important; }
+    .inbox-expanded #inbox-messages > div > div > div:nth-child(2) { font-size: 12px !important; }
+    .inbox-expanded #inbox-messages > div > div > div:nth-child(3) { font-size: 13px !important; }
+    .inbox-expanded #inbox-view-compose { font-size: 14px; }
+    .inbox-expanded #inbox-view-compose textarea { font-size: 14px !important; min-height: 100px !important; }
+    .inbox-expanded #inbox-view-compose input { font-size: 13px !important; }
+    .inbox-expanded #inbox-view-compose label { font-size: 12px !important; }
+    .inbox-expanded #inbox-filter { font-size: 13px !important; padding: 8px 14px !important; }
+
     .offers-shared-hdr {
       font-size: 12px; font-weight: 800; color: #7c3aed;
       text-transform: uppercase; letter-spacing: .06em;
@@ -2349,7 +2360,10 @@
     <div id="gchat-panel" style="display:none;position:fixed;bottom:24px;right:24px;width:400px;max-height:580px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(124,58,237,0.22);z-index:8100;flex-direction:column;overflow:hidden;border:1.5px solid #ede9fe">
       <div id="gchat-header" style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px 8px;background:linear-gradient(135deg,#1e1b4b,#4c1d95);flex-shrink:0;cursor:grab;user-select:none">
         <span style="font-size:13px;font-weight:800;color:#fff;letter-spacing:.03em">&#x1F4E8; Mesaje</span>
-        <button onclick="toggleGeneralChat()" style="background:none;border:none;font-size:18px;color:rgba(255,255,255,0.7);cursor:pointer;line-height:1">&#x2715;</button>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button id="gchat-expand-btn" onclick="toggleInboxExpand()" style="background:none;border:none;font-size:16px;color:rgba(255,255,255,0.7);cursor:pointer;line-height:1" title="Extinde / Minimizeaza">&#x26F6;</button>
+          <button onclick="toggleGeneralChat()" style="background:none;border:none;font-size:18px;color:rgba(255,255,255,0.7);cursor:pointer;line-height:1">&#x2715;</button>
+        </div>
       </div>
       <!-- Tabs: Inbox / Compune -->
       <div style="display:flex;border-bottom:1.5px solid #ede9fe;flex-shrink:0;background:#faf8ff">
@@ -5780,6 +5794,7 @@ else { setTimeout(_renderTotals, 100); }
     // ── Inbox / Messages Panel ──────────────────────────────────────────
 
     let _gchatOpen = false;
+    let _gchatExpanded = false;
     let _gchatUsers = [];
     let _inboxMessages = [];
     let _inboxTab = 'list';
@@ -5874,6 +5889,35 @@ else { setTimeout(_renderTotals, 100); }
       } else {
         panel.style.display = 'none';
         btn.style.display = 'flex';
+        // Reset expand on close
+        if (_gchatExpanded) { _gchatExpanded = true; toggleInboxExpand(); }
+      }
+    }
+
+    function toggleInboxExpand() {
+      _gchatExpanded = !_gchatExpanded;
+      const panel = document.getElementById('gchat-panel');
+      const msgBox = document.getElementById('inbox-messages');
+      const expandBtn = document.getElementById('gchat-expand-btn');
+      if (_gchatExpanded) {
+        panel.style.width = '700px';
+        panel.style.maxHeight = '85vh';
+        panel.style.left = Math.max(0, (window.innerWidth - 700) / 2) + 'px';
+        panel.style.top = Math.max(10, window.innerHeight * 0.07) + 'px';
+        panel.style.borderRadius = '18px';
+        if (msgBox) { msgBox.style.maxHeight = '60vh'; msgBox.style.fontSize = '14px'; }
+        expandBtn.innerHTML = '&#x2750;'; // minimize icon
+        expandBtn.title = 'Minimizeaza';
+        // Scale up text in inbox items
+        panel.classList.add('inbox-expanded');
+      } else {
+        panel.style.width = '400px';
+        panel.style.maxHeight = '580px';
+        panel.style.borderRadius = '16px';
+        if (msgBox) { msgBox.style.maxHeight = '400px'; msgBox.style.fontSize = ''; }
+        expandBtn.innerHTML = '&#x26F6;'; // expand icon
+        expandBtn.title = 'Extinde';
+        panel.classList.remove('inbox-expanded');
       }
     }
 
@@ -6002,19 +6046,20 @@ else { setTimeout(_renderTotals, 100); }
       const replyBtn = !isMine
         ? `<button onclick="replyToMessage('${m.sender}','${m.offer_ref||''}')" style="background:#ede9fe;color:#7c3aed;border:none;border-radius:6px;padding:5px 12px;font-size:10px;font-weight:700;cursor:pointer;margin-top:6px">&#8617; Raspunde</button>`
         : '';
+      const exp = _gchatExpanded;
       box.innerHTML = `
-        <div style="padding:14px">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
-            <button onclick="loadInbox();renderInbox(_inboxMessages,document.getElementById('inbox-filter').value)" style="background:none;border:none;font-size:16px;cursor:pointer;color:#7c3aed;padding:0">&#8592;</button>
-            <span style="font-size:13px;font-weight:800;color:#1e1b4b">Mesaj</span>
+        <div style="padding:${exp?'20px':'14px'}">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:${exp?'14px':'10px'}">
+            <button onclick="loadInbox();renderInbox(_inboxMessages,document.getElementById('inbox-filter').value)" style="background:none;border:none;font-size:${exp?'20px':'16px'};cursor:pointer;color:#7c3aed;padding:0">&#8592;</button>
+            <span style="font-size:${exp?'16px':'13px'};font-weight:800;color:#1e1b4b">Mesaj</span>
           </div>
-          <div style="background:#f9fafb;border-radius:10px;padding:12px 14px;border:1px solid #ede9fe">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <span style="font-size:12px;font-weight:700;color:${m.color||'#7c3aed'}">${isMine ? 'Tu' : (m.sender_name||m.sender)}</span>
-              <span style="font-size:9px;color:#9ca3af">${timeStr}</span>
+          <div style="background:#f9fafb;border-radius:${exp?'14px':'10px'};padding:${exp?'18px 20px':'12px 14px'};border:1px solid #ede9fe">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:${exp?'10px':'6px'}">
+              <span style="font-size:${exp?'15px':'12px'};font-weight:700;color:${m.color||'#7c3aed'}">${isMine ? 'Tu' : (m.sender_name||m.sender)}</span>
+              <span style="font-size:${exp?'11px':'9px'};color:#9ca3af">${timeStr}</span>
             </div>
-            <div style="font-size:10px;color:#6b7280;margin-bottom:8px">Catre: ${recipStr}</div>
-            <div style="font-size:12px;color:#1e1b4b;line-height:1.5;word-break:break-word">${_gchatFormatText(m.text)}</div>
+            <div style="font-size:${exp?'13px':'10px'};color:#6b7280;margin-bottom:${exp?'12px':'8px'}">Catre: ${recipStr}</div>
+            <div style="font-size:${exp?'15px':'12px'};color:#1e1b4b;line-height:${exp?'1.7':'1.5'};word-break:break-word">${_gchatFormatText(m.text)}</div>
             ${offerBtn}
             ${replyBtn}
           </div>
