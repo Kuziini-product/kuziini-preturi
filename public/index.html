@@ -5950,7 +5950,11 @@ else { setTimeout(_renderTotals, 100); }
       if (hashMatch) {
         const q = hashMatch[1].toLowerCase();
         const offerMatches = (_serverOffers || []).filter(o =>
-          (o.num||'').toLowerCase().includes(q) || (o.client||'').toLowerCase().includes(q)
+          (o.client||'').toLowerCase().includes(q) ||
+          (o.phone||'').toLowerCase().includes(q) ||
+          (o.email||'').toLowerCase().includes(q) ||
+          (o.num||'').toLowerCase().includes(q) ||
+          (o.product_codes || []).some(c => c.toLowerCase().includes(q))
         );
         if (offerMatches.length > 0) {
           sugBox.innerHTML = offerMatches.slice(0, 8).map(o =>
@@ -6001,10 +6005,13 @@ else { setTimeout(_renderTotals, 100); }
         });
       }
 
-      // Search offers
+      // Search offers (same rules as offers section search)
       const offerMatches = (_serverOffers || []).filter(o =>
-        (o.num||'').toLowerCase().includes(ql) || (o.client||'').toLowerCase().includes(ql) ||
-        (o.phone||'').toLowerCase().includes(ql) || (o.email||'').toLowerCase().includes(ql)
+        (o.client||'').toLowerCase().includes(ql) ||
+        (o.phone||'').toLowerCase().includes(ql) ||
+        (o.email||'').toLowerCase().includes(ql) ||
+        (o.num||'').toLowerCase().includes(ql) ||
+        (o.product_codes || []).some(c => c.toLowerCase().includes(ql))
       );
       if (offerMatches.length > 0) {
         html += '<div style="padding:4px 12px;font-size:9px;font-weight:800;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;background:#f9fafb">Oferte</div>';
