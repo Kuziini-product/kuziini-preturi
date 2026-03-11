@@ -26,19 +26,48 @@
     }
 
     /* ── Layout ── */
+    @keyframes borderRotate {
+      0% { --border-angle: 0deg; }
+      100% { --border-angle: 360deg; }
+    }
+    @property --border-angle {
+      syntax: "<angle>";
+      initial-value: 0deg;
+      inherits: false;
+    }
     .app-container {
       max-width: 960px;
       margin: 0 auto;
-      border: 1.5px solid rgba(60, 90, 160, 0.15);
       border-radius: 28px;
       padding: 20px 16px 32px;
-      background: rgba(255, 255, 255, 0.35);
+      background: linear-gradient(135deg, rgba(219,234,254,0.55) 0%, rgba(237,233,254,0.55) 50%, rgba(243,232,255,0.45) 100%);
       box-shadow:
-        0 0 0 1px rgba(60, 100, 180, 0.06),
-        0 2px 24px rgba(60, 90, 160, 0.08),
+        0 2px 24px rgba(60, 90, 160, 0.10),
         inset 0 1px 0 rgba(255, 255, 255, 0.7);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
+      position: relative;
+      border: 3px solid transparent;
+      background-clip: padding-box;
+    }
+    .app-container::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 30px;
+      padding: 3px;
+      background: conic-gradient(
+        from var(--border-angle, 0deg),
+        #3b82f6, #6366f1, #8b5cf6, #a855f7, #7c3aed,
+        #6366f1, #3b82f6, #60a5fa, #3b82f6
+      );
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      animation: borderRotate 4s linear infinite;
+      pointer-events: none;
+      z-index: 0;
     }
 
     /* ── Header / Logo ── */
@@ -784,6 +813,9 @@
         padding: 12px 8px 24px;
         border-radius: 18px;
       }
+      .app-container::before {
+        border-radius: 20px;
+      }
       .header {
         padding: 16px 12px;
         margin-bottom: 16px;
@@ -956,6 +988,9 @@
       .app-container {
         padding: 8px 6px 20px;
         border-radius: 14px;
+      }
+      .app-container::before {
+        border-radius: 16px;
       }
       .logo-full-img {
         max-height: 56px;
