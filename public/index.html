@@ -2121,7 +2121,7 @@
           <thead>
             <tr>
               <th>Produs</th>
-              <th style="text-align:right">Pret Kuziini</th>
+              <th id="cart-th-kz" style="text-align:right">Pret Kuziini</th>
               <th style="text-align:right">Cel mai ieftin</th>
               <th style="text-align:right">Diferenta</th>
               <th style="text-align:center">Cant.</th>
@@ -3187,7 +3187,7 @@ tr:nth-child(even) { background:#faf5ff; }
 
         html += `<tr onclick="showCartImage('${item.code}')" style="cursor:pointer">
           <td><span class="cart-code">${item.code}</span><br><span class="cart-cat">${item.category}</span></td>
-          <td class="cart-price">${kzStr}</td>
+          ${hasPerm('show_kz_price') ? `<td class="cart-price">${kzStr}</td>` : ''}
           <td class="cart-price">${cheapStr}</td>
           <td class="cart-diff ${diffClass}">${diffStr}${alertTag}${sellingStr}</td>
           <td>
@@ -3905,6 +3905,9 @@ else { setTimeout(_renderTotals, 100); }
       // Kuziini acquisition price section
       const kzSec = document.getElementById('kuziini-section');
       if (kzSec) kzSec.style.display = hasPerm('show_kz_price') ? '' : 'none';
+      // Cart table - Pret Kuziini column header
+      const cartThKz = document.getElementById('cart-th-kz');
+      if (cartThKz) cartThKz.style.display = hasPerm('show_kz_price') ? '' : 'none';
     }
 
     async function doLogin() {
