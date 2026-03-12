@@ -412,6 +412,16 @@ def get_offer_full(oid, username, session):
         return o, None
     if o.get('owner_id') == username or username in o.get('shared_with', []):
         return o, None
+    # Allow access if user is a chat participant for this offer
+    try:
+        raw = _rc('LRANGE', 'inbox_messages', 0, -1) or []
+        for r in raw:
+            m = json.loads(r) if isinstance(r, str) else r
+            if m.get('offer_ref') == oid:
+                if m.get('sender') == username or username in (m.get('recipients') or []):
+                    return o, None
+    except Exception:
+        pass
     return None, 'Acces interzis'
 
 def _offer_summary(o):
