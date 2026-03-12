@@ -2044,7 +2044,8 @@
           <!-- Per-user sounds list -->
           <div id="notif-user-sounds" style="display:flex;flex-direction:column;gap:6px;max-height:250px;overflow-y:auto"></div>
 
-          <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button onclick="testNotifSound()" style="padding:8px 20px;border-radius:9px;border:none;background:#1d4ed8;color:#fff;font-size:12px;font-weight:700;cursor:pointer">&#x1F50A; Testeaza notificarea</button>
             <span id="notif-settings-msg" style="font-size:11px;font-weight:600;color:#16a34a"></span>
           </div>
         </div>
@@ -5097,6 +5098,21 @@ else { setTimeout(_renderTotals, 100); }
         msg.textContent = d.message || (r.ok ? '✓ Trimis!' : 'Eroare.');
         msg.style.color = r.ok && d.ok ? '#16a34a' : '#dc2626';
       } catch(e) { msg.textContent = 'Eroare de retea.'; msg.style.color = '#dc2626'; }
+      setTimeout(() => { msg.textContent = ''; }, 5000);
+    }
+
+    async function testNotifSound() {
+      const msg = document.getElementById('notif-settings-msg');
+      // First play locally (this also unlocks audio on iOS)
+      const defSound = _getSoundSettings()['_default'] || 'bell';
+      playNotifSound(defSound);
+      msg.textContent = 'Sunet redat local! Se trimite si notificare la toti...';
+      msg.style.color = '#1d4ed8';
+      try {
+        await fetch('/api/activity/test_notif', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
+        msg.textContent = '✓ Notificare trimisa! Toate dispozitivele vor auzi in ~20s.';
+        msg.style.color = '#16a34a';
+      } catch(e) { msg.textContent = 'Sunet local OK, eroare trimitere.'; msg.style.color = '#d97706'; }
       setTimeout(() => { msg.textContent = ''; }, 5000);
     }
 

@@ -614,6 +614,14 @@ class handler(BaseHTTPRequestHandler):
             report = auth_utils.get_activity_report()
             self._json(report)
 
+        elif path == '/api/activity/test_notif':
+            session = self._require_auth(require_admin=True)
+            if not session:
+                return
+            # Create a fake activity event so all listeners get notified
+            auth_utils.log_activity('_system', 'login', {'test': True, 'note': 'Test notificare sunet'})
+            self._json({'ok': True, 'message': 'Notificare test trimisa! Asteptati ~20 secunde.'})
+
         elif path == '/api/activity/recent':
             session = self._require_auth()
             if not session:
