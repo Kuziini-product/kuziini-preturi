@@ -5780,14 +5780,15 @@ else { setTimeout(_renderTotals, 100); }
       }
 
       const showKz = hasPerm('show_kz_price');
-      const visVendors = ['samsung','emag','altex'].filter(v => hasPerm('vendors', v));
+      const visVendors = ['samsung','emag','flanco','altex'];
 
       let html = '<table class="report-table"><thead><tr>';
       html += '<th>Produs</th>';
       if (showKz) html += '<th>Kuziini</th>';
-      if (visVendors.includes('samsung')) html += '<th style="text-align:right">Samsung</th>';
-      if (visVendors.includes('emag'))    html += '<th style="text-align:right">eMAG</th>';
-      if (visVendors.includes('altex'))   html += '<th style="text-align:right">Altex</th>';
+      html += '<th style="text-align:right">Samsung</th>';
+      html += '<th style="text-align:right">eMAG</th>';
+      html += '<th style="text-align:right">Flanco</th>';
+      html += '<th style="text-align:right">Altex</th>';
       html += '<th>Perioada</th>';
       html += '</tr></thead><tbody>';
 
@@ -5819,9 +5820,10 @@ else { setTimeout(_renderTotals, 100); }
         html += `<tr style="cursor:pointer" onclick="loadProductHistory('${p.code}')">`;
         html += `<td><span class="cart-code">${p.code}</span><br><span class="cart-cat">${p.category}</span></td>`;
         if (showKz) html += `<td style="font-weight:600">${p.kuziini_price ? formatPrice(p.kuziini_price) : '—'}</td>`;
-        if (visVendors.includes('samsung')) html += priceCell('samsung');
-        if (visVendors.includes('emag'))    html += priceCell('emag');
-        if (visVendors.includes('altex'))   html += priceCell('altex');
+        html += priceCell('samsung');
+        html += priceCell('emag');
+        html += priceCell('flanco');
+        html += priceCell('altex');
         html += `<td style="font-size:10px;color:#9ca3af">${p.first_date || ''}<br>${p.latest_date || ''}<br>(${p.days_tracked} zile)</td>`;
         html += '</tr>';
       });
