@@ -436,9 +436,12 @@ class handler(BaseHTTPRequestHandler):
             import email_notify
             s = auth_utils.get_app_settings()
             emails = s.get('notify_emails', {})
-            my_email = emails.get(session['username'])
+            my_email = emails.get(session['username']) or emails.get('_admin')
+            # Also check if email was passed directly in body
+            if not my_email and body.get('email'):
+                my_email = body.get('email')
             if not my_email:
-                self._json({'ok': False, 'message': 'Seteaza mai intai adresa de email.'})
+                self._json({'ok': False, 'message': f'Seteaza mai intai adresa de email. (user={session["username"]}, keys={list(emails.keys())})'})
                 return
             ok = email_notify.send_email(my_email, 'Kuziini - Test Notificare', '''
               <div style="font-family:Segoe UI,Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px">
