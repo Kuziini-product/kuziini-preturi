@@ -1989,6 +1989,35 @@
             <span id="wa-settings-msg" style="font-size:11px;font-weight:600"></span>
           </div>
         </div>
+
+        <!-- Notification Sounds -->
+        <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:14px;padding:18px 20px;margin-bottom:18px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+            <span style="font-size:22px">&#x1F514;</span>
+            <div>
+              <div style="font-size:13px;font-weight:800;color:#1d4ed8">Sunete notificari mesaje</div>
+              <div style="font-size:10px;color:#6b7280">Seteaza sunete diferite per utilizator</div>
+            </div>
+            <label style="margin-left:auto;display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="notif-sound-enabled" onchange="_setNotifEnabled(this.checked)" style="accent-color:#1d4ed8;width:16px;height:16px">
+              <span style="font-size:11px;font-weight:700;color:#1d4ed8">Activ</span>
+            </label>
+          </div>
+
+          <!-- Default sound -->
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fff;border-radius:10px;border:1px solid #dbeafe;margin-bottom:10px">
+            <span style="font-size:12px;font-weight:700;color:#1e1b4b;min-width:100px">Sunet implicit</span>
+            <select id="notif-sound-default" onchange="_onSoundSettingChange('_default', this.value)" style="flex:1;padding:5px 8px;border-radius:8px;border:1.5px solid #bfdbfe;font-size:12px;color:#1e1b4b;background:#f8fafc"></select>
+            <button onclick="playNotifSound(document.getElementById('notif-sound-default').value)" style="background:#dbeafe;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px" title="Asculta">&#x25B6;</button>
+          </div>
+
+          <!-- Per-user sounds list -->
+          <div id="notif-user-sounds" style="display:flex;flex-direction:column;gap:6px;max-height:250px;overflow-y:auto"></div>
+
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+            <span id="notif-settings-msg" style="font-size:11px;font-weight:600;color:#16a34a"></span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -4927,6 +4956,7 @@ else { setTimeout(_renderTotals, 100); }
         loadActivityReport();
       } else if (tab === 'settings') {
         loadWaSettings();
+        _initNotifSoundSettings();
       }
     }
 
@@ -4963,6 +4993,59 @@ else { setTimeout(_renderTotals, 100); }
         msg.style.color = r.ok && d.ok ? '#16a34a' : '#dc2626';
       } catch(e) { msg.textContent = 'Eroare de retea.'; msg.style.color = '#dc2626'; }
       setTimeout(() => { msg.textContent = ''; }, 5000);
+    }
+
+    // ── Notification sound settings UI ──
+    function _initNotifSoundSettings() {
+      // Enable checkbox
+      const cb = document.getElementById('notif-sound-enabled');
+      if (cb) cb.checked = _getNotifEnabled();
+      // Populate default sound dropdown
+      const defSel = document.getElementById('notif-sound-default');
+      if (!defSel) return;
+      const settings = _getSoundSettings();
+      const defaultSound = settings['_default'] || 'bell';
+      defSel.innerHTML = Object.entries(_notifSounds).map(([id, s]) =>
+        `<option value="${id}" ${id === defaultSound ? 'selected' : ''}>${s.name}</option>`
+      ).join('');
+      // Populate per-user sound list
+      _renderNotifUserSounds();
+    }
+    function _renderNotifUserSounds() {
+      const box = document.getElementById('notif-user-sounds');
+      if (!box) return;
+      const settings = _getSoundSettings();
+      const defaultSound = settings['_default'] || 'bell';
+      // Get all known users from chat
+      const users = _gchatUsers.length > 0 ? _gchatUsers : [];
+      if (users.length === 0) {
+        box.innerHTML = '<div style="font-size:11px;color:#9ca3af;text-align:center;padding:8px">Deschide chatul prima data pentru a vedea utilizatorii.</div>';
+        return;
+      }
+      box.innerHTML = users.map(u => {
+        const uSound = settings[u] || '';
+        const options = '<option value="">(implicit: ' + (_notifSounds[defaultSound]?.name || defaultSound) + ')</option>'
+          + Object.entries(_notifSounds).map(([id, s]) =>
+            `<option value="${id}" ${id === uSound ? 'selected' : ''}>${s.name}</option>`
+          ).join('');
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:#fff;border-radius:8px;border:1px solid #dbeafe">
+          <span style="font-size:12px;font-weight:700;color:#1e1b4b;min-width:100px">@${u}</span>
+          <select onchange="_onSoundSettingChange('${u}', this.value)" style="flex:1;padding:4px 8px;border-radius:6px;border:1px solid #dbeafe;font-size:11px;color:#1e1b4b;background:#f8fafc">${options}</select>
+          <button onclick="playNotifSound(this.previousElementSibling.value || '${defaultSound}')" style="background:#dbeafe;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px" title="Asculta">&#x25B6;</button>
+        </div>`;
+      }).join('');
+    }
+    function _onSoundSettingChange(key, value) {
+      const settings = _getSoundSettings();
+      if (value) {
+        settings[key] = value;
+      } else {
+        delete settings[key];
+      }
+      _saveSoundSettings(settings);
+      if (key === '_default') _renderNotifUserSounds(); // refresh labels
+      const msg = document.getElementById('notif-settings-msg');
+      if (msg) { msg.textContent = '✓ Salvat'; setTimeout(() => { msg.textContent = ''; }, 2000); }
     }
 
     const _ACT_LABELS = {
@@ -5836,6 +5919,66 @@ else { setTimeout(_renderTotals, 100); }
     let _inboxTab = 'list';
     let _composeRecipients = [];
     let _composeOfferRef = null;
+    let _prevInboxIds = new Set(); // track known message IDs for new-message detection
+
+    // ── Notification Sounds (Web Audio API) ──
+    const _notifSounds = {
+      'bell':    { name: 'Clopot',     freq: [880, 1100, 880], dur: 0.12, type: 'sine' },
+      'chime':   { name: 'Chimval',    freq: [660, 880, 1320], dur: 0.15, type: 'sine' },
+      'ping':    { name: 'Ping',       freq: [1200], dur: 0.2, type: 'sine' },
+      'pop':     { name: 'Pop',        freq: [600, 400], dur: 0.08, type: 'triangle' },
+      'knock':   { name: 'Ciocănit',   freq: [200, 250], dur: 0.06, type: 'square' },
+      'whistle': { name: 'Fluier',     freq: [800, 1600, 800], dur: 0.18, type: 'sine' },
+      'alert':   { name: 'Alertă',     freq: [440, 660, 440, 660], dur: 0.1, type: 'sawtooth' },
+      'drop':    { name: 'Picătură',   freq: [1400, 600], dur: 0.15, type: 'sine' },
+      'ding':    { name: 'Ding',       freq: [1047, 1319, 1568], dur: 0.2, type: 'sine' },
+      'buzz':    { name: 'Buzz',       freq: [150, 200, 150], dur: 0.08, type: 'square' },
+    };
+    let _audioCtx = null;
+    function _getAudioCtx() {
+      if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return _audioCtx;
+    }
+    function playNotifSound(soundId) {
+      const s = _notifSounds[soundId];
+      if (!s) return;
+      try {
+        const ctx = _getAudioCtx();
+        if (ctx.state === 'suspended') ctx.resume();
+        const gainNode = ctx.createGain();
+        gainNode.connect(ctx.destination);
+        gainNode.gain.setValueAtTime(0.35, ctx.currentTime);
+        let t = ctx.currentTime;
+        s.freq.forEach((f, i) => {
+          const osc = ctx.createOscillator();
+          osc.type = s.type || 'sine';
+          osc.frequency.setValueAtTime(f, t);
+          osc.connect(gainNode);
+          osc.start(t);
+          osc.stop(t + s.dur);
+          t += s.dur + 0.02;
+        });
+        gainNode.gain.linearRampToValueAtTime(0, t + 0.05);
+      } catch(e) {}
+    }
+
+    // Sound settings per user (stored in localStorage)
+    function _getSoundSettings() {
+      try { return JSON.parse(localStorage.getItem('kuziini_notif_sounds') || '{}'); } catch(e) { return {}; }
+    }
+    function _saveSoundSettings(settings) {
+      localStorage.setItem('kuziini_notif_sounds', JSON.stringify(settings));
+    }
+    function _getSoundForUser(username) {
+      const s = _getSoundSettings();
+      return s[username] || s['_default'] || 'bell';
+    }
+    function _getNotifEnabled() {
+      return localStorage.getItem('kuziini_notif_enabled') !== 'false';
+    }
+    function _setNotifEnabled(val) {
+      localStorage.setItem('kuziini_notif_enabled', val ? 'true' : 'false');
+    }
 
     // ── Draggable chat button ──
     (function() {
@@ -6022,6 +6165,8 @@ else { setTimeout(_renderTotals, 100); }
         const d = await r.json();
         _gchatUsers = d.users || [];
         _inboxMessages = d.messages || [];
+        // Init known IDs (no sound on first load)
+        if (_prevInboxIds.size === 0) _prevInboxIds = new Set(_inboxMessages.map(m => m.id));
         renderInbox(_inboxMessages);
         updateGchatBadge(_inboxMessages.filter(m => !m.is_read).length);
         const unreadTab = document.getElementById('inbox-unread-tab');
@@ -6366,18 +6511,33 @@ else { setTimeout(_renderTotals, 100); }
       }
     }
 
-    // Poll inbox for new messages every 30s
+    // Poll inbox for new messages every 30s + play sound on new
     setInterval(async () => {
       const a = authLoad();
       if (!a || !a.token) return;
-      if (_gchatOpen && _inboxTab === 'list') { loadInbox(); return; }
+      const me = a.username;
       try {
         const r = await fetch('/api/chat/get', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
         if (!r.ok) return;
         const d = await r.json();
-        _inboxMessages = d.messages || [];
-        const unread = _inboxMessages.filter(m => !m.is_read).length;
+        const msgs = d.messages || [];
+        // Detect NEW unread messages (not seen before in this session)
+        if (_prevInboxIds.size > 0 && _getNotifEnabled()) {
+          const newUnread = msgs.filter(m => !m.is_read && m.sender !== me && !_prevInboxIds.has(m.id));
+          if (newUnread.length > 0) {
+            // Play sound for the first new message sender
+            const sender = newUnread[0].sender;
+            const soundId = _getSoundForUser(sender);
+            playNotifSound(soundId);
+          }
+        }
+        // Update known IDs
+        _prevInboxIds = new Set(msgs.map(m => m.id));
+        _inboxMessages = msgs;
+        if (_gchatUsers.length === 0 && d.users) _gchatUsers = d.users;
+        const unread = msgs.filter(m => !m.is_read).length;
         updateGchatBadge(unread);
+        if (_gchatOpen && _inboxTab === 'list') renderInbox(_inboxMessages);
       } catch(e) {}
     }, 30000);
 
