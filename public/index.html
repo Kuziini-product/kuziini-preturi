@@ -6212,25 +6212,6 @@ else { setTimeout(_renderTotals, 100); }
       }
     }
 
-    // Unlock audio on first interaction
-    let _audioUnlocked = false;
-    function _unlockAudio() {
-      if (_audioUnlocked) return;
-      _audioUnlocked = true;
-      try {
-        const AC = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AC();
-        const osc = ctx.createOscillator();
-        osc.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.001);
-        setTimeout(() => ctx.close(), 100);
-        console.log('[Notif] Audio unlocked');
-      } catch(e) {}
-    }
-    document.addEventListener('click', _unlockAudio, {once: true});
-    document.addEventListener('touchstart', _unlockAudio, {once: true});
-
     // Sound settings per user (stored in localStorage)
     function _getSoundSettings() {
       try { return JSON.parse(localStorage.getItem('kuziini_notif_sounds') || '{}'); } catch(e) { return {}; }
