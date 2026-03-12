@@ -4963,14 +4963,24 @@ else { setTimeout(_renderTotals, 100); }
         if (!saved || !saved.products) { if (w) w.close(); alert('Oferta nu contine produse sau nu exista.'); return; }
         const offerData = {num: saved.num, date: saved.date, ts: saved.ts, products: saved.products};
         const savedState = {client: saved.client||'', phone: saved.phone||'', email: saved.email||'', notes: saved.notes||'', description: saved.description||'', discount: saved.discount||0, num: saved.num, date: saved.date, ts: saved.ts};
-        // Fetch chat messages related to this offer
+        // Fetch chat messages related to this offer (from both inbox and offer chat)
         let chatMsgs = [];
         try {
-          const cr = await fetch('/api/chat/get', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
-          if (cr.ok) {
-            const cd = await cr.json();
-            chatMsgs = (cd.messages || []).filter(m => m.offer_ref === id);
+          const [inboxR, offerChatR] = await Promise.all([
+            fetch('/api/chat/get', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'}).catch(() => null),
+            fetch('/api/offers/chat/get', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({offer_id: id})}).catch(() => null)
+          ]);
+          if (inboxR && inboxR.ok) {
+            const d2 = await inboxR.json();
+            chatMsgs.push(...(d2.messages || []).filter(m => m.offer_ref === id));
           }
+          if (offerChatR && offerChatR.ok) {
+            const d3 = await offerChatR.json();
+            (d3.messages || []).forEach(m => {
+              if (!chatMsgs.some(x => x.id === m.id)) chatMsgs.push(m);
+            });
+          }
+          chatMsgs.sort((a, b) => (a.ts || 0) - (b.ts || 0));
         } catch(_) {}
         _openOfferWindow(offerData, savedState, w, chatMsgs);
       } catch(e) { if (w) w.close(); alert('Eroare la deschiderea ofertei: ' + e.message); }
