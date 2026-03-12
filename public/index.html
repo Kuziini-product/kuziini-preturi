@@ -5800,10 +5800,13 @@ else { setTimeout(_renderTotals, 100); }
 
         function priceCell(vendor) {
           const cur = latest[vendor];
-          const ch  = changes[vendor];
-          const prev = previous[vendor];
-          const chDate = changeDates[vendor];
+          let ch  = changes[vendor];
+          let prev = previous[vendor];
+          let chDate = changeDates[vendor];
           if (cur === null || cur === undefined) return '<td style="text-align:right;color:#d1d5db">—</td>';
+          // Filter: on increases tab show only positive, on decreases only negative
+          if (currentReportTab === 'increases' && ch && ch < 0) { ch = null; prev = undefined; chDate = null; }
+          if (currentReportTab === 'decreases' && ch && ch > 0) { ch = null; prev = undefined; chDate = null; }
           if (!ch) return `<td style="text-align:right">${formatPrice(cur)}</td>`;
           // Show: old price → new price (date, difference)
           const arrow = ch > 0 ? '&#x2191;' : '&#x2193;';
