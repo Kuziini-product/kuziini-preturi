@@ -215,15 +215,22 @@ class handler(BaseHTTPRequestHandler):
                     dates = sorted(hist.keys())
                     latest_date = dates[-1]
                     latest = hist[latest_date]
-                    # Calculeaza schimbare fata de prima zi disponibila
                     first_date = dates[0]
                     first = hist[first_date]
+                    # Find last price change per vendor (comparing consecutive days)
                     changes = {}
+                    previous = {}     # previous price before change
+                    change_dates = {} # date when change happened
                     for v in ['samsung', 'emag', 'flanco', 'altex']:
-                        cur = latest.get(v)
-                        prev = first.get(v)
-                        if cur is not None and prev is not None and prev > 0:
-                            changes[v] = round(cur - prev, 2)
+                        prev_price = None
+                        for d in dates:
+                            cur_price = hist[d].get(v)
+                            if cur_price is not None and prev_price is not None and cur_price != prev_price:
+                                changes[v] = round(cur_price - prev_price, 2)
+                                previous[v] = prev_price
+                                change_dates[v] = d
+                            if cur_price is not None:
+                                prev_price = cur_price
                     kz = None
                     cat = ''
                     if c in products:
@@ -237,6 +244,8 @@ class handler(BaseHTTPRequestHandler):
                         'latest_date': latest_date,
                         'first_date': first_date,
                         'changes': changes,
+                        'previous': previous,
+                        'change_dates': change_dates,
                         'days_tracked': len(dates),
                     })
                 summary.sort(key=lambda x: x['code'])
