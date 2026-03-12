@@ -1,0 +1,27 @@
+name: Daily Offer Report
+
+on:
+  schedule:
+    # Ruleaza zilnic la 18:00 UTC (20:00 ora Romaniei vara, 21:00 iarna)
+    - cron: '0 18 * * *'
+  workflow_dispatch: # permite rulare manuala din GitHub UI
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Send daily report via API
+        run: |
+          curl -s -X POST https://kuziini.app/api/report/daily \
+            -H "Content-Type: application/json" \
+            -d "{\"cron_key\": \"$CRON_SECRET\"}" \
+            -o response.json -w "\nHTTP Status: %{http_code}\n"
+          cat response.json
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Summary
+        if: always()
+        run: echo "Daily report sent at $(date -u '+%Y-%m-%d %H:%M UTC')"

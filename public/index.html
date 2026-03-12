@@ -2015,6 +2015,7 @@
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <button onclick="saveEmailSettings()" style="padding:8px 20px;border-radius:9px;border:none;background:#d97706;color:#fff;font-size:12px;font-weight:700;cursor:pointer">&#x1F4BE; Salveaza</button>
             <button onclick="testEmailNotif()" style="padding:8px 20px;border-radius:9px;border:1.5px solid #d97706;background:#fff;color:#d97706;font-size:12px;font-weight:700;cursor:pointer">&#x2709; Trimite email test</button>
+            <button onclick="sendDailyReport()" style="padding:8px 20px;border-radius:9px;border:1.5px solid #92400e;background:#fff;color:#92400e;font-size:12px;font-weight:700;cursor:pointer">&#x1F4CA; Raport oferte</button>
             <span id="email-settings-msg" style="font-size:11px;font-weight:600"></span>
           </div>
         </div>
@@ -5094,6 +5095,18 @@ else { setTimeout(_renderTotals, 100); }
         const r = await fetch('/api/settings/test_email', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
         const d = await r.json();
         msg.textContent = d.message || (r.ok ? '✓ Trimis!' : 'Eroare.');
+        msg.style.color = r.ok && d.ok ? '#16a34a' : '#dc2626';
+      } catch(e) { msg.textContent = 'Eroare de retea.'; msg.style.color = '#dc2626'; }
+      setTimeout(() => { msg.textContent = ''; }, 5000);
+    }
+
+    async function sendDailyReport() {
+      const msg = document.getElementById('email-settings-msg');
+      msg.textContent = 'Se genereaza raportul...'; msg.style.color = '#d97706';
+      try {
+        const r = await fetch('/api/report/daily', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
+        const d = await r.json();
+        msg.textContent = d.message || (r.ok ? '✓ Raport trimis!' : 'Eroare.');
         msg.style.color = r.ok && d.ok ? '#16a34a' : '#dc2626';
       } catch(e) { msg.textContent = 'Eroare de retea.'; msg.style.color = '#dc2626'; }
       setTimeout(() => { msg.textContent = ''; }, 5000);

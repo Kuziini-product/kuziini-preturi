@@ -453,6 +453,23 @@ class handler(BaseHTTPRequestHandler):
             ''')
             self._json({'ok': ok, 'message': 'Email trimis cu succes!' if ok else 'Eroare: verifica RESEND_API_KEY in Vercel.'})
 
+        elif path == '/api/report/daily':
+            # Can be called by admin or by cron (with secret key)
+            cron_key = body.get('cron_key') or ''
+            expected_key = os.environ.get('CRON_SECRET', '')
+            if cron_key and expected_key and cron_key == expected_key:
+                # Cron call - no auth needed
+                pass
+            else:
+                session = self._require_auth(require_admin=True)
+                if not session:
+                    return
+            import daily_report
+            to_email = body.get('email') or None
+            date_filter = body.get('date') or None
+            ok, message = daily_report.send_daily_report(to_email, date_filter)
+            self._json({'ok': ok, 'message': message})
+
         elif path == '/api/offers/delete':
             session = self._require_auth()
             if not session:
