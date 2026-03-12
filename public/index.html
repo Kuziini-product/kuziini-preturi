@@ -5934,47 +5934,82 @@ else { setTimeout(_renderTotals, 100); }
       'ding':    { name: 'Ding',       freq: [1047, 1319, 1568], dur: 0.2, type: 'sine' },
       'buzz':    { name: 'Buzz',       freq: [150, 200, 150], dur: 0.08, type: 'square' },
     };
-    let _audioCtx = null;
-    function _ensureAudioCtx() {
-      if (!_audioCtx) {
-        _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (_audioCtx.state === 'suspended') {
-        _audioCtx.resume();
-      }
-      return _audioCtx;
+    // Generate WAV data URI from frequency list (works everywhere, no AudioContext needed)
+    function _generateWav(freqs, durSec, waveType, sampleRate) {
+      sampleRate = sampleRate || 22050;
+      const samplesPerNote = Math.floor(sampleRate * durSec);
+      const totalSamples = samplesPerNote * freqs.length;
+      const buffer = new ArrayBuffer(44 + totalSamples * 2);
+      const view = new DataView(buffer);
+      // WAV header
+      const writeStr = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+      writeStr(0, 'RIFF');
+      view.setUint32(4, 36 + totalSamples * 2, true);
+      writeStr(8, 'WAVE');
+      writeStr(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeStr(36, 'data');
+      view.setUint32(40, totalSamples * 2, true);
+      let offset = 44;
+      freqs.forEach(freq => {
+        for (let i = 0; i < samplesPerNote; i++) {
+          const t = i / sampleRate;
+          const fade = Math.min(1, (samplesPerNote - i) / (sampleRate * 0.05)); // fade out
+          let val;
+          if (waveType === 'square') {
+            val = Math.sin(2 * Math.PI * freq * t) >= 0 ? 0.8 : -0.8;
+          } else if (waveType === 'triangle') {
+            val = (2 / Math.PI) * Math.asin(Math.sin(2 * Math.PI * freq * t)) * 0.8;
+          } else if (waveType === 'sawtooth') {
+            val = (2 * (freq * t - Math.floor(0.5 + freq * t))) * 0.8;
+          } else { // sine
+            val = Math.sin(2 * Math.PI * freq * t) * 0.8;
+          }
+          const sample = Math.max(-1, Math.min(1, val * fade));
+          view.setInt16(offset, sample * 32767, true);
+          offset += 2;
+        }
+      });
+      const blob = new Blob([buffer], {type: 'audio/wav'});
+      return URL.createObjectURL(blob);
     }
-    // Unlock audio on first user interaction (browser requirement)
-    document.addEventListener('click', function _unlockAudio() {
-      _ensureAudioCtx();
-      document.removeEventListener('click', _unlockAudio);
-    }, {once: true});
-    document.addEventListener('touchstart', function _unlockAudioT() {
-      _ensureAudioCtx();
-      document.removeEventListener('touchstart', _unlockAudioT);
-    }, {once: true});
+
+    // Pre-generate sound URLs
+    const _notifSoundUrls = {};
+    Object.entries(_notifSounds).forEach(([id, s]) => {
+      _notifSoundUrls[id] = _generateWav(s.freq, s.dur, s.type);
+    });
 
     function playNotifSound(soundId) {
-      const s = _notifSounds[soundId];
-      if (!s) { console.warn('Sound not found:', soundId); return; }
+      const url = _notifSoundUrls[soundId];
+      if (!url) { console.warn('Sound not found:', soundId); return; }
       try {
-        const ctx = _ensureAudioCtx();
-        const gainNode = ctx.createGain();
-        gainNode.connect(ctx.destination);
-        gainNode.gain.setValueAtTime(0.7, ctx.currentTime);
-        let t = ctx.currentTime;
-        s.freq.forEach((f, i) => {
-          const osc = ctx.createOscillator();
-          osc.type = s.type || 'sine';
-          osc.frequency.setValueAtTime(f, t);
-          osc.connect(gainNode);
-          osc.start(t);
-          osc.stop(t + s.dur);
-          t += s.dur + 0.02;
+        const audio = new Audio(url);
+        audio.volume = 1.0;
+        audio.play().then(() => {
+          console.log('[Notif] Playing sound:', soundId);
+        }).catch(e => {
+          console.warn('[Notif] Play blocked:', e.message);
         });
-        gainNode.gain.linearRampToValueAtTime(0, t + 0.1);
-      } catch(e) { console.error('Sound error:', e); }
+      } catch(e) { console.error('[Notif] Sound error:', e); }
     }
+
+    // Unlock audio on first interaction (for mobile)
+    let _audioUnlocked = false;
+    function _unlockAudio() {
+      if (_audioUnlocked) return;
+      _audioUnlocked = true;
+      const a = new Audio();
+      a.play().catch(() => {});
+    }
+    document.addEventListener('click', _unlockAudio, {once: true});
+    document.addEventListener('touchstart', _unlockAudio, {once: true});
 
     // Sound settings per user (stored in localStorage)
     function _getSoundSettings() {
