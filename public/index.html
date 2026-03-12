@@ -5832,26 +5832,38 @@ else { setTimeout(_renderTotals, 100); }
         const changes = p.changes || {};
         const previous = p.previous || {};
         const changeDates = p.change_dates || {};
+        const archive = _priceArchive && _priceArchive[p.code];
+        const vendorUrls = {};
+        if (archive && archive.vendors) {
+          ['samsung','emag','flanco','altex'].forEach(v => {
+            if (archive.vendors[v] && archive.vendors[v].url) vendorUrls[v] = archive.vendors[v].url;
+          });
+        }
 
         function priceCell(vendor) {
           const cur = latest[vendor];
           let ch  = changes[vendor];
           let prev = previous[vendor];
           let chDate = changeDates[vendor];
+          const url = vendorUrls[vendor];
           if (cur === null || cur === undefined) return '<td style="text-align:right;color:#d1d5db">—</td>';
           // Filter: on increases tab show only positive, on decreases only negative
           if (currentReportTab === 'increases' && ch && ch < 0) { ch = null; prev = undefined; chDate = null; }
           if (currentReportTab === 'decreases' && ch && ch > 0) { ch = null; prev = undefined; chDate = null; }
-          if (!ch) return `<td style="text-align:right">${formatPrice(cur)}</td>`;
+
+          const linkStart = url ? `<a href="${url}" target="_blank" onclick="event.stopPropagation()" style="text-decoration:none;color:inherit" title="Deschide pe site">` : '';
+          const linkEnd = url ? '</a>' : '';
+
+          if (!ch) return `<td style="text-align:right">${linkStart}${formatPrice(cur)}${url ? ' &#x2197;' : ''}${linkEnd}</td>`;
           // Show: old price → new price (date, difference)
           const arrow = ch > 0 ? '&#x2191;' : '&#x2193;';
           const cls = ch > 0 ? 'price-up' : 'price-down';
-          let cell = `<td style="text-align:right">`;
+          let cell = `<td style="text-align:right">${linkStart}`;
           if (prev !== undefined) cell += `<span style="text-decoration:line-through;color:#9ca3af;font-size:11px">${formatPrice(prev)}</span> `;
-          cell += `<b>${formatPrice(cur)}</b>`;
+          cell += `<b>${formatPrice(cur)}</b>${url ? ' &#x2197;' : ''}`;
           cell += `<br><span class="${cls}">${arrow} ${ch > 0 ? '+' : ''}${formatPrice(ch)}</span>`;
           if (chDate) cell += `<br><span style="font-size:9px;color:#6b7280">${chDate}</span>`;
-          cell += '</td>';
+          cell += `${linkEnd}</td>`;
           return cell;
         }
 
@@ -6096,11 +6108,24 @@ else { setTimeout(_renderTotals, 100); }
       });
       if (data.kuziini_price && data.kuziini_price < minPrice) minPrice = data.kuziini_price;
 
+      // Get vendor URLs from archive
+      const archive = _priceArchive && _priceArchive[code];
+      const vUrls = {};
+      if (archive && archive.vendors) {
+        vendors.forEach(v => { if (archive.vendors[v.key] && archive.vendors[v.key].url) vUrls[v.key] = archive.vendors[v.key].url; });
+      }
+
       let html = `<div style="background:#fff;border-radius:14px;border:1.5px solid #e5e7eb;padding:20px;margin-top:12px">`;
       // Header
       html += `<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">`;
       html += `<span style="font-weight:800;font-size:15px;color:#1e1b4b">${code}</span>`;
       if (data.kuziini_price) html += `<span style="background:#f3eeff;color:#7c3aed;padding:4px 12px;border-radius:8px;font-size:13px;font-weight:700">Kuziini: ${formatPrice(data.kuziini_price)}</span>`;
+      // Vendor link buttons
+      vendors.forEach(v => {
+        if (vUrls[v.key]) {
+          html += `<a href="${vUrls[v.key]}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;background:${v.bg};color:${v.color};font-size:11px;font-weight:700;text-decoration:none;border:1px solid ${v.color}30" title="Deschide pe ${v.name}">${v.name} &#x2197;</a>`;
+        }
+      });
       html += `<span style="font-size:11px;color:#6b7280;margin-left:auto">${showDates.length} zile</span>`;
       html += `</div>`;
 
