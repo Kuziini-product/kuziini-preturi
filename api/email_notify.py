@@ -10,10 +10,7 @@ Setup:
 """
 import json
 import os
-import urllib.request
-import urllib.parse
-import urllib.error
-
+import requests as _req
 
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
 FROM_EMAIL = 'Kuziini <onboarding@resend.dev>'  # free tier default sender
@@ -43,29 +40,23 @@ def send_email(to_email, subject, html_body):
         _last_email_error = 'No recipient email'
         return False
     try:
-        payload = json.dumps({
-            'from': FROM_EMAIL,
-            'to': [to_email],
-            'subject': subject,
-            'html': html_body,
-        }).encode('utf-8')
-        req = urllib.request.Request(
+        r = _req.post(
             'https://api.resend.com/emails',
-            data=payload,
             headers={
                 'Authorization': f'Bearer {api_key}',
                 'Content-Type': 'application/json',
-                'User-Agent': 'Kuziini/1.0',
-                'Accept': 'application/json',
             },
-            method='POST'
+            json={
+                'from': FROM_EMAIL,
+                'to': [to_email],
+                'subject': subject,
+                'html': html_body,
+            },
+            timeout=10
         )
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            body = resp.read().decode('utf-8')
-            return resp.status in (200, 201)
-    except urllib.error.HTTPError as e:
-        body = e.read().decode('utf-8') if hasattr(e, 'read') else ''
-        _last_email_error = f'Resend HTTP {e.code}: {body}'
+        if r.status_code in (200, 201):
+            return True
+        _last_email_error = f'Resend HTTP {r.status_code}: {r.text[:200]}'
         return False
     except Exception as e:
         _last_email_error = str(e)
