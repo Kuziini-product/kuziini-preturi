@@ -6115,21 +6115,82 @@ else { setTimeout(_renderTotals, 100); }
       return URL.createObjectURL(blob);
     }
 
-    // Pre-generate sound URLs
+    // Pre-generate WAV blob URLs for each sound
     const _notifSoundUrls = {};
     Object.entries(_notifSounds).forEach(([id, s]) => {
       _notifSoundUrls[id] = _generateWav(s.freq, s.dur, s.type);
     });
+
+    // Pre-create Audio objects (iOS needs them created during user gesture)
+    const _notifAudioPool = {};
+    Object.keys(_notifSounds).forEach(id => {
+      const a = new Audio(_notifSoundUrls[id]);
+      a.preload = 'auto';
+      a.volume = 1.0;
+      _notifAudioPool[id] = a;
+    });
+
+    // iOS audio unlock: play a silent buffer on first user touch/click
+    let _audioUnlocked = false;
+    function _unlockAudio() {
+      if (_audioUnlocked) return;
+      _audioUnlocked = true;
+      // Touch every Audio object to unlock them on iOS
+      Object.values(_notifAudioPool).forEach(a => {
+        a.play().then(() => a.pause()).catch(() => {});
+        a.currentTime = 0;
+      });
+      // Also try AudioContext
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AC();
+        const buf = ctx.createBuffer(1, 1, 22050);
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        src.connect(ctx.destination);
+        src.start(0);
+        ctx.resume();
+        console.log('[Notif] Audio unlocked via user gesture');
+      } catch(e) {}
+    }
+    document.addEventListener('touchstart', _unlockAudio, {once: true});
+    document.addEventListener('touchend', _unlockAudio, {once: true});
+    document.addEventListener('click', _unlockAudio, {once: true});
 
     function playNotifSound(soundId) {
       const s = _notifSounds[soundId];
       if (!s) { console.warn('[Notif] Sound not found:', soundId); return; }
       console.log('[Notif] Playing sound:', soundId);
 
-      // Method 1: AudioContext (most reliable for generated tones)
+      // Method 1: Reuse pre-created Audio object (best for iOS)
+      try {
+        const audio = _notifAudioPool[soundId];
+        if (audio) {
+          audio.currentTime = 0;
+          audio.volume = 1.0;
+          const p = audio.play();
+          if (p && p.then) {
+            p.then(() => console.log('[Notif] Audio played OK:', soundId))
+             .catch(e => {
+              console.warn('[Notif] Audio play rejected:', e.message, '- trying AudioContext');
+              _playViaContext(s);
+            });
+          }
+          return;
+        }
+      } catch(e) {
+        console.warn('[Notif] Audio pool failed:', e.message);
+      }
+
+      // Method 2: AudioContext fallback
+      _playViaContext(s);
+    }
+
+    function _playViaContext(s) {
       try {
         const AC = window.AudioContext || window.webkitAudioContext;
         const ctx = new AC();
+        if (ctx.state === 'suspended') ctx.resume();
         const gainNode = ctx.createGain();
         gainNode.connect(ctx.destination);
         gainNode.gain.setValueAtTime(1.0, ctx.currentTime);
@@ -6146,20 +6207,9 @@ else { setTimeout(_renderTotals, 100); }
         gainNode.gain.setValueAtTime(1.0, t - 0.05);
         gainNode.gain.linearRampToValueAtTime(0, t + 0.1);
         setTimeout(() => ctx.close(), (t - ctx.currentTime + 0.5) * 1000);
-        return; // success
       } catch(e) {
-        console.warn('[Notif] AudioContext failed:', e.message);
+        console.error('[Notif] All audio methods failed:', e);
       }
-
-      // Method 2: WAV blob fallback
-      try {
-        const url = _notifSoundUrls[soundId];
-        if (url) {
-          const audio = new Audio(url);
-          audio.volume = 1.0;
-          audio.play().catch(e2 => console.warn('[Notif] Audio fallback failed:', e2.message));
-        }
-      } catch(e) { console.error('[Notif] All methods failed:', e); }
     }
 
     // Unlock audio on first interaction
@@ -6789,6 +6839,32 @@ else { setTimeout(_renderTotals, 100); }
         }
       } catch(e) {}
     }, 20000);
+
+    // ── Visibility change: re-check on tab/app resume ──
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState !== 'visible') return;
+      const a = authLoad();
+      if (!a || !a.token || !_getNotifEnabled()) return;
+      console.log('[Notif] App resumed, checking for missed events...');
+      // Check activity
+      try {
+        const r = await fetch('/api/activity/recent', {
+          method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'},
+          body: JSON.stringify({since: _lastActivityTs})
+        });
+        if (r.ok) {
+          const d = await r.json();
+          const events = d.events || [];
+          if (events.length > 0) {
+            const ev = events[0];
+            const soundId = _getSoundForUser(ev.username) || _ACT_SOUNDS[ev.action] || 'knock';
+            console.log('[Activity-resume]', ev.username, ev.action, '→', soundId);
+            playNotifSound(soundId);
+            _lastActivityTs = Math.max(...events.map(e => e.ts || 0));
+          }
+        }
+      } catch(e) {}
+    });
 
     // Show chat button only when logged in
     function _updateGchatVisibility() {
