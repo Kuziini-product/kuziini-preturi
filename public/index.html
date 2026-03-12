@@ -6341,6 +6341,35 @@ else { setTimeout(_renderTotals, 100); }
       document.addEventListener('touchend', onEnd);
     })();
 
+    // ── Chat panel: scroll isolation + Ctrl+wheel zoom ──
+    (function() {
+      const panel = document.getElementById('gchat-panel');
+      if (!panel) return;
+      let chatZoom = parseFloat(localStorage.getItem('gchat_zoom') || '1');
+      const msgBox = document.getElementById('inbox-messages');
+      if (msgBox) msgBox.style.fontSize = (13 * chatZoom) + 'px';
+
+      panel.addEventListener('wheel', function(e) {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          e.stopPropagation();
+          chatZoom = Math.max(0.7, Math.min(2.0, chatZoom + (e.deltaY < 0 ? 0.1 : -0.1)));
+          localStorage.setItem('gchat_zoom', chatZoom.toFixed(2));
+          if (msgBox) msgBox.style.fontSize = (13 * chatZoom) + 'px';
+          const compose = document.getElementById('inbox-view-compose');
+          if (compose) compose.style.fontSize = (13 * chatZoom) + 'px';
+          return;
+        }
+        const target = e.target.closest('#inbox-messages, #inbox-view-compose');
+        if (target) {
+          const atTop = target.scrollTop === 0 && e.deltaY < 0;
+          const atBot = (target.scrollTop + target.clientHeight >= target.scrollHeight - 1) && e.deltaY > 0;
+          if (atTop || atBot) e.preventDefault();
+        }
+        e.stopPropagation();
+      }, {passive: false});
+    })();
+
     function toggleGeneralChat() {
       _gchatOpen = !_gchatOpen;
       const panel = document.getElementById('gchat-panel');
