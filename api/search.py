@@ -367,6 +367,13 @@ class handler(BaseHTTPRequestHandler):
                 email_notify.notify_offer_action('offer_save', agent_name, session['username'], body)
             except Exception:
                 pass
+            try:
+                import push_notify
+                user = auth_utils.get_user(session['username'])
+                agent_name = user.get('name', session['username']) if user else session['username']
+                push_notify.notify_offer_push('offer_save', agent_name, session['username'], body)
+            except Exception:
+                pass
             self._json({'ok': True, 'offer_id': oid})
 
         elif path == '/api/offers/list':
@@ -632,6 +639,13 @@ class handler(BaseHTTPRequestHandler):
                     email_notify.notify_offer_action(action, agent_name, session['username'], offer)
                 except Exception:
                     pass
+                try:
+                    import push_notify
+                    user = auth_utils.get_user(session['username'])
+                    agent_name = user.get('name', session['username']) if user else session['username']
+                    push_notify.notify_offer_push(action, agent_name, session['username'], offer)
+                except Exception:
+                    pass
             self._json({'ok': True})
 
         elif path == '/api/activity/report':
@@ -715,6 +729,11 @@ class handler(BaseHTTPRequestHandler):
                 email_notify.notify_chat_message(name, session['username'], text, recipients, offer_ref)
             except Exception:
                 pass
+            try:
+                import push_notify
+                push_notify.notify_chat_push(name, session['username'], text, recipients, offer_ref)
+            except Exception:
+                pass
             messages = auth_utils.get_inbox(session['username'])
             self._json({'ok': True, 'messages': messages})
 
@@ -728,6 +747,39 @@ class handler(BaseHTTPRequestHandler):
             if offer_id:
                 auth_utils.mark_offer_chat_seen(session['username'], offer_id)
             self._json({'ok': True})
+
+        # ── Push subscription ─────────────────────────────────────────────
+        elif path == '/api/push/subscribe':
+            session = self._require_auth()
+            if not session: return
+            sub = body.get('subscription')
+            if not sub:
+                self._json({'error': 'subscription obligatorie'}, 400); return
+            import push_notify
+            ok = push_notify.save_subscription(session['username'], sub)
+            self._json({'ok': ok})
+
+        elif path == '/api/push/unsubscribe':
+            session = self._require_auth()
+            if not session: return
+            import push_notify
+            push_notify.remove_subscription(session['username'])
+            self._json({'ok': True})
+
+        elif path == '/api/push/test':
+            session = self._require_auth()
+            if not session: return
+            import push_notify
+            ok = push_notify.send_push(
+                'Kuziini - Test',
+                'Notificarile push functioneaza!',
+                target_usernames=[session['username']]
+            )
+            self._json({'ok': ok, 'message': 'Push trimis!' if ok else 'Eroare - verificati cheia VAPID'})
+
+        elif path == '/api/push/vapid-key':
+            import push_notify
+            self._json({'key': push_notify.VAPID_PUBLIC_KEY})
 
         else:
             self._json({'error': 'Not found'}, 404)

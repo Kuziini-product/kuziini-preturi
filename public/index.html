@@ -1008,6 +1008,28 @@
       }
     }
 
+    /* ── Chat panel mobile fullscreen ── */
+    @media (max-width: 600px) {
+      #gchat-panel {
+        width: 100vw !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        border-radius: 0 !important;
+        border: none !important;
+      }
+      #inbox-messages {
+        max-height: calc(100vh - 140px) !important;
+      }
+      /* Settings cards: stack buttons vertically */
+      .admin-input {
+        font-size: 14px !important;
+      }
+    }
+
     /* ── Animations ── */
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(16px); }
@@ -2018,6 +2040,24 @@
             <button onclick="sendDailyReport()" style="padding:8px 20px;border-radius:9px;border:1.5px solid #92400e;background:#fff;color:#92400e;font-size:12px;font-weight:700;cursor:pointer">&#x1F4CA; Raport oferte</button>
             <span id="email-settings-msg" style="font-size:11px;font-weight:600"></span>
           </div>
+        </div>
+
+        <!-- Push Notifications -->
+        <div style="background:#ecfdf5;border:1.5px solid #6ee7b7;border-radius:14px;padding:18px 20px;margin-bottom:18px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+            <span style="font-size:22px">&#x1F4F1;</span>
+            <div>
+              <div style="font-size:13px;font-weight:800;color:#065f46">Notificari Push (telefon)</div>
+              <div style="font-size:10px;color:#6b7280">Primeste notificari chiar si cand aplicatia nu este deschisa</div>
+            </div>
+          </div>
+          <div id="push-status" style="font-size:12px;color:#6b7280;margin-bottom:12px">Se verifica...</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button id="push-subscribe-btn" onclick="togglePushSubscription()" style="padding:8px 20px;border-radius:9px;border:none;background:#059669;color:#fff;font-size:12px;font-weight:700;cursor:pointer">&#x1F514; Activeaza notificari push</button>
+            <button onclick="testPushNotif()" style="padding:8px 20px;border-radius:9px;border:1.5px solid #059669;background:#fff;color:#059669;font-size:12px;font-weight:700;cursor:pointer">&#x1F4F2; Test push</button>
+            <span id="push-msg" style="font-size:11px;font-weight:600"></span>
+          </div>
+          <div style="font-size:9px;color:#6b7280;margin-top:8px">Pe iPhone: adauga site-ul pe Home Screen (Share &gt; Add to Home Screen) pentru notificari.</div>
         </div>
 
         <!-- Notification Sounds -->
@@ -4995,6 +5035,7 @@ else { setTimeout(_renderTotals, 100); }
       } else if (tab === 'settings') {
         loadWaSettings();
         loadEmailSettings();
+        initPushUI();
         _initNotifSoundSettings();
       }
     }
@@ -5138,6 +5179,127 @@ else { setTimeout(_renderTotals, 100); }
         msg.style.color = r.ok && d.ok ? '#16a34a' : '#dc2626';
       } catch(e) { msg.textContent = 'Eroare de retea.'; msg.style.color = '#dc2626'; }
       setTimeout(() => { msg.textContent = ''; }, 5000);
+    }
+
+    // ── Push Notifications (Service Worker) ──
+    let _pushSubscription = null;
+
+    async function initPushUI() {
+      const statusEl = document.getElementById('push-status');
+      const btn = document.getElementById('push-subscribe-btn');
+      if (!statusEl || !btn) return;
+
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        statusEl.textContent = 'Push notifications nu sunt suportate in acest browser.';
+        statusEl.style.color = '#dc2626';
+        btn.disabled = true;
+        return;
+      }
+
+      try {
+        const reg = await navigator.serviceWorker.register('/sw.js');
+        await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        _pushSubscription = sub;
+        if (sub) {
+          statusEl.innerHTML = '<span style="color:#059669;font-weight:700">&#x2705; Notificari push active</span>';
+          btn.textContent = '&#x1F515; Dezactiveaza push';
+          btn.style.background = '#dc2626';
+        } else {
+          statusEl.textContent = 'Notificarile push nu sunt activate.';
+          btn.innerHTML = '&#x1F514; Activeaza notificari push';
+          btn.style.background = '#059669';
+        }
+      } catch(e) {
+        statusEl.textContent = 'Eroare: ' + e.message;
+        statusEl.style.color = '#dc2626';
+      }
+    }
+
+    async function togglePushSubscription() {
+      const statusEl = document.getElementById('push-status');
+      const btn = document.getElementById('push-subscribe-btn');
+      const msg = document.getElementById('push-msg');
+
+      if (_pushSubscription) {
+        // Unsubscribe
+        try {
+          await _pushSubscription.unsubscribe();
+          await fetch('/api/push/unsubscribe', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
+          _pushSubscription = null;
+          statusEl.textContent = 'Notificarile push nu sunt activate.';
+          btn.innerHTML = '&#x1F514; Activeaza notificari push';
+          btn.style.background = '#059669';
+          if (msg) { msg.textContent = 'Dezactivat.'; msg.style.color = '#dc2626'; }
+        } catch(e) {
+          if (msg) { msg.textContent = 'Eroare: ' + e.message; msg.style.color = '#dc2626'; }
+        }
+      } else {
+        // Subscribe
+        try {
+          const permission = await Notification.requestPermission();
+          if (permission !== 'granted') {
+            if (msg) { msg.textContent = 'Permisiunea a fost refuzata.'; msg.style.color = '#dc2626'; }
+            return;
+          }
+          // Get VAPID public key from server
+          const keyResp = await fetch('/api/push/vapid-key', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'});
+          const keyData = await keyResp.json();
+          if (!keyData.key) {
+            if (msg) { msg.textContent = 'VAPID key nu este configurata pe server.'; msg.style.color = '#dc2626'; }
+            return;
+          }
+          const vapidKey = urlBase64ToUint8Array(keyData.key);
+
+          const reg = await navigator.serviceWorker.ready;
+          const sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: vapidKey
+          });
+          _pushSubscription = sub;
+
+          // Save to server
+          await fetch('/api/push/subscribe', {
+            method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'},
+            body: JSON.stringify({subscription: sub.toJSON()})
+          });
+
+          statusEl.innerHTML = '<span style="color:#059669;font-weight:700">&#x2705; Notificari push active</span>';
+          btn.textContent = '&#x1F515; Dezactiveaza push';
+          btn.style.background = '#dc2626';
+          if (msg) { msg.textContent = 'Activat cu succes!'; msg.style.color = '#059669'; }
+        } catch(e) {
+          if (msg) { msg.textContent = 'Eroare: ' + e.message; msg.style.color = '#dc2626'; }
+        }
+      }
+      setTimeout(() => { if (msg) msg.textContent = ''; }, 5000);
+    }
+
+    async function testPushNotif() {
+      const msg = document.getElementById('push-msg');
+      if (!_pushSubscription) {
+        if (msg) { msg.textContent = 'Activeaza mai intai notificarile push.'; msg.style.color = '#d97706'; }
+        setTimeout(() => { if (msg) msg.textContent = ''; }, 3000);
+        return;
+      }
+      if (msg) { msg.textContent = 'Se trimite...'; msg.style.color = '#6b7280'; }
+      try {
+        const r = await fetch('/api/push/test', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
+        const d = await r.json();
+        if (msg) { msg.textContent = d.message || 'Trimis!'; msg.style.color = d.ok ? '#059669' : '#dc2626'; }
+      } catch(e) {
+        if (msg) { msg.textContent = 'Eroare retea.'; msg.style.color = '#dc2626'; }
+      }
+      setTimeout(() => { if (msg) msg.textContent = ''; }, 5000);
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const raw = atob(base64);
+      const arr = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+      return arr;
     }
 
     // ── Notification sound settings UI ──
@@ -6874,6 +7036,11 @@ else { setTimeout(_renderTotals, 100); }
         }
       } catch(e) {}
     }, 20000);
+
+    // ── Register Service Worker early (for push even when app closed) ──
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
 
     // ── Visibility change: re-check on tab/app resume ──
     document.addEventListener('visibilitychange', async () => {
