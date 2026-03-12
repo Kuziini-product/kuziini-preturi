@@ -87,3 +87,27 @@ def notify(action: str, agent_name: str, agent_username: str, offer: dict | None
 # Keep old name for backwards compat
 def notify_madalin(action, agent_name, agent_username, offer=None):
     return notify(action, agent_name, agent_username, offer)
+
+
+def notify_chat_message(sender_name, sender_username, text, recipients=None, offer_ref=None):
+    """
+    Send WhatsApp notification when a new chat message arrives.
+    Sends to the globally configured WhatsApp number (admin).
+    """
+    phone, apikey = _get_settings()
+    if not phone or not apikey:
+        return False
+
+    lines = [
+        f'*Kuziini* — Mesaj nou 💬',
+        f'👤 De la: {sender_name} ({sender_username})',
+    ]
+    if recipients:
+        lines.append(f'📨 Catre: {", ".join(recipients)}')
+    if offer_ref:
+        lines.append(f'📋 Oferta: #{offer_ref}')
+    # Truncate long messages
+    preview = text[:200] + ('...' if len(text) > 200 else '')
+    lines.append(f'💬 {preview}')
+
+    return send_message(phone, apikey, '\n'.join(lines))

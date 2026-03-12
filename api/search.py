@@ -619,6 +619,12 @@ class handler(BaseHTTPRequestHandler):
             u = auth_utils.get_user(session['username'])
             name = u.get('name', session['username']) if u else session['username']
             auth_utils.add_inbox_message(session['username'], name, text, recipients, offer_ref)
+            # Send WhatsApp notification for new message
+            try:
+                import whatsapp
+                whatsapp.notify_chat_message(name, session['username'], text, recipients, offer_ref)
+            except Exception:
+                pass
             messages = auth_utils.get_inbox(session['username'])
             self._json({'ok': True, 'messages': messages})
 
