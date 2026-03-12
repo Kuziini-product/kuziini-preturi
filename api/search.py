@@ -353,11 +353,18 @@ class handler(BaseHTTPRequestHandler):
             if err:
                 self._json({'error': err}, 403)
                 return
-            # WhatsApp notification to Madalin
+            # Notifications
             try:
                 user = auth_utils.get_user(session['username'])
                 agent_name = user.get('name', session['username']) if user else session['username']
                 whatsapp.notify_madalin('offer_save', agent_name, session['username'], body)
+            except Exception:
+                pass
+            try:
+                import email_notify
+                user = auth_utils.get_user(session['username'])
+                agent_name = user.get('name', session['username']) if user else session['username']
+                email_notify.notify_offer_action('offer_save', agent_name, session['username'], body)
             except Exception:
                 pass
             self._json({'ok': True, 'offer_id': oid})
@@ -602,7 +609,7 @@ class handler(BaseHTTPRequestHandler):
             data   = body.get('data') or {}
             if action:
                 auth_utils.log_activity(session['username'], action, data)
-            # WhatsApp notification for export actions
+            # Notifications for export actions
             if action in ('export_excel', 'export_pdf'):
                 try:
                     user = auth_utils.get_user(session['username'])
@@ -612,6 +619,17 @@ class handler(BaseHTTPRequestHandler):
                     if offer_id:
                         offer, _ = auth_utils.get_offer_full(offer_id, session['username'], session)
                     whatsapp.notify_madalin(action, agent_name, session['username'], offer)
+                except Exception:
+                    pass
+                try:
+                    import email_notify
+                    user = auth_utils.get_user(session['username'])
+                    agent_name = user.get('name', session['username']) if user else session['username']
+                    offer_id = data.get('offer_id')
+                    offer = None
+                    if offer_id:
+                        offer, _ = auth_utils.get_offer_full(offer_id, session['username'], session)
+                    email_notify.notify_offer_action(action, agent_name, session['username'], offer)
                 except Exception:
                     pass
             self._json({'ok': True})
