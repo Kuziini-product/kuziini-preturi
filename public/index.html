@@ -6038,54 +6038,100 @@ else { setTimeout(_renderTotals, 100); }
         return;
       }
 
-      // Gaseste max price pentru scala
-      let maxPrice = 0;
-      dates.forEach(d => {
-        const day = history[d];
-        ['samsung', 'emag', 'flanco', 'altex'].forEach(v => {
-          if (day[v] && day[v] > maxPrice) maxPrice = day[v];
-        });
-      });
-      if (data.kuziini_price && data.kuziini_price > maxPrice) maxPrice = data.kuziini_price;
-
-      let html = `<div class="report-detail-chart">`;
-      html += `<div style="font-weight:700;font-size:14px;margin-bottom:12px;color:#1e1b4b">${code}`;
-      if (data.kuziini_price) html += ` <span style="color:#7c6fa8;font-weight:500;font-size:12px">Kuziini: ${formatPrice(data.kuziini_price)}</span>`;
-      html += `</div>`;
+      const vendors = [
+        {key:'samsung', name:'Samsung', color:'#1428a0', bg:'#e8eaf6'},
+        {key:'emag',    name:'eMAG',    color:'#e67e00', bg:'#fff8e1'},
+        {key:'flanco',  name:'Flanco',  color:'#e11d48', bg:'#fce4ec'},
+        {key:'altex',   name:'Altex',   color:'#7c3aed', bg:'#ede9fe'},
+      ];
 
       // Show last 30 days max
       const showDates = dates.slice(-30);
 
+      // Find min price for reference
+      let minPrice = Infinity;
       showDates.forEach(d => {
-        const day = history[d];
-        const dateStr = d.slice(5); // MM-DD
-        html += `<div class="chart-bar-row">`;
-        html += `<span class="chart-date">${dateStr}</span>`;
-        html += `<div class="chart-bars">`;
+        vendors.forEach(v => {
+          const val = history[d][v.key];
+          if (val && val < minPrice) minPrice = val;
+        });
+      });
+      if (data.kuziini_price && data.kuziini_price < minPrice) minPrice = data.kuziini_price;
 
-        ['samsung', 'emag', 'flanco', 'altex'].forEach(v => {
-          const val = day[v];
-          if (val && maxPrice > 0) {
-            const width = Math.max(2, Math.round((val / maxPrice) * 200));
-            html += `<div class="chart-bar ${v}" style="width:${width}px" title="${v}: ${formatPrice(val)}"></div>`;
-          }
+      let html = `<div style="background:#fff;border-radius:14px;border:1.5px solid #e5e7eb;padding:20px;margin-top:12px">`;
+      // Header
+      html += `<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">`;
+      html += `<span style="font-weight:800;font-size:15px;color:#1e1b4b">${code}</span>`;
+      if (data.kuziini_price) html += `<span style="background:#f3eeff;color:#7c3aed;padding:4px 12px;border-radius:8px;font-size:13px;font-weight:700">Kuziini: ${formatPrice(data.kuziini_price)}</span>`;
+      html += `<span style="font-size:11px;color:#6b7280;margin-left:auto">${showDates.length} zile</span>`;
+      html += `</div>`;
+
+      // Table
+      html += `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">`;
+      // Header row
+      html += `<thead><tr style="border-bottom:2px solid #e5e7eb">`;
+      html += `<th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:800;color:#6b7280">DATA</th>`;
+      vendors.forEach(v => {
+        html += `<th style="text-align:right;padding:8px 10px;font-size:11px;font-weight:800;color:${v.color}">${v.name.toUpperCase()}</th>`;
+      });
+      html += `<th style="text-align:center;padding:8px 10px;font-size:11px;font-weight:800;color:#059669">CEL MAI IEFTIN</th>`;
+      html += `</tr></thead><tbody>`;
+
+      showDates.forEach((d, idx) => {
+        const day = history[d];
+        const prevDay = idx > 0 ? history[showDates[idx - 1]] : null;
+        const dateStr = new Date(d + 'T00:00:00').toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
+
+        // Find cheapest vendor for this day
+        let cheapest = null, cheapestPrice = Infinity;
+        vendors.forEach(v => {
+          if (day[v.key] && day[v.key] < cheapestPrice) { cheapestPrice = day[v.key]; cheapest = v.key; }
         });
 
-        // Show prices inline
-        const prices = ['samsung', 'emag', 'flanco', 'altex']
-          .filter(v => day[v])
-          .map(v => `<span style="color:${v === 'samsung' ? '#1428a0' : v === 'emag' ? '#f5a623' : v === 'flanco' ? '#e11d48' : '#7c3aed'};font-size:10px">${formatPrice(day[v])}</span>`)
-          .join(' ');
-        html += `<span style="margin-left:8px">${prices}</span>`;
+        const rowBg = idx % 2 === 0 ? '#fafafa' : '#fff';
+        html += `<tr style="background:${rowBg};border-bottom:1px solid #f3f4f6">`;
+        html += `<td style="padding:8px 10px;font-weight:600;color:#374151;white-space:nowrap">${dateStr}</td>`;
 
-        html += `</div></div>`;
+        vendors.forEach(v => {
+          const val = day[v.key];
+          const prevVal = prevDay ? prevDay[v.key] : null;
+          if (!val) {
+            html += `<td style="text-align:right;padding:8px 10px;color:#d1d5db">—</td>`;
+            return;
+          }
+          const isCheapest = v.key === cheapest;
+          let cellStyle = `text-align:right;padding:8px 10px;font-weight:${isCheapest ? '800' : '500'}`;
+          if (isCheapest) cellStyle += `;background:#ecfdf5;color:#059669`;
+          else cellStyle += `;color:${v.color}`;
+
+          let changeTag = '';
+          if (prevVal && val !== prevVal) {
+            const diff = val - prevVal;
+            if (diff > 0) changeTag = `<div style="font-size:10px;color:#dc2626;font-weight:700">&#9650; +${formatPrice(diff)}</div>`;
+            else changeTag = `<div style="font-size:10px;color:#16a34a;font-weight:700">&#9660; ${formatPrice(diff)}</div>`;
+          }
+
+          html += `<td style="${cellStyle}">${formatPrice(val)}${changeTag}</td>`;
+        });
+
+        // Cheapest column
+        if (cheapest) {
+          const v = vendors.find(x => x.key === cheapest);
+          html += `<td style="text-align:center;padding:8px 10px"><span style="background:${v.bg};color:${v.color};padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700">${v.name}</span></td>`;
+        } else {
+          html += `<td style="text-align:center;padding:8px 10px;color:#d1d5db">—</td>`;
+        }
+
+        html += `</tr>`;
       });
 
-      html += `<div class="chart-legend">`;
-      html += `<div class="chart-legend-item"><div class="chart-legend-dot" style="background:#1428a0"></div>Samsung</div>`;
-      html += `<div class="chart-legend-item"><div class="chart-legend-dot" style="background:#f5a623"></div>eMAG</div>`;
-      html += `<div class="chart-legend-item"><div class="chart-legend-dot" style="background:#e11d48"></div>Flanco</div>`;
-      html += `<div class="chart-legend-item"><div class="chart-legend-dot" style="background:#7c3aed"></div>Altex</div>`;
+      html += `</tbody></table></div>`;
+
+      // Legend
+      html += `<div style="display:flex;gap:16px;margin-top:14px;flex-wrap:wrap">`;
+      vendors.forEach(v => {
+        html += `<span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#374151"><span style="width:10px;height:10px;border-radius:50%;background:${v.color};display:inline-block"></span>${v.name}</span>`;
+      });
       html += `</div></div>`;
 
       detail.innerHTML = html;
