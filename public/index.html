@@ -2481,6 +2481,10 @@
           <button class="report-action-btn" onclick="printReportPDF()">Print PDF</button>
         </div>
       </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+        <input id="report-filter-code" placeholder="&#x1F50D; Filtreaza cod produs..." style="flex:1;min-width:180px;padding:8px 12px;border-radius:8px;border:1.5px solid #d1d5db;font-size:13px;color:#1e1b4b;outline:none;background:#fff" oninput="renderReport()">
+        <button id="report-filter-cart-btn" onclick="toggleReportCartFilter()" style="padding:8px 16px;border-radius:8px;border:1.5px solid #7c3aed;background:#fff;color:#7c3aed;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">&#x1F6D2; Doar produse din cos</button>
+      </div>
       <div class="report-wrap">
         <div id="reports-body"></div>
       </div>
@@ -5605,6 +5609,17 @@ else { setTimeout(_renderTotals, 100); }
     // ── Rapoarte preturi ──────────────────────────────────────────────────
     let reportsData = null;
     let currentReportTab = 'summary';
+    let _reportCartFilter = false;
+
+    function toggleReportCartFilter() {
+      _reportCartFilter = !_reportCartFilter;
+      const btn = document.getElementById('report-filter-cart-btn');
+      if (btn) {
+        btn.style.background = _reportCartFilter ? '#7c3aed' : '#fff';
+        btn.style.color = _reportCartFilter ? '#fff' : '#7c3aed';
+      }
+      renderReport();
+    }
 
     // Tab → required report permission
     function _tabPerm(tab) {
@@ -5766,6 +5781,16 @@ else { setTimeout(_renderTotals, 100); }
       detail.innerHTML = '';
 
       let items = reportsData.products;
+
+      // ── User filters (search + cart) ─────────────────────────────────
+      const filterCode = (document.getElementById('report-filter-code')?.value || '').trim().toUpperCase();
+      if (filterCode) {
+        items = items.filter(p => p.code.toUpperCase().includes(filterCode) || (p.category || '').toUpperCase().includes(filterCode));
+      }
+      if (_reportCartFilter) {
+        const cartCodes = new Set(cart.map(c => c.code.toUpperCase()));
+        items = items.filter(p => cartCodes.has(p.code.toUpperCase()));
+      }
 
       // ── Tab-level filters (scumpiri / ieftiniri) ──────────────────────
       if (currentReportTab === 'increases') {
