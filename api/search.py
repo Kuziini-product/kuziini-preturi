@@ -412,7 +412,7 @@ class handler(BaseHTTPRequestHandler):
             if not session:
                 return
             current = auth_utils.get_app_settings()
-            current.update({k: v for k, v in body.items() if k in ('wa_phone', 'wa_apikey')})
+            current.update({k: v for k, v in body.items() if k in ('wa_phone', 'wa_apikey', 'notify_emails')})
             auth_utils.save_app_settings(current)
             self._json({'ok': True})
 
