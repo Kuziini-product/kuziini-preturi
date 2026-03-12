@@ -408,21 +408,8 @@ def get_offer_full(oid, username, session):
     o = _jget(f'offer:{oid}')
     if not o:
         return None, 'Oferta inexistenta'
-    if has_permission(session, 'offers', 'global'):
-        return o, None
-    if o.get('owner_id') == username or username in o.get('shared_with', []):
-        return o, None
-    # Allow access if user is a chat participant for this offer
-    try:
-        raw = _rc('LRANGE', 'inbox_messages', 0, -1) or []
-        for r in raw:
-            m = json.loads(r) if isinstance(r, str) else r
-            if m.get('offer_ref') == oid:
-                if m.get('sender') == username or username in (m.get('recipients') or []):
-                    return o, None
-    except Exception:
-        pass
-    return None, 'Acces interzis'
+    # Any authenticated user can view offers (small team app)
+    return o, None
 
 def _offer_summary(o):
     prods = o.get('products', [])
