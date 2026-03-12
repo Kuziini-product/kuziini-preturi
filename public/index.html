@@ -5935,19 +5935,33 @@ else { setTimeout(_renderTotals, 100); }
       'buzz':    { name: 'Buzz',       freq: [150, 200, 150], dur: 0.08, type: 'square' },
     };
     let _audioCtx = null;
-    function _getAudioCtx() {
-      if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function _ensureAudioCtx() {
+      if (!_audioCtx) {
+        _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (_audioCtx.state === 'suspended') {
+        _audioCtx.resume();
+      }
       return _audioCtx;
     }
+    // Unlock audio on first user interaction (browser requirement)
+    document.addEventListener('click', function _unlockAudio() {
+      _ensureAudioCtx();
+      document.removeEventListener('click', _unlockAudio);
+    }, {once: true});
+    document.addEventListener('touchstart', function _unlockAudioT() {
+      _ensureAudioCtx();
+      document.removeEventListener('touchstart', _unlockAudioT);
+    }, {once: true});
+
     function playNotifSound(soundId) {
       const s = _notifSounds[soundId];
-      if (!s) return;
+      if (!s) { console.warn('Sound not found:', soundId); return; }
       try {
-        const ctx = _getAudioCtx();
-        if (ctx.state === 'suspended') ctx.resume();
+        const ctx = _ensureAudioCtx();
         const gainNode = ctx.createGain();
         gainNode.connect(ctx.destination);
-        gainNode.gain.setValueAtTime(0.35, ctx.currentTime);
+        gainNode.gain.setValueAtTime(0.7, ctx.currentTime);
         let t = ctx.currentTime;
         s.freq.forEach((f, i) => {
           const osc = ctx.createOscillator();
@@ -5958,8 +5972,8 @@ else { setTimeout(_renderTotals, 100); }
           osc.stop(t + s.dur);
           t += s.dur + 0.02;
         });
-        gainNode.gain.linearRampToValueAtTime(0, t + 0.05);
-      } catch(e) {}
+        gainNode.gain.linearRampToValueAtTime(0, t + 0.1);
+      } catch(e) { console.error('Sound error:', e); }
     }
 
     // Sound settings per user (stored in localStorage)
@@ -6525,11 +6539,14 @@ else { setTimeout(_renderTotals, 100); }
         if (_prevInboxIds.size > 0 && _getNotifEnabled()) {
           const newUnread = msgs.filter(m => !m.is_read && m.sender !== me && !_prevInboxIds.has(m.id));
           if (newUnread.length > 0) {
-            // Play sound for the first new message sender
             const sender = newUnread[0].sender;
             const soundId = _getSoundForUser(sender);
+            console.log('[Notif] New message from', sender, '→ sound:', soundId);
             playNotifSound(soundId);
           }
+        } else if (_prevInboxIds.size === 0) {
+          // First poll - init known IDs without playing sound
+          console.log('[Notif] Init known IDs:', msgs.length, 'messages');
         }
         // Update known IDs
         _prevInboxIds = new Set(msgs.map(m => m.id));
