@@ -1,0 +1,41 @@
+name: eMAG Price Scraper
+
+on:
+  schedule:
+    # Ruleaza zilnic la 04:00 UTC (06:00 ora Romaniei vara, 07:00 iarna)
+    - cron: '0 4 * * *'
+    # A doua rulare la 14:00 UTC (16:00 ora Romaniei)
+    - cron: '0 14 * * *'
+  workflow_dispatch: # permite rulare manuala din GitHub UI
+
+jobs:
+  scrape-emag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      - name: Create .env.local with Redis credentials
+        run: |
+          echo "UPSTASH_REDIS_REST_URL=${{ secrets.UPSTASH_REDIS_REST_URL }}" > .env.local
+          echo "UPSTASH_REDIS_REST_TOKEN=${{ secrets.UPSTASH_REDIS_REST_TOKEN }}" >> .env.local
+
+      - name: Run eMAG scraper
+        run: python emag_scraper.py
+        env:
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+
+      - name: Summary
+        if: always()
+        run: echo "eMAG scraper completed at $(date -u '+%Y-%m-%d %H:%M UTC')"

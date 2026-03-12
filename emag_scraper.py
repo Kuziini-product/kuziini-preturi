@@ -25,21 +25,23 @@ import urllib.request
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PRODUCTS_JSON = os.path.join(SCRIPT_DIR, 'data', 'products.json')
 
-# Load Redis credentials from .env.local
-ENV_FILE = os.path.join(SCRIPT_DIR, '.env.local')
-REDIS_URL = ''
-REDIS_TOKEN = ''
-if os.path.isfile(ENV_FILE):
-    with open(ENV_FILE, 'r') as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith('UPSTASH_REDIS_REST_URL='):
-                REDIS_URL = line.split('=', 1)[1].strip('"').strip("'")
-            elif line.startswith('UPSTASH_REDIS_REST_TOKEN='):
-                REDIS_TOKEN = line.split('=', 1)[1].strip('"').strip("'")
+# Load Redis credentials from env vars (GitHub Actions) or .env.local (local)
+REDIS_URL = os.environ.get('UPSTASH_REDIS_REST_URL', '')
+REDIS_TOKEN = os.environ.get('UPSTASH_REDIS_REST_TOKEN', '')
 
 if not REDIS_URL or not REDIS_TOKEN:
-    print("EROARE: Nu am gasit UPSTASH_REDIS_REST_URL/TOKEN in .env.local")
+    ENV_FILE = os.path.join(SCRIPT_DIR, '.env.local')
+    if os.path.isfile(ENV_FILE):
+        with open(ENV_FILE, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith('UPSTASH_REDIS_REST_URL='):
+                    REDIS_URL = line.split('=', 1)[1].strip('"').strip("'")
+                elif line.startswith('UPSTASH_REDIS_REST_TOKEN='):
+                    REDIS_TOKEN = line.split('=', 1)[1].strip('"').strip("'")
+
+if not REDIS_URL or not REDIS_TOKEN:
+    print("EROARE: Nu am gasit UPSTASH_REDIS_REST_URL/TOKEN (nici env vars, nici .env.local)")
     sys.exit(1)
 
 
