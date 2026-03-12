@@ -457,8 +457,10 @@ class handler(BaseHTTPRequestHandler):
                 </div>
               </div>
             ''')
-            api_key_set = bool(os.environ.get('RESEND_API_KEY', ''))
-            self._json({'ok': ok, 'message': 'Email trimis cu succes!' if ok else f'Eroare trimitere. API_KEY setat: {api_key_set}, email: {my_email}'})
+            if ok:
+                self._json({'ok': True, 'message': 'Email trimis cu succes!'})
+            else:
+                self._json({'ok': False, 'message': f'Eroare: {email_notify._last_email_error}'})
 
         elif path == '/api/report/daily':
             # Can be called by admin or by cron (with secret key)

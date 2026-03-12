@@ -29,14 +29,18 @@ def _get_user_emails():
         return {}
 
 
+_last_email_error = ''
+
 def send_email(to_email, subject, html_body):
     """Send an email via Resend API. Returns True on success."""
+    global _last_email_error
+    _last_email_error = ''
     api_key = os.environ.get('RESEND_API_KEY', '') or RESEND_API_KEY
     if not api_key:
-        print(f'[Email] RESEND_API_KEY not set')
+        _last_email_error = 'RESEND_API_KEY not set'
         return False
     if not to_email:
-        print(f'[Email] No recipient email')
+        _last_email_error = 'No recipient email'
         return False
     try:
         payload = json.dumps({
@@ -56,14 +60,13 @@ def send_email(to_email, subject, html_body):
         )
         with urllib.request.urlopen(req, timeout=10) as resp:
             body = resp.read().decode('utf-8')
-            print(f'[Email] Resend response: {resp.status} {body}')
             return resp.status in (200, 201)
     except urllib.error.HTTPError as e:
         body = e.read().decode('utf-8') if hasattr(e, 'read') else ''
-        print(f'[Email] Resend HTTP error {e.code}: {body}')
+        _last_email_error = f'Resend HTTP {e.code}: {body}'
         return False
     except Exception as e:
-        print(f'[Email] Error sending to {to_email}: {e}')
+        _last_email_error = str(e)
         return False
 
 
