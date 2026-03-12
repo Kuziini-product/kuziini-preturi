@@ -1990,6 +1990,35 @@
           </div>
         </div>
 
+        <!-- Email Notifications -->
+        <div style="background:#fef3c7;border:1.5px solid #fbbf24;border-radius:14px;padding:18px 20px;margin-bottom:18px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+            <span style="font-size:22px">&#x2709;</span>
+            <div>
+              <div style="font-size:13px;font-weight:800;color:#92400e">Notificari Email</div>
+              <div style="font-size:10px;color:#6b7280">Primeste notificari pe email cand primesti mesaje noi</div>
+            </div>
+            <label style="margin-left:auto;display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="email-notif-enabled" onchange="saveEmailSettings()" style="accent-color:#d97706;width:16px;height:16px">
+              <span style="font-size:11px;font-weight:700;color:#92400e">Activ</span>
+            </label>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <div style="font-size:10px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Email-ul tau (pentru notificari)</div>
+            <input id="email-notif-addr" class="admin-input" placeholder="exemplu@gmail.com" style="width:100%;box-sizing:border-box">
+            <div style="font-size:9px;color:#6b7280;margin-top:3px">Vei primi notificari pe acest email cand cineva iti trimite un mesaj</div>
+          </div>
+
+          <div id="email-all-users" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;margin-bottom:12px"></div>
+
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button onclick="saveEmailSettings()" style="padding:8px 20px;border-radius:9px;border:none;background:#d97706;color:#fff;font-size:12px;font-weight:700;cursor:pointer">&#x1F4BE; Salveaza</button>
+            <button onclick="testEmailNotif()" style="padding:8px 20px;border-radius:9px;border:1.5px solid #d97706;background:#fff;color:#d97706;font-size:12px;font-weight:700;cursor:pointer">&#x2709; Trimite email test</button>
+            <span id="email-settings-msg" style="font-size:11px;font-weight:600"></span>
+          </div>
+        </div>
+
         <!-- Notification Sounds -->
         <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:14px;padding:18px 20px;margin-bottom:18px">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
@@ -4956,6 +4985,7 @@ else { setTimeout(_renderTotals, 100); }
         loadActivityReport();
       } else if (tab === 'settings') {
         loadWaSettings();
+        loadEmailSettings();
         _initNotifSoundSettings();
       }
     }
@@ -4988,6 +5018,80 @@ else { setTimeout(_renderTotals, 100); }
       msg.textContent = 'Se trimite...'; msg.style.color = '#7c3aed';
       try {
         const r = await fetch('/api/settings/test_wa', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
+        const d = await r.json();
+        msg.textContent = d.message || (r.ok ? '✓ Trimis!' : 'Eroare.');
+        msg.style.color = r.ok && d.ok ? '#16a34a' : '#dc2626';
+      } catch(e) { msg.textContent = 'Eroare de retea.'; msg.style.color = '#dc2626'; }
+      setTimeout(() => { msg.textContent = ''; }, 5000);
+    }
+
+    // ── Email notification settings ──
+    async function loadEmailSettings() {
+      try {
+        const r = await fetch('/api/settings/get', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
+        if (!r.ok) return;
+        const d = await r.json();
+        const s = d.settings || {};
+        const emails = s.notify_emails || {};
+        const myUser = session?.username || '';
+        document.getElementById('email-notif-addr').value = emails[myUser] || '';
+        document.getElementById('email-notif-enabled').checked = !!(emails[myUser]);
+        // Render all user email mappings for admin
+        const box = document.getElementById('email-all-users');
+        if (box && session?.role === 'admin') {
+          const users = _gchatUsers.length > 0 ? _gchatUsers : [];
+          box.innerHTML = users.filter(u => {
+            const uname = typeof u === 'string' ? u : u.username;
+            return uname !== myUser;
+          }).map(u => {
+            const uname = typeof u === 'string' ? u : u.username;
+            const dname = typeof u === 'string' ? u : (u.name || u.username);
+            const email = emails[uname] || '';
+            return `<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:#fff;border-radius:8px;border:1px solid #fde68a">
+              <span style="font-size:12px;font-weight:700;color:#92400e;min-width:100px">@${dname}</span>
+              <input class="admin-input email-user-input" data-username="${uname}" value="${email}" placeholder="email@exemplu.com" style="flex:1;font-size:11px;padding:4px 8px">
+            </div>`;
+          }).join('');
+        }
+      } catch(e) {}
+    }
+
+    async function saveEmailSettings() {
+      const msg = document.getElementById('email-settings-msg');
+      const myUser = session?.username || '';
+      const myEmail = (document.getElementById('email-notif-addr').value || '').trim();
+      const enabled = document.getElementById('email-notif-enabled').checked;
+      try {
+        // Get current settings first
+        const r1 = await fetch('/api/settings/get', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
+        const d1 = await r1.json();
+        const s = d1.settings || {};
+        const emails = s.notify_emails || {};
+        // Update my email
+        if (enabled && myEmail) {
+          emails[myUser] = myEmail;
+        } else {
+          delete emails[myUser];
+        }
+        // Update other users (admin only)
+        document.querySelectorAll('.email-user-input').forEach(inp => {
+          const uname = inp.dataset.username;
+          const val = (inp.value || '').trim();
+          if (val) emails[uname] = val;
+          else delete emails[uname];
+        });
+        const r = await fetch('/api/settings/save', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({notify_emails: emails})});
+        if (r.ok) { msg.textContent = '✓ Salvat!'; msg.style.color = '#16a34a'; }
+        else       { msg.textContent = 'Eroare.'; msg.style.color = '#dc2626'; }
+      } catch(e) { msg.textContent = 'Eroare de retea.'; msg.style.color = '#dc2626'; }
+      setTimeout(() => { msg.textContent = ''; }, 3000);
+    }
+
+    async function testEmailNotif() {
+      const msg = document.getElementById('email-settings-msg');
+      msg.textContent = 'Se trimite...'; msg.style.color = '#d97706';
+      try {
+        const r = await fetch('/api/settings/test_email', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:'{}'});
         const d = await r.json();
         msg.textContent = d.message || (r.ok ? '✓ Trimis!' : 'Eroare.');
         msg.style.color = r.ok && d.ok ? '#16a34a' : '#dc2626';

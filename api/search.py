@@ -429,6 +429,30 @@ class handler(BaseHTTPRequestHandler):
             })
             self._json({'ok': ok, 'message': 'Mesaj trimis cu succes!' if ok else 'Eroare: verifica numarul si apikey-ul.'})
 
+        elif path == '/api/settings/test_email':
+            session = self._require_auth(require_admin=True)
+            if not session:
+                return
+            import email_notify
+            s = auth_utils.get_app_settings()
+            emails = s.get('notify_emails', {})
+            my_email = emails.get(session['username'])
+            if not my_email:
+                self._json({'ok': False, 'message': 'Seteaza mai intai adresa de email.'})
+                return
+            ok = email_notify.send_email(my_email, 'Kuziini - Test Notificare', '''
+              <div style="font-family:Segoe UI,Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px">
+                <div style="background:linear-gradient(135deg,#1e1b4b,#3b0764);color:#fff;padding:16px 20px;border-radius:12px 12px 0 0">
+                  <h2 style="margin:0;font-size:18px">Kuziini - Test Notificare</h2>
+                </div>
+                <div style="background:#f8f7ff;padding:20px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px">
+                  <p>Notificarile email functioneaza corect!</p>
+                  <p style="font-size:12px;color:#6b7280"><a href="https://kuziini.app" style="color:#7c3aed">kuziini.app</a></p>
+                </div>
+              </div>
+            ''')
+            self._json({'ok': ok, 'message': 'Email trimis cu succes!' if ok else 'Eroare: verifica RESEND_API_KEY in Vercel.'})
+
         elif path == '/api/offers/delete':
             session = self._require_auth()
             if not session:
@@ -619,10 +643,15 @@ class handler(BaseHTTPRequestHandler):
             u = auth_utils.get_user(session['username'])
             name = u.get('name', session['username']) if u else session['username']
             auth_utils.add_inbox_message(session['username'], name, text, recipients, offer_ref)
-            # Send WhatsApp notification for new message
+            # Send notifications for new message
             try:
                 import whatsapp
                 whatsapp.notify_chat_message(name, session['username'], text, recipients, offer_ref)
+            except Exception:
+                pass
+            try:
+                import email_notify
+                email_notify.notify_chat_message(name, session['username'], text, recipients, offer_ref)
             except Exception:
                 pass
             messages = auth_utils.get_inbox(session['username'])
