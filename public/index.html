@@ -5023,14 +5023,16 @@ else { setTimeout(_renderTotals, 100); }
         return;
       }
       box.innerHTML = users.map(u => {
-        const uSound = settings[u] || '';
+        const uname = typeof u === 'string' ? u : u.username;
+        const displayName = typeof u === 'string' ? u : (u.name || u.username);
+        const uSound = settings[uname] || '';
         const options = '<option value="">(implicit: ' + (_notifSounds[defaultSound]?.name || defaultSound) + ')</option>'
           + Object.entries(_notifSounds).map(([id, s]) =>
             `<option value="${id}" ${id === uSound ? 'selected' : ''}>${s.name}</option>`
           ).join('');
         return `<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:#fff;border-radius:8px;border:1px solid #dbeafe">
-          <span style="font-size:12px;font-weight:700;color:#1e1b4b;min-width:100px">@${u}</span>
-          <select onchange="_onSoundSettingChange('${u}', this.value)" style="flex:1;padding:4px 8px;border-radius:6px;border:1px solid #dbeafe;font-size:11px;color:#1e1b4b;background:#f8fafc">${options}</select>
+          <span style="font-size:12px;font-weight:700;color:#1e1b4b;min-width:100px">@${displayName}</span>
+          <select onchange="_onSoundSettingChange('${uname}', this.value)" style="flex:1;padding:4px 8px;border-radius:6px;border:1px solid #dbeafe;font-size:11px;color:#1e1b4b;background:#f8fafc">${options}</select>
           <button onclick="playNotifSound(this.previousElementSibling.value || '${defaultSound}')" style="background:#dbeafe;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px" title="Asculta">&#x25B6;</button>
         </div>`;
       }).join('');
@@ -5923,16 +5925,16 @@ else { setTimeout(_renderTotals, 100); }
 
     // ── Notification Sounds (Web Audio API) ──
     const _notifSounds = {
-      'bell':    { name: 'Clopot',     freq: [880, 1100, 880], dur: 0.12, type: 'sine' },
-      'chime':   { name: 'Chimval',    freq: [660, 880, 1320], dur: 0.15, type: 'sine' },
-      'ping':    { name: 'Ping',       freq: [1200], dur: 0.2, type: 'sine' },
-      'pop':     { name: 'Pop',        freq: [600, 400], dur: 0.08, type: 'triangle' },
-      'knock':   { name: 'Ciocănit',   freq: [200, 250], dur: 0.06, type: 'square' },
-      'whistle': { name: 'Fluier',     freq: [800, 1600, 800], dur: 0.18, type: 'sine' },
-      'alert':   { name: 'Alertă',     freq: [440, 660, 440, 660], dur: 0.1, type: 'sawtooth' },
-      'drop':    { name: 'Picătură',   freq: [1400, 600], dur: 0.15, type: 'sine' },
-      'ding':    { name: 'Ding',       freq: [1047, 1319, 1568], dur: 0.2, type: 'sine' },
-      'buzz':    { name: 'Buzz',       freq: [150, 200, 150], dur: 0.08, type: 'square' },
+      'bell':    { name: 'Clopot',     freq: [880, 1100, 880], dur: 0.25, type: 'sine' },
+      'chime':   { name: 'Chimval',    freq: [660, 880, 1320], dur: 0.3, type: 'sine' },
+      'ping':    { name: 'Ping',       freq: [1200], dur: 0.5, type: 'sine' },
+      'pop':     { name: 'Pop',        freq: [600, 400], dur: 0.2, type: 'triangle' },
+      'knock':   { name: 'Ciocănit',   freq: [200, 250], dur: 0.15, type: 'square' },
+      'whistle': { name: 'Fluier',     freq: [800, 1600, 800], dur: 0.3, type: 'sine' },
+      'alert':   { name: 'Alertă',     freq: [440, 660, 440, 660], dur: 0.2, type: 'sawtooth' },
+      'drop':    { name: 'Picătură',   freq: [1400, 600], dur: 0.3, type: 'sine' },
+      'ding':    { name: 'Ding',       freq: [1047, 1319, 1568], dur: 0.3, type: 'sine' },
+      'buzz':    { name: 'Buzz',       freq: [150, 200, 150], dur: 0.2, type: 'square' },
     };
     // Generate WAV data URI from frequency list (works everywhere, no AudioContext needed)
     function _generateWav(freqs, durSec, waveType, sampleRate) {
@@ -5987,26 +5989,61 @@ else { setTimeout(_renderTotals, 100); }
     });
 
     function playNotifSound(soundId) {
-      const url = _notifSoundUrls[soundId];
-      if (!url) { console.warn('Sound not found:', soundId); return; }
+      const s = _notifSounds[soundId];
+      if (!s) { console.warn('[Notif] Sound not found:', soundId); return; }
+      console.log('[Notif] Playing sound:', soundId);
+
+      // Method 1: AudioContext (most reliable for generated tones)
       try {
-        const audio = new Audio(url);
-        audio.volume = 1.0;
-        audio.play().then(() => {
-          console.log('[Notif] Playing sound:', soundId);
-        }).catch(e => {
-          console.warn('[Notif] Play blocked:', e.message);
+        const AC = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AC();
+        const gainNode = ctx.createGain();
+        gainNode.connect(ctx.destination);
+        gainNode.gain.setValueAtTime(1.0, ctx.currentTime);
+        let t = ctx.currentTime + 0.01;
+        s.freq.forEach(f => {
+          const osc = ctx.createOscillator();
+          osc.type = s.type || 'sine';
+          osc.frequency.setValueAtTime(f, t);
+          osc.connect(gainNode);
+          osc.start(t);
+          osc.stop(t + s.dur);
+          t += s.dur + 0.03;
         });
-      } catch(e) { console.error('[Notif] Sound error:', e); }
+        gainNode.gain.setValueAtTime(1.0, t - 0.05);
+        gainNode.gain.linearRampToValueAtTime(0, t + 0.1);
+        setTimeout(() => ctx.close(), (t - ctx.currentTime + 0.5) * 1000);
+        return; // success
+      } catch(e) {
+        console.warn('[Notif] AudioContext failed:', e.message);
+      }
+
+      // Method 2: WAV blob fallback
+      try {
+        const url = _notifSoundUrls[soundId];
+        if (url) {
+          const audio = new Audio(url);
+          audio.volume = 1.0;
+          audio.play().catch(e2 => console.warn('[Notif] Audio fallback failed:', e2.message));
+        }
+      } catch(e) { console.error('[Notif] All methods failed:', e); }
     }
 
-    // Unlock audio on first interaction (for mobile)
+    // Unlock audio on first interaction
     let _audioUnlocked = false;
     function _unlockAudio() {
       if (_audioUnlocked) return;
       _audioUnlocked = true;
-      const a = new Audio();
-      a.play().catch(() => {});
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AC();
+        const osc = ctx.createOscillator();
+        osc.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.001);
+        setTimeout(() => ctx.close(), 100);
+        console.log('[Notif] Audio unlocked');
+      } catch(e) {}
     }
     document.addEventListener('click', _unlockAudio, {once: true});
     document.addEventListener('touchstart', _unlockAudio, {once: true});
