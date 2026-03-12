@@ -5035,12 +5035,13 @@ else { setTimeout(_renderTotals, 100); }
         const d = await r.json();
         const s = d.settings || {};
         const emails = s.notify_emails || {};
-        const myUser = session?.username || '';
+        const _auth = authLoad() || {};
+        const myUser = _auth.username || '';
         document.getElementById('email-notif-addr').value = emails[myUser] || '';
         document.getElementById('email-notif-enabled').checked = !!(emails[myUser]);
         // Render all user email mappings for admin
         const box = document.getElementById('email-all-users');
-        if (box && session?.role === 'admin') {
+        if (box && _auth.role === 'admin') {
           const users = _gchatUsers.length > 0 ? _gchatUsers : [];
           box.innerHTML = users.filter(u => {
             const uname = typeof u === 'string' ? u : u.username;
@@ -5060,7 +5061,7 @@ else { setTimeout(_renderTotals, 100); }
 
     async function saveEmailSettings() {
       const msg = document.getElementById('email-settings-msg');
-      const myUser = session?.username || '';
+      const myUser = (authLoad() || {}).username || '';
       const myEmail = (document.getElementById('email-notif-addr').value || '').trim();
       const enabled = document.getElementById('email-notif-enabled').checked;
       try {
