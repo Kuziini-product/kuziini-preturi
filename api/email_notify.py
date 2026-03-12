@@ -55,6 +55,8 @@ def send_email(to_email, subject, html_body):
             headers={
                 'Authorization': f'Bearer {api_key}',
                 'Content-Type': 'application/json',
+                'User-Agent': 'Kuziini/1.0',
+                'Accept': 'application/json',
             },
             method='POST'
         )
