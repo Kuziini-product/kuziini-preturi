@@ -614,6 +614,15 @@ class handler(BaseHTTPRequestHandler):
             report = auth_utils.get_activity_report()
             self._json(report)
 
+        elif path == '/api/activity/recent':
+            session = self._require_auth()
+            if not session:
+                return
+            since = float(body.get('since', 0))
+            log = auth_utils._jget('actlog:all') or []
+            recent = [e for e in log if e.get('ts', 0) > since and e.get('username') != session['username']]
+            self._json({'events': recent[:50]})
+
         elif path == '/api/offers/chat/get':
             session = self._require_auth()
             if not session: return

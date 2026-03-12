@@ -6747,6 +6747,33 @@ else { setTimeout(_renderTotals, 100); }
       } catch(e) {}
     }, 30000);
 
+    // ── Activity polling (notify when someone uses the app) ──
+    let _lastActivityTs = Date.now() / 1000;
+    const _ACT_SOUNDS = {
+      login: 'knock', cart_add: 'pop', offer_gen: 'ding',
+      offer_save: 'bell', export_excel: 'buzz', export_pdf: 'buzz'
+    };
+    setInterval(async () => {
+      const a = authLoad();
+      if (!a || !a.token || !_getNotifEnabled()) return;
+      try {
+        const r = await fetch('/api/activity/recent', {
+          method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'},
+          body: JSON.stringify({since: _lastActivityTs})
+        });
+        if (!r.ok) return;
+        const d = await r.json();
+        const events = d.events || [];
+        if (events.length > 0) {
+          const ev = events[0];
+          const soundId = _getSoundForUser(ev.username) || _ACT_SOUNDS[ev.action] || 'knock';
+          console.log('[Activity]', ev.username, ev.action, '→ sound:', soundId);
+          playNotifSound(soundId);
+          _lastActivityTs = Math.max(...events.map(e => e.ts || 0));
+        }
+      } catch(e) {}
+    }, 20000);
+
     // Show chat button only when logged in
     function _updateGchatVisibility() {
       const a = authLoad();
