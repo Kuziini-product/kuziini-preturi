@@ -346,25 +346,25 @@ def send_daily_report(to_email=None, date_filter=None):
     if not api_key:
         return False, 'RESEND_API_KEY nu este configurat.'
 
-    import urllib.request
+    import requests as _req
     try:
-        payload = json.dumps({
-            'from': email_notify.FROM_EMAIL,
-            'to': [to_email],
-            'subject': subject,
-            'html': html_body,
-            'attachments': attachments,
-        }).encode('utf-8')
-        req = urllib.request.Request(
+        r = _req.post(
             'https://api.resend.com/emails',
-            data=payload,
             headers={
                 'Authorization': f'Bearer {api_key}',
                 'Content-Type': 'application/json',
             },
-            method='POST'
+            json={
+                'from': email_notify.FROM_EMAIL,
+                'to': [to_email],
+                'subject': subject,
+                'html': html_body,
+                'attachments': attachments,
+            },
+            timeout=30
         )
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            return resp.status in (200, 201), 'Raport trimis cu succes!'
+        if r.status_code in (200, 201):
+            return True, 'Raport trimis cu succes!'
+        return False, f'Eroare Resend: {r.status_code} {r.text[:200]}'
     except Exception as e:
         return False, f'Eroare: {e}'
