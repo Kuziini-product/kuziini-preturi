@@ -12,6 +12,7 @@ import json
 import os
 import urllib.request
 import urllib.parse
+import urllib.error
 
 
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
@@ -30,8 +31,12 @@ def _get_user_emails():
 
 def send_email(to_email, subject, html_body):
     """Send an email via Resend API. Returns True on success."""
-    api_key = RESEND_API_KEY
-    if not api_key or not to_email:
+    api_key = os.environ.get('RESEND_API_KEY', '') or RESEND_API_KEY
+    if not api_key:
+        print(f'[Email] RESEND_API_KEY not set')
+        return False
+    if not to_email:
+        print(f'[Email] No recipient email')
         return False
     try:
         payload = json.dumps({
@@ -49,8 +54,14 @@ def send_email(to_email, subject, html_body):
             },
             method='POST'
         )
-        with urllib.request.urlopen(req, timeout=8) as resp:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            body = resp.read().decode('utf-8')
+            print(f'[Email] Resend response: {resp.status} {body}')
             return resp.status in (200, 201)
+    except urllib.error.HTTPError as e:
+        body = e.read().decode('utf-8') if hasattr(e, 'read') else ''
+        print(f'[Email] Resend HTTP error {e.code}: {body}')
+        return False
     except Exception as e:
         print(f'[Email] Error sending to {to_email}: {e}')
         return False

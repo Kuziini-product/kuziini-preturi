@@ -457,7 +457,8 @@ class handler(BaseHTTPRequestHandler):
                 </div>
               </div>
             ''')
-            self._json({'ok': ok, 'message': 'Email trimis cu succes!' if ok else 'Eroare: verifica RESEND_API_KEY in Vercel.'})
+            api_key_set = bool(os.environ.get('RESEND_API_KEY', ''))
+            self._json({'ok': ok, 'message': 'Email trimis cu succes!' if ok else f'Eroare trimitere. API_KEY setat: {api_key_set}, email: {my_email}'})
 
         elif path == '/api/report/daily':
             # Can be called by admin or by cron (with secret key)
