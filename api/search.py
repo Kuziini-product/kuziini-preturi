@@ -437,6 +437,9 @@ class handler(BaseHTTPRequestHandler):
             s = auth_utils.get_app_settings()
             emails = s.get('notify_emails', {})
             my_email = emails.get(session['username']) or emails.get('_admin')
+            # Fallback: find any valid email in the dict
+            if not my_email:
+                my_email = next((v for v in emails.values() if v and '@' in str(v)), None)
             # Also check if email was passed directly in body
             if not my_email and body.get('email'):
                 my_email = body.get('email')

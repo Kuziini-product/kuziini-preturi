@@ -5061,7 +5061,9 @@ else { setTimeout(_renderTotals, 100); }
 
     async function saveEmailSettings() {
       const msg = document.getElementById('email-settings-msg');
-      const myUser = (authLoad() || {}).username || '';
+      const _a = authLoad() || {};
+      const myUser = _a.username || '';
+      if (!myUser) { msg.textContent = 'Eroare: nu esti logat.'; msg.style.color = '#dc2626'; return; }
       const myEmail = (document.getElementById('email-notif-addr').value || '').trim();
       const enabled = document.getElementById('email-notif-enabled').checked;
       try {
@@ -5073,8 +5075,10 @@ else { setTimeout(_renderTotals, 100); }
         // Update my email
         if (enabled && myEmail) {
           emails[myUser] = myEmail;
+          if (_a.role === 'admin') emails['_admin'] = myEmail;
         } else {
           delete emails[myUser];
+          if (_a.role === 'admin') delete emails['_admin'];
         }
         // Update other users (admin only)
         document.querySelectorAll('.email-user-input').forEach(inp => {
