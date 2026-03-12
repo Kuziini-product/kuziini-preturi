@@ -4955,19 +4955,16 @@ else { setTimeout(_renderTotals, 100); }
     }
 
     async function openSavedOffer(id) {
-      // Open window synchronously (before await) to avoid popup blocker on mobile
-      const w = window.open('', '_blank', 'width=980,height=900,scrollbars=yes');
-      if (w) w.document.write('<html><body style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Segoe UI,Arial;color:#6d28d9"><h2>Se incarca oferta...</h2></body></html>');
       try {
         const r = await fetch('/api/offers/get', {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body: JSON.stringify({offer_id: id})});
-        if (r.status === 401) { if (w) w.close(); doLogout(); return; }
-        if (!r.ok) { if (w) w.close(); try { const e = await r.json(); alert('Eroare: ' + (e.error || r.status)); } catch(_) { alert('Eroare HTTP ' + r.status); } return; }
+        if (r.status === 401) { doLogout(); return; }
+        if (!r.ok) { try { const e = await r.json(); alert('Eroare: ' + (e.error || r.status)); } catch(_) { alert('Eroare HTTP ' + r.status); } return; }
         const d = await r.json();
         const saved = d.offer;
-        if (!saved || !saved.products) { if (w) w.close(); alert('Oferta nu contine produse sau nu exista.'); return; }
+        if (!saved || !saved.products) { alert('Oferta nu contine produse sau nu exista.'); return; }
         const offerData = {num: saved.num, date: saved.date, ts: saved.ts, products: saved.products};
         const savedState = {client: saved.client||'', phone: saved.phone||'', email: saved.email||'', notes: saved.notes||'', description: saved.description||'', discount: saved.discount||0, num: saved.num, date: saved.date, ts: saved.ts};
-        // Fetch chat messages related to this offer (from both inbox and offer chat)
+        // Fetch chat messages related to this offer
         let chatMsgs = [];
         try {
           const [inboxR, offerChatR] = await Promise.all([
@@ -4986,8 +4983,8 @@ else { setTimeout(_renderTotals, 100); }
           }
           chatMsgs.sort((a, b) => (a.ts || 0) - (b.ts || 0));
         } catch(_) {}
-        _openOfferWindow(offerData, savedState, w, chatMsgs);
-      } catch(e) { if (w) w.close(); alert('Eroare la deschiderea ofertei: ' + e.message); }
+        _openOfferWindow(offerData, savedState, null, chatMsgs);
+      } catch(e) { alert('Eroare la deschiderea ofertei: ' + e.message); }
     }
 
     async function reloadOfferToCart(id) {
