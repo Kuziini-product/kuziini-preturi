@@ -4360,10 +4360,31 @@ else { setTimeout(_renderTotals, 100); }
       }
 
       const w = existingWindow || window.open('', '_blank', 'width=980,height=900,scrollbars=yes');
-      if (!w) { alert('Permiteti popup-urile pentru a genera oferta.'); return; }
-      w.document.open();
-      w.document.write(html);
-      w.document.close();
+      if (w) {
+        w.document.open();
+        w.document.write(html);
+        w.document.close();
+      } else {
+        // Popup blocked - fallback to fullscreen iframe overlay
+        let overlay = document.getElementById('offer-overlay');
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.id = 'offer-overlay';
+          overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;background:rgba(0,0,0,0.6);display:flex;flex-direction:column';
+          document.body.appendChild(overlay);
+        }
+        overlay.style.display = 'flex';
+        overlay.innerHTML = `<div style="display:flex;justify-content:flex-end;padding:8px 16px;background:#1e1b4b">
+          <button onclick="document.getElementById('offer-overlay').style.display='none'" style="background:#dc2626;color:#fff;border:none;padding:8px 20px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">&#x2715; Inchide</button>
+        </div>`;
+        const iframe = document.createElement('iframe');
+        iframe.style.cssText = 'flex:1;border:none;background:#fff';
+        iframe.sandbox = 'allow-scripts allow-same-origin allow-popups allow-forms';
+        overlay.appendChild(iframe);
+        iframe.contentDocument.open();
+        iframe.contentDocument.write(html);
+        iframe.contentDocument.close();
+      }
     }
 
     function _fpOffer(v) {
