@@ -1995,23 +1995,18 @@ def scrape_altex(code):
                     if ready_val is not None:
                         log(f"  Altex: ready != null, caut produse in __NEXT_DATA__")
                         prod_url = _altex_find_product_url_in_json(nd_data, code_lower)
-                        # Doar daca URL-ul contine codul, pretul e de incredere
-                        code_in_url = prod_url and code_lower in prod_url.lower()
-                        p = find_price_in_json(nd_data) if code_in_url else None
+                        p = find_price_in_json(nd_data)
                         if p:
                             log(f"  Altex PRET GASIT (__NEXT_DATA__ search): {p}")
-                            return (p, prod_url)
+                            return (p, prod_url or search_url)
                         if prod_url and '/cpd/' in prod_url:
                             log(f"  Altex: URL produs din NEXT_DATA: {prod_url}")
                             _, pp = _curl_with_cookies(
                                 prod_url, timeout=15, referer=search_url)
                             if pp:
-                                if product_matches_code(pp, code):
-                                    price = _altex_extract_price_from_product_page(pp, prod_url)
-                                    if price:
-                                        return (price, prod_url)
-                                else:
-                                    log(f"  Altex NEXT_DATA: produsul NU corespunde codului {code}, skip")
+                                price = _altex_extract_price_from_product_page(pp, prod_url)
+                                if price:
+                                    return (price, prod_url)
                     else:
                         # ready=null: Altex nu trimite produse server-side
                         # Steps 2-5 vor esua (API-uri returneaza HTML, nu JSON)
@@ -2083,21 +2078,17 @@ def scrape_altex(code):
                 if api_data:
                     log(f"  Altex API (skip_to_ddg) JSON OK: {str(api_data)[:300]}")
                     prod_url = _altex_find_product_url_in_json(api_data, code_lower)
-                    code_in_url = prod_url and code_lower in prod_url.lower()
-                    p = find_price_in_json(api_data) if code_in_url else None
+                    p = find_price_in_json(api_data)
                     if p:
                         log(f"  Altex PRET GASIT (API skip_to_ddg): {p}")
-                        return (p, prod_url)
+                        return (p, prod_url or search_url)
                     if prod_url and '/cpd/' in prod_url:
                         full_url = prod_url if prod_url.startswith('http') else 'https://altex.ro' + prod_url
                         _, pp = _curl_with_cookies(full_url, timeout=15, referer=search_url)
                         if pp:
-                            if product_matches_code(pp, code):
-                                price = _altex_extract_price_from_product_page(pp, full_url)
-                                if price:
-                                    return (price, full_url)
-                            else:
-                                log(f"  Altex API (skip_to_ddg): produsul NU corespunde codului {code}, skip")
+                            price = _altex_extract_price_from_product_page(pp, full_url)
+                            if price:
+                                return (price, full_url)
             break  # goto DuckDuckGo
 
         # ── STEP 2: Next.js data route CU cookies ────────────────────────────
@@ -2112,23 +2103,19 @@ def scrape_altex(code):
                 if nj_data:
                     log(f"  Altex Next.js data: JSON OK")
                     prod_url = _altex_find_product_url_in_json(nj_data, code_lower)
-                    code_in_url = prod_url and code_lower in prod_url.lower()
-                    p = find_price_in_json(nj_data) if code_in_url else None
+                    p = find_price_in_json(nj_data)
                     if p:
                         log(f"  Altex PRET GASIT (NJ data JSON): {p}")
-                        return (p, prod_url)
+                        return (p, prod_url or search_url)
                     if prod_url and '/cpd/' in prod_url:
                         full_url = prod_url if prod_url.startswith('http') else 'https://altex.ro' + prod_url
                         log(f"  Altex NJ data: URL produs: {full_url}")
                         _, pp = _curl_with_cookies(
                             full_url, timeout=15, referer=search_url)
                         if pp:
-                            if product_matches_code(pp, code):
-                                price = _altex_extract_price_from_product_page(pp, full_url)
-                                if price:
-                                    return (price, full_url)
-                            else:
-                                log(f"  Altex NJ: produsul NU corespunde codului {code}, skip")
+                            price = _altex_extract_price_from_product_page(pp, full_url)
+                            if price:
+                                return (price, full_url)
                     break  # daca am primit JSON, nu incerca a 2-a varianta
 
         # ── STEP 3: API interne Altex CU cookies ─────────────────────────────
@@ -2143,22 +2130,18 @@ def scrape_altex(code):
             if api_data:
                 log(f"  Altex API JSON OK: {str(api_data)[:300]}")
                 prod_url = _altex_find_product_url_in_json(api_data, code_lower)
-                code_in_url = prod_url and code_lower in prod_url.lower()
-                p = find_price_in_json(api_data) if code_in_url else None
+                p = find_price_in_json(api_data)
                 if p:
                     log(f"  Altex PRET GASIT (API): {p}")
-                    return (p, prod_url)
+                    return (p, prod_url or search_url)
                 if prod_url and '/cpd/' in prod_url:
                     full_url = prod_url if prod_url.startswith('http') else 'https://altex.ro' + prod_url
                     _, pp = _curl_with_cookies(
                         full_url, timeout=15, referer=search_url)
                     if pp:
-                        if product_matches_code(pp, code):
-                            price = _altex_extract_price_from_product_page(pp, full_url)
-                            if price:
-                                return (price, full_url)
-                        else:
-                            log(f"  Altex API: produsul NU corespunde codului {code}, skip")
+                        price = _altex_extract_price_from_product_page(pp, full_url)
+                        if price:
+                            return (price, full_url)
 
         break  # nu incerca alte variante daca am obtinut HTML
 
