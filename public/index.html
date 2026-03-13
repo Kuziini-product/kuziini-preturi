@@ -3770,7 +3770,7 @@ tr:nth-child(even) { background:#faf5ff; }
 
       const initTotal = offerData.products.reduce((s, p) => s + p.baseSellPrice * (p.qty || 1), 0);
 
-      const html = `<!DOCTYPE html>
+      let html = `<!DOCTYPE html>
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
