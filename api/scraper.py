@@ -1401,15 +1401,66 @@ def scrape_flanco(code):
     global _flanco_warmed
     log(f"\n--- Flanco ({code}) ---")
 
+    _flanco_exclude = ['telefon', 'phone', 'mobil', 'smartphone', 'smartwatch',
+                       'tableta', 'laptop', 'notebook', 'casti', 'earbuds',
+                       'aspirator', 'masina-de-spalat', 'kit']
+
+    # ── FINEDATA FIRST (pe Vercel, curl poate fi blocat) ───────────────
+    if FINEDATA_API_KEY and IS_VERCEL:
+        log("  Flanco: FineData prioritar pe Vercel...")
+        for variant in get_search_variants(code)[:2]:
+            search_url = f'https://www.flanco.ro/catalogsearch/result/?q={urllib.parse.quote(variant)}'
+            _, search_soup = _finedata_fetch(search_url)
+            if not search_soup:
+                continue
+            page_text_lower = search_soup.get_text().lower()
+            if 'nu a gasit' in page_text_lower or '0 produse' in page_text_lower:
+                continue
+            product_url = None
+            code_lower_f = code.lower()
+            for a in search_soup.find_all('a', href=True):
+                href = a['href']
+                hl = href.lower()
+                if _is_flanco_product_url(href) and (code_lower_f in hl or variant.lower() in hl):
+                    product_url = href if href.startswith('http') else 'https://www.flanco.ro' + href
+                    break
+            if not product_url:
+                for sel in ['a.product-item-link', '.product-item-name a', 'li.product-item a[href*=".html"]']:
+                    for a in search_soup.select(sel)[:5]:
+                        href = a.get('href', '')
+                        if _is_flanco_product_url(href):
+                            hl = href.lower()
+                            if any(x in hl for x in _flanco_exclude):
+                                continue
+                            product_url = href if href.startswith('http') else 'https://www.flanco.ro' + href
+                            break
+                    if product_url:
+                        break
+            if product_url:
+                log(f"  Flanco FineData product: {product_url}")
+                _, prod_soup = _finedata_fetch(product_url)
+                if prod_soup and product_matches_code(prod_soup, code):
+                    for sel in ['[data-price-type="finalPrice"] .price', '.special-price .price',
+                                '.price-wrapper .price', '.price-box .price', '.price']:
+                        for elem in prod_soup.select(sel)[:3]:
+                            p = parse_ro_price(elem.get_text(separator=''))
+                            if p and p > 400:
+                                log(f"  Flanco PRET GASIT (FineData + {sel}): {p}")
+                                return (p, product_url)
+                    p = extract_json_ld_price(prod_soup)
+                    if p:
+                        log(f"  Flanco PRET GASIT (FineData JSON-LD): {p}")
+                        return (p, product_url)
+                    prices = find_prices_in_soup(prod_soup)
+                    if prices:
+                        return (prices[0], product_url)
+        log("  Flanco FineData: nu a gasit, continuam cu curl...")
+
     # Warmup cu curl (prima oara) — Flanco e blocat pentru Python/OpenSSL
     if not _flanco_warmed:
         if not IS_VERCEL:
             get_page_curl('https://www.flanco.ro/', timeout=8)
         _flanco_warmed = True
-
-    _flanco_exclude = ['telefon', 'phone', 'mobil', 'smartphone', 'smartwatch',
-                       'tableta', 'laptop', 'notebook', 'casti', 'earbuds',
-                       'aspirator', 'masina-de-spalat', 'kit']
 
     for variant in get_search_variants(code):
         for search_url in [
@@ -2051,6 +2102,58 @@ def scrape_altex(code):
     log(f"\n--- Altex ({code}) ---")
     code_lower = code.lower()
     skip_to_ddg = False  # Flag: skip steps 2-5 daca ready=null (client-side only)
+
+    # ── FINEDATA FIRST (pe Vercel, curl e blocat de Akamai) ────────────
+    if FINEDATA_API_KEY and IS_VERCEL:
+        log("  Altex: FineData prioritar pe Vercel...")
+        altex_codes_fd = [code]
+        if '/' in code:
+            altex_codes_fd.append(code.split('/')[0])
+        for altex_code in altex_codes_fd:
+            direct_url = f'https://altex.ro/produs/cpd/{urllib.parse.quote(altex_code, safe="")}/'
+            log(f"  Altex FineData direct: {direct_url}")
+            _, direct_soup = _finedata_fetch(direct_url)
+            if direct_soup and product_matches_code(direct_soup, code):
+                price = _altex_extract_price_from_product_page(direct_soup, direct_url)
+                if price:
+                    log(f"  Altex PRET GASIT (FineData direct): {price}")
+                    return (price, direct_url)
+                p = extract_json_ld_price(direct_soup)
+                if p:
+                    log(f"  Altex PRET GASIT (FineData JSON-LD): {p}")
+                    return (p, direct_url)
+                prices = find_prices_in_soup(direct_soup)
+                if prices:
+                    return (prices[0], direct_url)
+        # Search cu JS rendering
+        for variant in get_search_variants(code)[:1]:
+            search_url = f'https://altex.ro/cauta/?q={urllib.parse.quote(variant)}'
+            log(f"  Altex FineData search: {search_url}")
+            _, search_soup = _finedata_fetch(search_url, js_render=True)
+            if not search_soup:
+                continue
+            product_url = None
+            for a in search_soup.find_all('a', href=True):
+                href = a['href']
+                if '/cpd/' in href.lower():
+                    if code_lower in href.lower() or variant.lower() in href.lower():
+                        product_url = href if href.startswith('http') else 'https://altex.ro' + href
+                        break
+            if not product_url:
+                for a in search_soup.find_all('a', href=True):
+                    if '/cpd/' in a['href'].lower():
+                        href = a['href']
+                        product_url = href if href.startswith('http') else 'https://altex.ro' + href
+                        break
+            if product_url:
+                log(f"  Altex FineData product: {product_url}")
+                _, prod_soup = _finedata_fetch(product_url)
+                if prod_soup and product_matches_code(prod_soup, code):
+                    price = _altex_extract_price_from_product_page(prod_soup, product_url)
+                    if price:
+                        log(f"  Altex PRET GASIT (FineData search): {price}")
+                        return (price, product_url)
+        log("  Altex FineData: nu a gasit, continuam cu curl...")
 
     # ── STEP 0: URL direct cu /produs/cpd/CODE/ ─────────────────────────
     # Altex accepta orice slug inainte de /cpd/ si serveste pagina produsului
