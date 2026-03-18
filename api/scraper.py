@@ -667,7 +667,7 @@ def get_page(url, timeout=None, referer=None):
 
 # ─── FineData.ai Fetch (anti-bot bypass) ─────────────────────────────────────
 
-def _finedata_fetch(url, js_render=False, timeout=30):
+def _finedata_fetch(url, js_render=False, timeout=20):
     """
     Fetch URL via FineData.ai API (bypass Cloudflare, Akamai, DataDome).
     Returneaza (text, soup) sau (None, None).
@@ -683,7 +683,7 @@ def _finedata_fetch(url, js_render=False, timeout=30):
             'use_residential': True,
             'tls_profile': 'chrome136',
             'timeout': timeout,
-            'max_retries': 3,
+            'max_retries': 2,
         }
         if js_render:
             payload['use_js_render'] = True

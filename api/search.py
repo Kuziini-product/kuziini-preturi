@@ -95,6 +95,7 @@ class handler(BaseHTTPRequestHandler):
                 'version': _start_time,
                 'app_version': APP_VERSION,
                 'cache_configured': cache_configured(),
+                'finedata_configured': bool(os.environ.get('FINEDATA_API_KEY', '')),
             })
 
         elif path == '/api/reload_excel':
