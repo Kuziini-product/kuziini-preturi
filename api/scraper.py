@@ -712,6 +712,75 @@ def _finedata_fetch(url, js_render=False, timeout=15):
     return None, None
 
 
+def _finedata_extract_price(url, product_code, js_render=False, timeout=20):
+    """
+    FineData cu AI extraction: un singur apel care returneaza pretul si URL-ul produsului.
+    Foloseste extract_prompt pentru a cere AI-ului sa extraga pretul.
+    Returneaza (price, product_url) sau (None, None).
+    """
+    if not FINEDATA_API_KEY:
+        return None, None
+    try:
+        payload = {
+            'url': url,
+            'formats': ['markdown'],
+            'stealth_antibot': True,
+            'use_residential': True,
+            'tls_profile': 'chrome136',
+            'timeout': timeout,
+            'max_retries': 2,
+            'only_main_content': True,
+            'extract_prompt': (
+                f'Find the product with Samsung code "{product_code}" on this page. '
+                f'Return ONLY a JSON object with: '
+                f'{{"price": <number or null>, "url": "<product URL or null>", "name": "<product name or null>"}}. '
+                f'The price should be a number without currency (e.g. 4899.99). '
+                f'If the product is not found, return {{"price": null, "url": null, "name": null}}.'
+            ),
+        }
+        if js_render:
+            payload['use_js_render'] = True
+            payload['js_wait_for'] = 'networkidle'
+        resp = requests.post(
+            'https://api.finedata.ai/api/v1/scrape',
+            headers={'x-api-key': FINEDATA_API_KEY, 'Content-Type': 'application/json'},
+            json=payload,
+            timeout=timeout + 10,
+        )
+        data = resp.json()
+        tokens = data.get('tokens_used', '?')
+        log(f"  FineData extract {url[:55]} -> tokens={tokens}")
+        if data.get('success'):
+            extract = data.get('data', {}).get('extract', {})
+            # AI extraction result
+            ai_data = extract.get('ai_extract', extract) if isinstance(extract, dict) else {}
+            if not isinstance(ai_data, dict):
+                # Poate fi un string JSON
+                try:
+                    ai_data = json.loads(str(ai_data))
+                except Exception:
+                    ai_data = {}
+            price = ai_data.get('price')
+            prod_url = ai_data.get('url')
+            if price and isinstance(price, (int, float)) and price > 100:
+                log(f"  FineData AI extract: price={price}, url={prod_url}")
+                return (float(price), prod_url or url)
+            # Fallback: parsam markdown-ul returnat
+            md = data.get('data', {}).get('markdown', '')
+            if md:
+                prices = re.findall(r'([\d.]+[,.]?\d{0,2})\s*(?:lei|RON|Lei)', md)
+                for ps in prices:
+                    p = parse_ro_price(ps + ' lei')
+                    if p and p > 400:
+                        log(f"  FineData markdown price: {p}")
+                        return (p, prod_url or url)
+    except requests.exceptions.Timeout:
+        log(f"  FineData extract TIMEOUT: {url[:55]}", 'warning')
+    except Exception as e:
+        log(f"  FineData extract exceptie: {e}", 'error')
+    return None, None
+
+
 # ─── eMAG Scraper ────────────────────────────────────────────────────────────
 # Strategie DIRECTA (fara fallback pe pagina de search — cauza pretului gresit):
 #   1. search-by-filters API (JSON intern eMAG) → URL produs → fetch → pret
@@ -2067,35 +2136,33 @@ def scrape_altex(code):
     skip_to_ddg = False  # Flag: skip steps 2-5 daca ready=null (client-side only)
 
     # ── FINEDATA FIRST (pe Vercel, curl e blocat de Akamai) ────────────
-    # Un singur apel: URL direct /produs/cpd/CODE/ (SSR, nu necesita JS)
+    # Un singur apel cu AI extraction: search page cu JS rendering
     if FINEDATA_API_KEY and IS_VERCEL:
-        log("  Altex: FineData prioritar pe Vercel...")
+        log("  Altex: FineData AI extract pe Vercel...")
+        variant = get_search_variants(code)[0]
+        search_url = f'https://altex.ro/cauta/?q={urllib.parse.quote(variant)}'
+        price, prod_url = _finedata_extract_price(search_url, code, js_render=True, timeout=25)
+        if price:
+            # Normalizeaza URL-ul
+            if prod_url and not prod_url.startswith('http'):
+                prod_url = 'https://altex.ro' + prod_url
+            log(f"  Altex PRET GASIT (FineData AI): {price}")
+            return (price, prod_url or search_url)
+        # Fallback: direct URL fara JS
         altex_code = code.split('/')[0] if '/' in code else code
         direct_url = f'https://altex.ro/produs/cpd/{urllib.parse.quote(altex_code, safe="")}/'
-        log(f"  Altex FineData direct: {direct_url}")
-        _, direct_soup = _finedata_fetch(direct_url)
+        _, direct_soup = _finedata_fetch(direct_url, timeout=15)
         if direct_soup and product_matches_code(direct_soup, code):
-            price = _altex_extract_price_from_product_page(direct_soup, direct_url)
-            if price:
-                log(f"  Altex PRET GASIT (FineData direct): {price}")
-                return (price, direct_url)
+            p = _altex_extract_price_from_product_page(direct_soup, direct_url)
+            if p:
+                log(f"  Altex PRET GASIT (FineData direct): {p}")
+                return (p, direct_url)
             p = extract_json_ld_price(direct_soup)
             if p:
-                log(f"  Altex PRET GASIT (FineData JSON-LD): {p}")
                 return (p, direct_url)
-            prices = find_prices_in_soup(direct_soup)
-            if prices:
-                return (prices[0], direct_url)
-            log("  Altex FineData: pagina incarcata dar pret negasit")
-        elif direct_soup:
-            log("  Altex FineData: cod nu corespunde")
-        else:
-            log("  Altex FineData: pagina nu s-a incarcat")
-        # Pe Vercel, curl nu merge pt Altex (Akamai) - skip direct la return
-        if IS_VERCEL:
-            log("  Altex: skip curl pe Vercel (blocat de Akamai)")
-            return (None, None)
-        log("  Altex FineData: continuam cu curl...")
+        # Pe Vercel, curl nu merge pt Altex (Akamai) - skip
+        log("  Altex: skip curl pe Vercel (blocat de Akamai)")
+        return (None, None)
 
     # ── STEP 0: URL direct cu /produs/cpd/CODE/ ─────────────────────────
     # Altex accepta orice slug inainte de /cpd/ si serveste pagina produsului
