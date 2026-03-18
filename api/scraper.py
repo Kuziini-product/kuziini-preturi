@@ -32,7 +32,7 @@ IS_WINDOWS = platform.system() == 'Windows'
 
 # Pe Vercel timeout-uri mai scurte (10s total per functie pe Hobby)
 # Cron mode seteaza CURL_TIMEOUT la 15s (cron are 60s)
-CURL_TIMEOUT = 8 if IS_VERCEL else 12
+CURL_TIMEOUT = 15 if IS_VERCEL else 12
 
 def set_cron_timeouts():
     """Mareste timeout-urile pentru cron mode (60s budget)."""
@@ -89,7 +89,7 @@ def log(msg, level='info'):
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                  '(KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+                  '(KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,'
               'image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
     'Accept-Language': 'ro-RO,ro;q=0.9,en-US;q=0.8,en;q=0.7',
@@ -100,7 +100,7 @@ HEADERS = {
     'Sec-Fetch-Mode': 'navigate',
     'Sec-Fetch-Site': 'none',
     'Sec-Fetch-User': '?1',
-    'Sec-Ch-Ua': '"Chromium";v="123", "Not:A-Brand";v="8", "Google Chrome";v="123"',
+    'Sec-Ch-Ua': '"Chromium";v="134", "Not:A-Brand";v="8", "Google Chrome";v="134"',
     'Sec-Ch-Ua-Mobile': '?0',
     'Sec-Ch-Ua-Platform': '"Windows"',
     'DNT': '1',
@@ -569,6 +569,19 @@ def _get_curl_bin():
             _curl_bin = 'curl'
     return _curl_bin
 
+# Detecteaza daca curl suporta HTTP/2 (Linux/OpenSSL da, Windows/Schannel nu)
+_curl_has_http2 = None
+def _curl_supports_http2():
+    global _curl_has_http2
+    if _curl_has_http2 is None:
+        try:
+            r = subprocess.run([_get_curl_bin(), '--version'], capture_output=True, timeout=5)
+            _curl_has_http2 = b'HTTP2' in r.stdout or b'http2' in r.stdout or b'nghttp2' in r.stdout
+        except Exception:
+            _curl_has_http2 = False
+        log(f"  curl HTTP/2 support: {_curl_has_http2}")
+    return _curl_has_http2
+
 
 def get_page_curl(url, timeout=None, referer=None):
     if timeout is None:
@@ -582,7 +595,7 @@ def get_page_curl(url, timeout=None, referer=None):
         '-m', str(timeout),
         '--compressed',
         '-H', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-              'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+              'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
         '-H', 'Accept: text/html,application/xhtml+xml,application/xml;'
               'q=0.9,image/avif,image/webp,*/*;q=0.8',
         '-H', 'Accept-Language: ro-RO,ro;q=0.9,en-US;q=0.8,en;q=0.7',
@@ -592,6 +605,8 @@ def get_page_curl(url, timeout=None, referer=None):
         '-H', 'Sec-Fetch-User: ?1',
         '-H', 'DNT: 1',
     ]
+    if _curl_supports_http2():
+        cmd.insert(3, '--http2')
     if referer:
         cmd += ['-H', f'Referer: {referer}', '-H', 'Sec-Fetch-Site: same-origin']
     cmd.append(url)
@@ -1533,7 +1548,7 @@ def _curl_with_cookies(url, timeout=None, referer=None, save_cookies=False):
         '--compressed',
         '-b', cookie_file,  # trimite cookies
         '-H', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-              'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+              'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
         '-H', 'Accept: text/html,application/xhtml+xml,application/xml;'
               'q=0.9,image/avif,image/webp,*/*;q=0.8',
         '-H', 'Accept-Language: ro-RO,ro;q=0.9,en-US;q=0.8,en;q=0.7',
@@ -1543,6 +1558,8 @@ def _curl_with_cookies(url, timeout=None, referer=None, save_cookies=False):
         '-H', 'Sec-Fetch-User: ?1',
         '-H', 'DNT: 1',
     ]
+    if _curl_supports_http2():
+        cmd.insert(3, '--http2')
     if save_cookies:
         cmd += ['-c', cookie_file]  # salveaza cookies
     if referer:
@@ -1598,7 +1615,7 @@ def _curl_json_with_cookies(url, timeout=12, referer=None):
         '--compressed',
         '-b', cookie_file,
         '-H', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-              'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+              'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
         '-H', 'Accept: application/json, text/javascript, */*; q=0.01',
         '-H', 'Accept-Language: ro-RO,ro;q=0.9,en-US;q=0.8,en;q=0.7',
         '-H', 'X-Requested-With: XMLHttpRequest',
@@ -1606,6 +1623,8 @@ def _curl_json_with_cookies(url, timeout=12, referer=None):
         '-H', 'Sec-Fetch-Mode: cors',
         '-H', 'Sec-Fetch-Site: same-origin',
     ]
+    if _curl_supports_http2():
+        cmd.insert(3, '--http2')
     if referer:
         cmd += ['-H', f'Referer: {referer}']
     cmd.append(url)
@@ -2481,7 +2500,7 @@ def _altex_scrape_via_api(code):
             _get_curl_bin(), '-s', '-L', '-m', '12', '--compressed',
             '-b', cookie_file,
             '-H', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                  'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+                  'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
             '-H', 'Accept: application/json, text/plain, */*',
             '-H', 'Accept-Language: ro-RO,ro;q=0.9',
             '-H', f'Referer: {referer}',
@@ -2865,7 +2884,7 @@ def search_product(code, cron_mode=False):
     if cron_mode:
         VENDOR_TIMEOUT = 45
     elif IS_VERCEL:
-        VENDOR_TIMEOUT = 9
+        VENDOR_TIMEOUT = 20
     else:
         VENDOR_TIMEOUT = 120
 
@@ -2876,11 +2895,8 @@ def search_product(code, cron_mode=False):
         'altex':   f'https://altex.ro/cauta/?q={urllib.parse.quote(code)}',
     }
 
-    # Skip Altex and Flanco on Vercel cron (blocked by anti-bot, scraped locally via Playwright)
+    # Try all vendors including Altex and Flanco (updated UA + longer timeouts)
     skip_vendors = []
-    if cron_mode and IS_VERCEL:
-        skip_vendors = ['altex', 'flanco']
-        log(f"  CRON: skipping {skip_vendors} (blocked on Vercel, scraped locally)")
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:
         fut_aggregator = ex.submit(scrape_price_aggregator, code)

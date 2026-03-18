@@ -126,9 +126,9 @@ class handler(BaseHTTPRequestHandler):
                 # Salveaza istoricul preturilor (snapshot zilnic)
                 if result.get('prices'):
                     save_price_history(code, result['prices'])
-                # Daca vendori lipsesc (doar emag - altex/flanco sunt blocate pe Vercel)
+                # Daca vendori lipsesc, incearca retry
                 prices = result.get('prices', {})
-                missing = [v for v in ['emag'] if not prices.get(v)]
+                missing = [v for v in ['emag', 'flanco', 'altex'] if not prices.get(v)]
                 if missing:
                     elapsed2 = time.time() - start
                     log(f"  CRON: {code} missing={missing}, elapsed={round(elapsed2,1)}s, retrying...")
