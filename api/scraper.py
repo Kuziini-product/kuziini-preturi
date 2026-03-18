@@ -2136,20 +2136,18 @@ def scrape_altex(code):
     skip_to_ddg = False  # Flag: skip steps 2-5 daca ready=null (client-side only)
 
     # ── FINEDATA FIRST (pe Vercel, curl e blocat de Akamai) ────────────
-    # UN SINGUR apel FineData: Google search cu AI extraction
+    # UN SINGUR apel FineData: search page cu JS render + AI extraction
     if FINEDATA_API_KEY and IS_VERCEL:
-        log("  Altex: FineData via Google pe Vercel...")
+        log("  Altex: FineData JS render pe Vercel...")
         variant = get_search_variants(code)[0]
-        google_url = f'https://www.google.com/search?q=site:altex.ro+samsung+{urllib.parse.quote(variant)}+pret&hl=ro'
-        price, prod_url = _finedata_extract_price(google_url, code, js_render=False, timeout=18)
+        search_url = f'https://altex.ro/cauta/?q={urllib.parse.quote(variant)}'
+        price, prod_url = _finedata_extract_price(
+            search_url, code, js_render=True, timeout=40)
         if price:
-            if prod_url and 'altex.ro' in prod_url:
-                if not prod_url.startswith('http'):
-                    prod_url = 'https://altex.ro' + prod_url
-            else:
-                prod_url = f'https://altex.ro/cauta/?q={urllib.parse.quote(variant)}'
-            log(f"  Altex PRET GASIT (FineData Google): {price}")
-            return (price, prod_url)
+            if prod_url and not prod_url.startswith('http'):
+                prod_url = 'https://altex.ro' + prod_url
+            log(f"  Altex PRET GASIT (FineData AI): {price}")
+            return (price, prod_url or search_url)
         # Pe Vercel, curl nu merge pt Altex (Akamai) - skip
         log("  Altex: skip curl pe Vercel (blocat de Akamai)")
         return (None, None)
