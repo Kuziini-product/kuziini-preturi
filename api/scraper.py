@@ -2136,77 +2136,20 @@ def scrape_altex(code):
     skip_to_ddg = False  # Flag: skip steps 2-5 daca ready=null (client-side only)
 
     # ── FINEDATA FIRST (pe Vercel, curl e blocat de Akamai) ────────────
-    # Strategia: FineData fetch search page (fara JS) → extrage buildId →
-    # FineData fetch Next.js data route (JSON) → extrage pret
+    # UN SINGUR apel FineData: Google search cu AI extraction
     if FINEDATA_API_KEY and IS_VERCEL:
-        log("  Altex: FineData pe Vercel...")
+        log("  Altex: FineData via Google pe Vercel...")
         variant = get_search_variants(code)[0]
-        v_enc = urllib.parse.quote(variant)
-        search_url = f'https://altex.ro/cauta/?q={v_enc}'
-
-        # STEP 1: Fetch search page (HTML, fara JS) - extrage buildId + link-uri /cpd/
-        search_text, search_soup = _finedata_fetch(search_url, timeout=15)
-        build_id = None
-        if search_soup:
-            nd = search_soup.find('script', id='__NEXT_DATA__')
-            if nd and nd.string:
-                try:
-                    nd_data = json.loads(nd.string)
-                    build_id = nd_data.get('buildId', '')
-                    # Verifica daca are produse direct in __NEXT_DATA__
-                    page_props = nd_data.get('props', {}).get('pageProps', {})
-                    if page_props.get('ready') is not None:
-                        prod_url = _altex_find_product_url_in_json(nd_data, code_lower)
-                        p = find_price_in_json(nd_data)
-                        if p:
-                            log(f"  Altex PRET GASIT (FineData __NEXT_DATA__): {p}")
-                            return (p, prod_url or search_url)
-                    log(f"  Altex FineData buildId: {build_id}")
-                except Exception as e:
-                    log(f"  Altex FineData __NEXT_DATA__ parse: {e}", 'warning')
-
-            # Cauta link-uri /cpd/ in HTML
-            product_url = None
-            for a in search_soup.find_all('a', href=True):
-                href = a['href']
-                if '/cpd/' in href.lower() and (code_lower in href.lower() or variant.lower() in href.lower()):
-                    product_url = href if href.startswith('http') else 'https://altex.ro' + href
-                    break
-            if product_url:
-                log(f"  Altex FineData product link: {product_url}")
-                _, prod_soup = _finedata_fetch(product_url, timeout=15)
-                if prod_soup and product_matches_code(prod_soup, code):
-                    price = _altex_extract_price_from_product_page(prod_soup, product_url)
-                    if price:
-                        log(f"  Altex PRET GASIT (FineData product): {price}")
-                        return (price, product_url)
-
-        # STEP 2: Next.js data route (JSON, fara JS) cu buildId
-        if build_id:
-            data_url = f'https://altex.ro/_next/data/{build_id}/cauta/{v_enc}.json'
-            log(f"  Altex FineData data route: {data_url[:70]}")
-            data_text, _ = _finedata_fetch(data_url, timeout=12)
-            if data_text:
-                try:
-                    nj_data = json.loads(data_text) if isinstance(data_text, str) else None
-                    if nj_data:
-                        prod_url = _altex_find_product_url_in_json(nj_data, code_lower)
-                        p = find_price_in_json(nj_data)
-                        if p:
-                            log(f"  Altex PRET GASIT (FineData NJ data): {p}")
-                            full_url = prod_url if prod_url and prod_url.startswith('http') else (
-                                'https://altex.ro' + prod_url if prod_url else search_url)
-                            return (p, full_url)
-                except Exception as e:
-                    log(f"  Altex FineData NJ parse: {e}", 'warning')
-
-        # STEP 3: AI extraction ca ultim resort (fara JS, din markdown)
-        price, prod_url = _finedata_extract_price(search_url, code, js_render=False, timeout=15)
+        google_url = f'https://www.google.com/search?q=site:altex.ro+samsung+{urllib.parse.quote(variant)}+pret&hl=ro'
+        price, prod_url = _finedata_extract_price(google_url, code, js_render=False, timeout=18)
         if price:
-            if prod_url and not prod_url.startswith('http'):
-                prod_url = 'https://altex.ro' + prod_url
-            log(f"  Altex PRET GASIT (FineData AI): {price}")
-            return (price, prod_url or search_url)
+            if prod_url and 'altex.ro' in prod_url:
+                if not prod_url.startswith('http'):
+                    prod_url = 'https://altex.ro' + prod_url
+            else:
+                prod_url = f'https://altex.ro/cauta/?q={urllib.parse.quote(variant)}'
+            log(f"  Altex PRET GASIT (FineData Google): {price}")
+            return (price, prod_url)
         # Pe Vercel, curl nu merge pt Altex (Akamai) - skip
         log("  Altex: skip curl pe Vercel (blocat de Akamai)")
         return (None, None)
