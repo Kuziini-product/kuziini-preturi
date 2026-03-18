@@ -3091,8 +3091,12 @@ def search_product(code, cron_mode=False):
         'altex':   f'https://altex.ro/cauta/?q={urllib.parse.quote(code)}',
     }
 
-    # Try all vendors including Altex and Flanco (updated UA + longer timeouts)
+    # Cron: skip Altex/Flanco pe Vercel (FineData prea lent pt batch, 40s/vendor)
+    # User requests: toate vendorii (FineData incape in 60s pt 1 vendor)
     skip_vendors = []
+    if cron_mode and IS_VERCEL:
+        skip_vendors = ['altex', 'flanco']
+        log(f"  CRON: skip {skip_vendors} (FineData prea lent pt batch)")
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:
         fut_aggregator = ex.submit(scrape_price_aggregator, code)

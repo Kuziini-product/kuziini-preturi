@@ -126,9 +126,9 @@ class handler(BaseHTTPRequestHandler):
                 # Salveaza istoricul preturilor (snapshot zilnic)
                 if result.get('prices'):
                     save_price_history(code, result['prices'])
-                # Daca vendori lipsesc, incearca retry
+                # Daca vendori lipsesc (doar samsung/emag - altex/flanco via FineData la user request)
                 prices = result.get('prices', {})
-                missing = [v for v in ['emag', 'flanco', 'altex'] if not prices.get(v)]
+                missing = [v for v in ['samsung', 'emag'] if not prices.get(v)]
                 if missing:
                     elapsed2 = time.time() - start
                     log(f"  CRON: {code} missing={missing}, elapsed={round(elapsed2,1)}s, retrying...")
