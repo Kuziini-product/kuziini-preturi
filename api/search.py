@@ -36,8 +36,9 @@ class handler(BaseHTTPRequestHandler):
 
             # Single vendor mode: /api/search?code=X&vendor=samsung
             if vendor:
+                force = params.get('force', [''])[0] == '1'
                 # Check cache first - return cached vendor price if available
-                if cache_configured():
+                if cache_configured() and not force:
                     cached = get_cached_price(code)
                     if cached and cached.get('prices', {}).get(vendor) is not None:
                         products = load_products()
