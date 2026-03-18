@@ -2163,23 +2163,104 @@ def scrape_altex(code):
     skip_to_ddg = False  # Flag: skip steps 2-5 daca ready=null (client-side only)
 
     # ── FINEDATA FIRST (pe Vercel, curl e blocat de Akamai) ────────────
-    # UN SINGUR apel FineData: search page cu JS render + AI extraction
-    # Altex e SPA Next.js - necesita timeout mai lung si wait pt produse
+    # Strategia: FineData fetch Altex API interne (JSON, fara JS render)
+    # apoi fetch pagina produsului daca gasim URL
     if FINEDATA_API_KEY and IS_VERCEL:
-        log("  Altex: FineData JS render pe Vercel...")
-        variant = get_search_variants(code)[0]
-        search_url = f'https://altex.ro/cauta/?q={urllib.parse.quote(variant)}'
-        # Timeout mai lung pt Altex JS render (SPA complex)
-        altex_timeout = 25 if not CRON_MODE else 22
-        price, prod_url = _finedata_extract_price(
-            search_url, code, js_render=True, timeout=altex_timeout)
-        if price:
-            if prod_url and not prod_url.startswith('http'):
-                prod_url = 'https://altex.ro' + prod_url
-            log(f"  Altex PRET GASIT (FineData AI): {price}")
-            return (price, prod_url or search_url)
+        log("  Altex: FineData API interne pe Vercel...")
+        for variant in get_search_variants(code)[:2]:
+            v_enc = urllib.parse.quote(variant)
+
+            # STEP 1: Fetch search page HTML (fara JS) -> extrage buildId
+            search_url = f'https://altex.ro/cauta/?q={v_enc}'
+            search_text, search_soup = _finedata_fetch(search_url, js_render=False)
+            build_id = None
+            if search_soup:
+                nd = search_soup.find('script', id='__NEXT_DATA__')
+                if nd and nd.string:
+                    try:
+                        nd_data = json.loads(nd.string)
+                        build_id = nd_data.get('buildId', '')
+                        log(f"  Altex FineData buildId: {build_id}")
+                        # Daca __NEXT_DATA__ are produse (ready != null)
+                        pp = nd_data.get('props', {}).get('pageProps', {})
+                        if pp.get('ready') is not None:
+                            prod_url = _altex_find_product_url_in_json(nd_data, code_lower)
+                            p = find_price_in_json(nd_data)
+                            if p:
+                                full_url = ('https://altex.ro' + prod_url if prod_url and not prod_url.startswith('http')
+                                            else prod_url or search_url)
+                                log(f"  Altex PRET GASIT (FineData NEXT_DATA): {p}")
+                                return (p, full_url)
+                    except Exception as e:
+                        log(f"  Altex FineData NEXT_DATA: {e}", 'warning')
+
+                # Cauta link-uri /cpd/ direct in HTML
+                for a in search_soup.find_all('a', href=True):
+                    href = a['href']
+                    if '/cpd/' in href.lower() and (code_lower in href.lower() or variant.lower() in href.lower()):
+                        prod_url = href if href.startswith('http') else 'https://altex.ro' + href
+                        log(f"  Altex FineData cpd link: {prod_url}")
+                        _, prod_soup = _finedata_fetch(prod_url)
+                        if prod_soup and product_matches_code(prod_soup, code):
+                            price = _altex_extract_price_from_product_page(prod_soup, prod_url)
+                            if price:
+                                log(f"  Altex PRET GASIT (FineData cpd): {price}")
+                                return (price, prod_url)
+                        break
+
+            # STEP 2: Next.js data route (JSON, fara JS)
+            if build_id:
+                data_url = f'https://altex.ro/_next/data/{build_id}/cauta/{v_enc}.json'
+                log(f"  Altex FineData data route...")
+                data_text, _ = _finedata_fetch(data_url)
+                if data_text and isinstance(data_text, str) and data_text.strip().startswith('{'):
+                    try:
+                        nj_data = json.loads(data_text)
+                        prod_url = _altex_find_product_url_in_json(nj_data, code_lower)
+                        p = find_price_in_json(nj_data)
+                        if p:
+                            full_url = ('https://altex.ro' + prod_url if prod_url and not prod_url.startswith('http')
+                                        else prod_url or search_url)
+                            log(f"  Altex PRET GASIT (FineData NJ data): {p}")
+                            return (p, full_url)
+                        # Daca am gasit URL dar nu pret, fetch pagina produsului
+                        if prod_url and '/cpd/' in str(prod_url):
+                            full_url = prod_url if prod_url.startswith('http') else 'https://altex.ro' + prod_url
+                            _, prod_soup = _finedata_fetch(full_url)
+                            if prod_soup and product_matches_code(prod_soup, code):
+                                price = _altex_extract_price_from_product_page(prod_soup, full_url)
+                                if price:
+                                    log(f"  Altex PRET GASIT (FineData NJ+page): {price}")
+                                    return (price, full_url)
+                    except Exception as e:
+                        log(f"  Altex FineData NJ parse: {e}", 'warning')
+
+            # STEP 3: API-uri interne Altex (JSON, fara JS)
+            for api_path in [
+                f'https://altex.ro/api/v2/catalog/products?q={v_enc}&size=10',
+                f'https://altex.ro/api/v2/search?q={v_enc}&size=10',
+            ]:
+                log(f"  Altex FineData API: {api_path[:65]}")
+                api_text, _ = _finedata_fetch(api_path)
+                if api_text and isinstance(api_text, str):
+                    try:
+                        api_data = json.loads(api_text.strip()) if api_text.strip().startswith('{') or api_text.strip().startswith('[') else None
+                        if api_data:
+                            prod_url = _altex_find_product_url_in_json(api_data, code_lower)
+                            p = find_price_in_json(api_data)
+                            if p:
+                                full_url = ('https://altex.ro' + prod_url if prod_url and not prod_url.startswith('http')
+                                            else prod_url or search_url)
+                                log(f"  Altex PRET GASIT (FineData API): {p}")
+                                return (p, full_url)
+                    except Exception:
+                        pass
+
+            if build_id:
+                break  # Am avut succes cu conexiunea, nu mai incercam alta varianta
+
         # Pe Vercel, curl nu merge pt Altex (Akamai) - skip
-        log("  Altex: skip curl pe Vercel (blocat de Akamai)")
+        log("  Altex: FineData nu a gasit, skip curl pe Vercel")
         return (None, None)
 
     # ── STEP 0: URL direct cu /produs/cpd/CODE/ ─────────────────────────
