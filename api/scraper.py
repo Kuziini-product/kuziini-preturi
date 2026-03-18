@@ -2163,57 +2163,67 @@ def scrape_altex(code):
     skip_to_ddg = False  # Flag: skip steps 2-5 daca ready=null (client-side only)
 
     # ── FINEDATA FIRST (pe Vercel, curl e blocat de Akamai) ────────────
-    # MAX 2 apeluri: (1) search HTML -> buildId, (2) Next.js data route JSON
+    # UN SINGUR apel: headful browser + JS render + AI extraction
+    # Altex e SPA cu produse client-side, necesita browser real
     if FINEDATA_API_KEY and IS_VERCEL:
-        log("  Altex: FineData pe Vercel...")
+        log("  Altex: FineData headful pe Vercel...")
         variant = get_search_variants(code)[0]
         v_enc = urllib.parse.quote(variant)
         search_url = f'https://altex.ro/cauta/?q={v_enc}'
-        fd_timeout = 15  # scurt, doar fetch HTML
-
-        # APEL 1: Search page HTML (fara JS) -> buildId + check __NEXT_DATA__
-        search_text, search_soup = _finedata_fetch(search_url, timeout=fd_timeout)
-        if search_soup:
-            nd = search_soup.find('script', id='__NEXT_DATA__')
-            build_id = None
-            if nd and nd.string:
-                try:
-                    nd_data = json.loads(nd.string)
-                    build_id = nd_data.get('buildId', '')
-                    pp = nd_data.get('props', {}).get('pageProps', {})
-                    # Daca are produse server-side
-                    if pp.get('ready') is not None:
-                        prod_url = _altex_find_product_url_in_json(nd_data, code_lower)
-                        p = find_price_in_json(nd_data)
-                        if p:
-                            full_url = ('https://altex.ro' + prod_url if prod_url and not prod_url.startswith('http')
-                                        else prod_url or search_url)
-                            log(f"  Altex PRET GASIT (FineData NEXT_DATA): {p}")
-                            return (p, full_url)
-                    log(f"  Altex buildId={build_id}, ready={pp.get('ready')}")
-                except Exception as e:
-                    log(f"  Altex NEXT_DATA parse: {e}", 'warning')
-
-            # APEL 2: Next.js data route (JSON)
-            if build_id:
-                data_url = f'https://altex.ro/_next/data/{build_id}/cauta/{v_enc}.json'
-                log(f"  Altex FineData data route: {data_url[:70]}")
-                data_text, _ = _finedata_fetch(data_url, timeout=fd_timeout)
-                if data_text and isinstance(data_text, str):
-                    raw = data_text.strip()
-                    if raw.startswith('{') or raw.startswith('['):
-                        try:
-                            nj_data = json.loads(raw)
-                            prod_url = _altex_find_product_url_in_json(nj_data, code_lower)
-                            p = find_price_in_json(nj_data)
-                            if p:
-                                full_url = ('https://altex.ro' + prod_url if prod_url and not prod_url.startswith('http')
-                                            else prod_url or search_url)
-                                log(f"  Altex PRET GASIT (FineData NJ): {p}")
-                                return (p, full_url)
-                            log(f"  Altex NJ data: pret negasit")
-                        except Exception as e:
-                            log(f"  Altex NJ parse: {e}", 'warning')
+        altex_timeout = 25 if not CRON_MODE else 22
+        try:
+            payload = {
+                'url': search_url,
+                'formats': ['markdown'],
+                'stealth_antibot_headful': True,  # max evasion (browser real)
+                'use_residential': True,
+                'use_js_render': True,
+                'js_wait_for': 'load',
+                'js_scroll': True,
+                'timeout': altex_timeout,
+                'max_retries': 2,
+                'only_main_content': True,
+                'extract_prompt': (
+                    f'Find the Samsung product with code "{code}" on this page. '
+                    f'RULES: 1) If page says "nu a avut niciun rezultat" or shows no Samsung products, return null. '
+                    f'2) ONLY match Samsung TVs or soundbars, ignore other brands. '
+                    f'3) Return JSON: {{"price": <number or null>, "url": "<product URL or null>", "name": "<name or null>"}}. '
+                    f'Price as number without currency (e.g. 3999.99).'
+                ),
+            }
+            resp = requests.post(
+                'https://api.finedata.ai/api/v1/scrape',
+                headers={'x-api-key': FINEDATA_API_KEY, 'Content-Type': 'application/json'},
+                json=payload,
+                timeout=altex_timeout + 10,
+            )
+            data = resp.json()
+            tokens = data.get('tokens_used', '?')
+            log(f"  Altex FineData headful -> tokens={tokens}, success={data.get('success')}")
+            if data.get('success'):
+                extract = data.get('data', {}).get('extract', {})
+                ai_data = extract.get('ai_extract', extract) if isinstance(extract, dict) else {}
+                if not isinstance(ai_data, dict):
+                    try:
+                        ai_data = json.loads(str(ai_data))
+                    except Exception:
+                        ai_data = {}
+                price = ai_data.get('price')
+                prod_url = ai_data.get('url')
+                prod_name = ai_data.get('name', '')
+                if price and isinstance(price, (int, float)) and price > 100:
+                    name_lower = (prod_name or '').lower()
+                    if 'samsung' in name_lower or code_lower in name_lower or not prod_name:
+                        if prod_url and not prod_url.startswith('http'):
+                            prod_url = 'https://altex.ro' + prod_url
+                        log(f"  Altex PRET GASIT (FineData headful): {price} - {prod_name}")
+                        return (float(price), prod_url or search_url)
+                    else:
+                        log(f"  Altex FineData: REJECTED (not Samsung): {prod_name}")
+        except requests.exceptions.Timeout:
+            log(f"  Altex FineData headful TIMEOUT", 'warning')
+        except Exception as e:
+            log(f"  Altex FineData headful eroare: {e}", 'error')
 
         log("  Altex: FineData nu a gasit, skip curl pe Vercel")
         return (None, None)
