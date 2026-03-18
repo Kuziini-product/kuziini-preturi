@@ -740,11 +740,15 @@ def _finedata_extract_price(url, product_code, js_render=False, timeout=None):
             'max_retries': 2,
             'only_main_content': True,
             'extract_prompt': (
-                f'Find the product with Samsung code "{product_code}" on this page. '
-                f'Return ONLY a JSON object with: '
-                f'{{"price": <number or null>, "url": "<product URL or null>", "name": "<product name or null>"}}. '
-                f'The price should be a number without currency (e.g. 4899.99). '
-                f'If the product is not found, return {{"price": null, "url": null, "name": null}}.'
+                f'I am looking for a Samsung TV or soundbar with model code "{product_code}" on this page. '
+                f'IMPORTANT RULES: '
+                f'1. If the page says "nu a avut niciun rezultat" or "niciun rezultat" or "no results", return null values. '
+                f'2. ONLY return a price if you find a Samsung product that matches the code "{product_code}". '
+                f'3. Do NOT return prices from promotional products, unrelated brands (Electrolux, Whirlpool, Hisense, etc.), or random offers shown below search results. '
+                f'4. The product MUST be a Samsung TV or Samsung soundbar. '
+                f'Return ONLY a JSON object: {{"price": <number or null>, "url": "<product URL or null>", "name": "<Samsung product name or null>"}}. '
+                f'Price should be a number without currency (e.g. 4899.99). '
+                f'If the Samsung product is not found, return {{"price": null, "url": null, "name": null}}.'
             ),
         }
         if js_render:
@@ -771,17 +775,29 @@ def _finedata_extract_price(url, product_code, js_render=False, timeout=None):
                     ai_data = {}
             price = ai_data.get('price')
             prod_url = ai_data.get('url')
+            prod_name = ai_data.get('name', '')
             if price and isinstance(price, (int, float)) and price > 100:
-                log(f"  FineData AI extract: price={price}, url={prod_url}")
-                return (float(price), prod_url or url)
-            # Fallback: parsam markdown-ul returnat
+                # Validare: numele produsului trebuie sa contina "samsung" sau codul
+                name_lower = (prod_name or '').lower()
+                code_lower = product_code.lower()
+                code_short = code_lower[:8]  # ex: qe65qn85
+                if ('samsung' in name_lower or code_lower in name_lower or
+                        code_short in name_lower or not prod_name):
+                    log(f"  FineData AI extract: price={price}, name={prod_name}, url={prod_url}")
+                    return (float(price), prod_url or url)
+                else:
+                    log(f"  FineData AI: REJECTED (not Samsung): name={prod_name}, price={price}")
+            # Fallback: verificam markdown-ul doar daca contine codul Samsung
             md = data.get('data', {}).get('markdown', '')
-            if md:
-                prices = re.findall(r'([\d.]+[,.]?\d{0,2})\s*(?:lei|RON|Lei)', md)
+            if md and (product_code.lower() in md.lower() or product_code[:8].lower() in md.lower()):
+                # Cauta pretul doar langa mentiunea codului Samsung
+                code_idx = md.lower().find(product_code[:8].lower())
+                nearby = md[max(0, code_idx - 200):code_idx + 500]
+                prices = re.findall(r'([\d.]+[,.]?\d{0,2})\s*(?:lei|RON|Lei)', nearby)
                 for ps in prices:
                     p = parse_ro_price(ps + ' lei')
                     if p and p > 400:
-                        log(f"  FineData markdown price: {p}")
+                        log(f"  FineData markdown price (near code): {p}")
                         return (p, prod_url or url)
     except requests.exceptions.Timeout:
         log(f"  FineData extract TIMEOUT: {url[:55]}", 'warning')
