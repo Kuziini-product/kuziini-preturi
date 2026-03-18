@@ -694,7 +694,8 @@ def _finedata_fetch(url, js_render=False, timeout=None):
         }
         if js_render:
             payload['use_js_render'] = True
-            payload['js_wait_for'] = 'networkidle'
+            payload['js_wait_for'] = 'load'
+            payload['js_scroll'] = True  # triggereaza lazy loading
         resp = requests.post(
             'https://api.finedata.ai/api/v1/scrape',
             headers={'x-api-key': FINEDATA_API_KEY, 'Content-Type': 'application/json'},
@@ -753,7 +754,8 @@ def _finedata_extract_price(url, product_code, js_render=False, timeout=None):
         }
         if js_render:
             payload['use_js_render'] = True
-            payload['js_wait_for'] = 'networkidle'
+            payload['js_wait_for'] = 'load'
+            payload['js_scroll'] = True  # triggereaza lazy loading
         resp = requests.post(
             'https://api.finedata.ai/api/v1/scrape',
             headers={'x-api-key': FINEDATA_API_KEY, 'Content-Type': 'application/json'},
@@ -2162,12 +2164,15 @@ def scrape_altex(code):
 
     # ── FINEDATA FIRST (pe Vercel, curl e blocat de Akamai) ────────────
     # UN SINGUR apel FineData: search page cu JS render + AI extraction
+    # Altex e SPA Next.js - necesita timeout mai lung si wait pt produse
     if FINEDATA_API_KEY and IS_VERCEL:
         log("  Altex: FineData JS render pe Vercel...")
         variant = get_search_variants(code)[0]
         search_url = f'https://altex.ro/cauta/?q={urllib.parse.quote(variant)}'
+        # Timeout mai lung pt Altex JS render (SPA complex)
+        altex_timeout = 25 if not CRON_MODE else 22
         price, prod_url = _finedata_extract_price(
-            search_url, code, js_render=True)
+            search_url, code, js_render=True, timeout=altex_timeout)
         if price:
             if prod_url and not prod_url.startswith('http'):
                 prod_url = 'https://altex.ro' + prod_url
