@@ -29,6 +29,7 @@ DATA_DIR = os.path.join(PROJECT_ROOT, 'data')
 
 IS_VERCEL = os.environ.get('VERCEL', '') == '1' or os.environ.get('VERCEL_ENV', '') != ''
 IS_WINDOWS = platform.system() == 'Windows'
+FINEDATA_API_KEY = os.environ.get('FINEDATA_API_KEY', '')
 
 # Pe Vercel timeout-uri mai scurte (10s total per functie pe Hobby)
 # Cron mode seteaza CURL_TIMEOUT la 15s (cron are 60s)
@@ -661,6 +662,53 @@ def get_page(url, timeout=None, referer=None):
         log(f"  TIMEOUT ({timeout}s) pentru {url[:60]}", 'warning')
     except Exception as e:
         log(f"  EROARE fetch {url[:60]}: {e}", 'error')
+    return None, None
+
+
+# ─── FineData.ai Fetch (anti-bot bypass) ─────────────────────────────────────
+
+def _finedata_fetch(url, js_render=False, timeout=30):
+    """
+    Fetch URL via FineData.ai API (bypass Cloudflare, Akamai, DataDome).
+    Returneaza (text, soup) sau (None, None).
+    Necesita FINEDATA_API_KEY in env.
+    """
+    if not FINEDATA_API_KEY:
+        return None, None
+    try:
+        payload = {
+            'url': url,
+            'formats': ['rawHtml'],
+            'stealth_antibot': True,
+            'use_residential': True,
+            'tls_profile': 'chrome136',
+            'timeout': timeout,
+            'max_retries': 3,
+        }
+        if js_render:
+            payload['use_js_render'] = True
+            payload['js_wait_for'] = 'networkidle'
+        resp = requests.post(
+            'https://api.finedata.ai/api/v1/scrape',
+            headers={'x-api-key': FINEDATA_API_KEY, 'Content-Type': 'application/json'},
+            json=payload,
+            timeout=timeout + 10,
+        )
+        data = resp.json()
+        if data.get('success') and data.get('status_code') == 200:
+            html = data.get('body', '') or data.get('data', {}).get('rawHtml', '')
+            tokens = data.get('tokens_used', '?')
+            log(f"  FineData OK {url[:60]} -> {len(html):,}b ({tokens} tokens)")
+            if html and len(html) > 500:
+                return html, BeautifulSoup(html, 'html.parser')
+            log(f"  FineData: raspuns prea mic ({len(html)}b)", 'warning')
+        else:
+            reason = data.get('meta', {}).get('block_reason', data.get('error', 'unknown'))
+            log(f"  FineData EROARE: status={data.get('status_code')}, reason={reason}", 'warning')
+    except requests.exceptions.Timeout:
+        log(f"  FineData TIMEOUT ({timeout}s): {url[:60]}", 'warning')
+    except Exception as e:
+        log(f"  FineData exceptie: {e}", 'error')
     return None, None
 
 
@@ -1510,6 +1558,54 @@ def scrape_flanco(code):
             if flanco_urls:
                 break  # am gasit URL-uri dar nu s-a potrivit codul
 
+    # ── FineData.ai fallback (anti-bot bypass) ──
+    if FINEDATA_API_KEY:
+        log("  Flanco: incercare via FineData.ai...")
+        for variant in get_search_variants(code)[:2]:
+            search_url = f'https://www.flanco.ro/catalogsearch/result/?q={urllib.parse.quote(variant)}'
+            _, search_soup = _finedata_fetch(search_url)
+            if not search_soup:
+                continue
+            page_text_lower = search_soup.get_text().lower()
+            if 'nu a gasit' in page_text_lower or '0 produse' in page_text_lower:
+                continue
+            product_url = None
+            code_lower_f = code.lower()
+            # Cauta link-uri de produs
+            for a in search_soup.find_all('a', href=True):
+                href = a['href']
+                hl = href.lower()
+                if _is_flanco_product_url(href) and (code_lower_f in hl or variant.lower() in hl):
+                    product_url = href if href.startswith('http') else 'https://www.flanco.ro' + href
+                    break
+            if not product_url:
+                for sel in ['a.product-item-link', '.product-item-name a', 'li.product-item a[href*=".html"]']:
+                    for a in search_soup.select(sel)[:5]:
+                        href = a.get('href', '')
+                        if _is_flanco_product_url(href):
+                            product_url = href if href.startswith('http') else 'https://www.flanco.ro' + href
+                            break
+                    if product_url:
+                        break
+            if product_url:
+                log(f"  Flanco FineData product URL: {product_url}")
+                _, prod_soup = _finedata_fetch(product_url)
+                if prod_soup and product_matches_code(prod_soup, code):
+                    for sel in ['[data-price-type="finalPrice"] .price', '.special-price .price',
+                                '.price-wrapper .price', '.price-box .price', '.price']:
+                        for elem in prod_soup.select(sel)[:3]:
+                            p = parse_ro_price(elem.get_text(separator=''))
+                            if p and p > 400:
+                                log(f"  Flanco PRET GASIT (FineData + {sel}): {p}")
+                                return (p, product_url)
+                    p = extract_json_ld_price(prod_soup)
+                    if p:
+                        log(f"  Flanco PRET GASIT (FineData JSON-LD): {p}")
+                        return (p, product_url)
+                    prices = find_prices_in_soup(prod_soup)
+                    if prices:
+                        return (prices[0], product_url)
+
     log("  Flanco: negasit", 'warning')
     return (None, None)
 
@@ -2177,6 +2273,60 @@ def scrape_altex(code):
                 price = _altex_extract_price_from_product_page(pp, ddg_url)
                 if price:
                     return (price, ddg_url)
+
+    # ── FineData.ai fallback (anti-bot bypass cu JS rendering) ──
+    if FINEDATA_API_KEY:
+        log("  Altex: incercare via FineData.ai...")
+        # STEP A: URL direct cu /produs/cpd/CODE/ (SSR - nu necesita JS)
+        altex_codes = [code]
+        if '/' in code:
+            altex_codes.append(code.split('/')[0])
+        for altex_code in altex_codes:
+            direct_url = f'https://altex.ro/produs/cpd/{urllib.parse.quote(altex_code, safe="")}/'
+            log(f"  Altex FineData STEP A: {direct_url}")
+            _, direct_soup = _finedata_fetch(direct_url)
+            if direct_soup and product_matches_code(direct_soup, code):
+                price = _altex_extract_price_from_product_page(direct_soup, direct_url)
+                if price:
+                    log(f"  Altex PRET GASIT (FineData direct): {price}")
+                    return (price, direct_url)
+                p = extract_json_ld_price(direct_soup)
+                if p:
+                    log(f"  Altex PRET GASIT (FineData JSON-LD): {p}")
+                    return (p, direct_url)
+                prices = find_prices_in_soup(direct_soup)
+                if prices:
+                    return (prices[0], direct_url)
+
+        # STEP B: Search page cu JS rendering (Altex e Next.js SPA)
+        for variant in get_search_variants(code)[:2]:
+            search_url = f'https://altex.ro/cauta/?q={urllib.parse.quote(variant)}'
+            log(f"  Altex FineData STEP B: {search_url}")
+            search_text, search_soup = _finedata_fetch(search_url, js_render=True)
+            if not search_soup:
+                continue
+            # Cauta link-uri /cpd/ in HTML
+            product_url = None
+            for a in search_soup.find_all('a', href=True):
+                href = a['href']
+                if '/cpd/' in href.lower():
+                    if code.lower() in href.lower() or variant.lower() in href.lower():
+                        product_url = href if href.startswith('http') else 'https://altex.ro' + href
+                        break
+            if not product_url:
+                for a in search_soup.find_all('a', href=True):
+                    href = a['href']
+                    if '/cpd/' in href.lower():
+                        product_url = href if href.startswith('http') else 'https://altex.ro' + href
+                        break
+            if product_url:
+                log(f"  Altex FineData product URL: {product_url}")
+                _, prod_soup = _finedata_fetch(product_url)
+                if prod_soup and product_matches_code(prod_soup, code):
+                    price = _altex_extract_price_from_product_page(prod_soup, product_url)
+                    if price:
+                        log(f"  Altex PRET GASIT (FineData search): {price}")
+                        return (price, product_url)
 
     log("  Altex: negasit", 'warning')
     return (None, None)
