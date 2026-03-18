@@ -35,10 +35,15 @@ FINEDATA_API_KEY = os.environ.get('FINEDATA_API_KEY', '')
 # Cron mode seteaza CURL_TIMEOUT la 15s (cron are 60s)
 CURL_TIMEOUT = 15 if IS_VERCEL else 12
 
+CRON_MODE = False
+FINEDATA_TIMEOUT = 20  # Default timeout FineData (secunde)
+
 def set_cron_timeouts():
     """Mareste timeout-urile pentru cron mode (60s budget)."""
-    global CURL_TIMEOUT
+    global CURL_TIMEOUT, CRON_MODE, FINEDATA_TIMEOUT
     CURL_TIMEOUT = 15
+    CRON_MODE = True
+    FINEDATA_TIMEOUT = 18  # Cron: mai scurt (4 vendori in paralel, 60s total)
 REQ_TIMEOUT = 5 if IS_VERCEL else 10
 
 EXCEL_FILE = None
@@ -667,12 +672,14 @@ def get_page(url, timeout=None, referer=None):
 
 # ─── FineData.ai Fetch (anti-bot bypass) ─────────────────────────────────────
 
-def _finedata_fetch(url, js_render=False, timeout=15):
+def _finedata_fetch(url, js_render=False, timeout=None):
     """
     Fetch URL via FineData.ai API (bypass Cloudflare, Akamai, DataDome).
     Returneaza (text, soup) sau (None, None).
     Necesita FINEDATA_API_KEY in env.
     """
+    if timeout is None:
+        timeout = FINEDATA_TIMEOUT
     if not FINEDATA_API_KEY:
         return None, None
     try:
@@ -712,12 +719,14 @@ def _finedata_fetch(url, js_render=False, timeout=15):
     return None, None
 
 
-def _finedata_extract_price(url, product_code, js_render=False, timeout=20):
+def _finedata_extract_price(url, product_code, js_render=False, timeout=None):
     """
     FineData cu AI extraction: un singur apel care returneaza pretul si URL-ul produsului.
     Foloseste extract_prompt pentru a cere AI-ului sa extraga pretul.
     Returneaza (price, product_url) sau (None, None).
     """
+    if timeout is None:
+        timeout = FINEDATA_TIMEOUT
     if not FINEDATA_API_KEY:
         return None, None
     try:
@@ -2142,7 +2151,7 @@ def scrape_altex(code):
         variant = get_search_variants(code)[0]
         search_url = f'https://altex.ro/cauta/?q={urllib.parse.quote(variant)}'
         price, prod_url = _finedata_extract_price(
-            search_url, code, js_render=True, timeout=40)
+            search_url, code, js_render=True)
         if price:
             if prod_url and not prod_url.startswith('http'):
                 prod_url = 'https://altex.ro' + prod_url
@@ -3076,11 +3085,12 @@ def search_product(code, cron_mode=False):
     result_urls = {}
     image_result = [None]
 
-    # Timeout per-vendor: cron=45s, user request=9s, local=120s
+    # Timeout per-vendor (ruleaza in paralel, total = max(all) + overhead)
+    # Cron: 30s (FineData 18s + marja), User Vercel: 25s, Local: 120s
     if cron_mode:
-        VENDOR_TIMEOUT = 45
+        VENDOR_TIMEOUT = 30
     elif IS_VERCEL:
-        VENDOR_TIMEOUT = 20
+        VENDOR_TIMEOUT = 25
     else:
         VENDOR_TIMEOUT = 120
 
@@ -3091,12 +3101,8 @@ def search_product(code, cron_mode=False):
         'altex':   f'https://altex.ro/cauta/?q={urllib.parse.quote(code)}',
     }
 
-    # Cron: skip Altex/Flanco pe Vercel (FineData prea lent pt batch, 40s/vendor)
-    # User requests: toate vendorii (FineData incape in 60s pt 1 vendor)
+    # Toate vendorii, inclusiv Altex/Flanco via FineData (ruleaza in paralel)
     skip_vendors = []
-    if cron_mode and IS_VERCEL:
-        skip_vendors = ['altex', 'flanco']
-        log(f"  CRON: skip {skip_vendors} (FineData prea lent pt batch)")
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:
         fut_aggregator = ex.submit(scrape_price_aggregator, code)
