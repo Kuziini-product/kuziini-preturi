@@ -11,8 +11,12 @@
   ],
   "crons": [
     {
-      "path": "/api/cron",
+      "path": "/api/cron?reset=1",
       "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron?reset=1",
+      "schedule": "0 15 * * *"
     }
   ]
 }
