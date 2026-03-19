@@ -9,31 +9,36 @@
     "category": "TV Neo QLED",
     "code": "QE65QN900FTXXH",
     "price": 8645.1475,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe65qn900ftxxh/gallery/ro-qled-qn900f-qe65qn900ftxxh-545540947?$720_576_PNG$"
   },
   "QE75QN900FTXXH": {
     "category": "TV Neo QLED",
     "code": "QE75QN900FTXXH",
     "price": 12127.0193,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe75qn900ftxxh/gallery/ro-qled-qn900f-qe75qn900ftxxh-545540975?$720_576_PNG$"
   },
   "QE85QN900FTXXH": {
     "category": "TV Neo QLED",
     "code": "QE85QN900FTXXH",
     "price": 18833.4322,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe85qn900ftxxh/gallery/ro-qled-qn900f-qe85qn900ftxxh-545540999?$720_576_PNG$"
   },
   "QE65QN990FTXXH": {
     "category": "TV Neo QLED",
     "code": "QE65QN990FTXXH",
     "price": 15069.6304,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe65qn990ftxxh/gallery/ro-qled-qn990f-qe65qn990ftxxh-545540014?$720_576_PNG$"
   },
   "QE75QN990FTXXH": {
     "category": "TV Neo QLED",
     "code": "QE75QN990FTXXH",
     "price": 20088.044899999997,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe75qn990ftxxh/gallery/ro-qled-qn990f-qe75qn990ftxxh-545540036?$720_576_PNG$"
   },
   "QE85QN990FTXXH": {
     "category": "TV Neo QLED",
@@ -45,7 +50,8 @@
     "category": "TV Neo QLED",
     "code": "QE43QN90FATXXH",
     "price": 3598.0802,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe43qn90fatxxh/gallery/ro-qled-qn90f-qe43qn90fatxxh-545662921?$720_576_PNG$"
   },
   "QE50QN90FATXXH": {
     "category": "TV Neo QLED",
@@ -57,25 +63,29 @@
     "category": "TV Neo QLED",
     "code": "QE55QN90FATXXH",
     "price": 4803.7847,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe55qn90fatxxh/gallery/ro-qled-qn90f-542792-qe55qn90fatxxh-545896539?$720_576_PNG$"
   },
   "QE65QN90FATXXH": {
     "category": "TV Neo QLED",
     "code": "QE65QN90FATXXH",
     "price": 6247.2421,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe65qn90fatxxh/gallery/ro-qled-tv-qe65qn90fatxxh-front-black-546543930?$720_576_PNG$"
   },
   "QE75QN90FATXXH": {
     "category": "TV Neo QLED",
     "code": "QE75QN90FATXXH",
     "price": 8884.146700000001,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe75qn90fatxxh/gallery/ro-qled-tv-qe75qn90fatxxh-front-black-546544630?$720_576_PNG$"
   },
   "QE85QN90FATXXH": {
     "category": "TV Neo QLED",
     "code": "QE85QN90FATXXH",
     "price": 12698.514399999998,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe85qn90fatxxh/gallery/ro-qled-tv-qe85qn90fatxxh-front-black-546545943?$720_576_PNG$"
   },
   "QE98QN90FATXXH": {
     "category": "TV Neo QLED",
@@ -87,43 +97,50 @@
     "category": "TV Neo QLED",
     "code": "QE55QN85FAUXXH",
     "price": 4027.5697,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe55qn85fauxxh/gallery/ro-qled-tv-qe55qn85fauxxh-front-silver-546602241?$720_576_PNG$"
   },
   "QE65QN85FAUXXH": {
     "category": "TV Neo QLED",
     "code": "QE65QN85FAUXXH",
     "price": 5547.8984,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe65qn85fauxxh/gallery/ro-qled-qn85f-qe65qn85fauxxh-545663362?$720_576_PNG$"
   },
   "QE75QN85FAUXXH": {
     "category": "TV Neo QLED",
     "code": "QE75QN85FAUXXH",
     "price": 8064.2507,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe75qn85fauxxh/gallery/ro-qled-tv-qe75qn85fauxxh-front-silver-546601110?$720_576_PNG$"
   },
   "QE85QN85FAUXXH": {
     "category": "TV Neo QLED",
     "code": "QE85QN85FAUXXH",
     "price": 10580.723999999998,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe85qn85fauxxh/gallery/ro-qled-tv-qe85qn85fauxxh-front-silver-546601685?$720_576_PNG$"
   },
   "QE50QN80FAUXXH": {
     "category": "TV Neo QLED",
     "code": "QE50QN80FAUXXH",
     "price": 3022.1081,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe50qn80fauxxh/gallery/ro-qled-qn80f-qe50qn80fauxxh-545541851?$720_576_PNG$"
   },
   "QE55QN80FAUXXH": {
     "category": "TV Neo QLED",
     "code": "QE55QN80FAUXXH",
     "price": 3567.2857,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe55qn80fauxxh/gallery/ro-qled-qn80f-qe55qn80fauxxh-545541874?$720_576_PNG$"
   },
   "QE65QN80FAUXXH": {
     "category": "TV Neo QLED",
     "code": "QE65QN80FAUXXH",
     "price": 4414.5156,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe65qn80fauxxh/gallery/ro-qled-qn80f-qe65qn80fauxxh-545541902?$720_576_PNG$"
   },
   "QE75QN80FAUXXH": {
     "category": "TV Neo QLED",
@@ -135,7 +152,8 @@
     "category": "TV Neo QLED",
     "code": "QE85QN80FAUXXH",
     "price": 8570.0549,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe85qn80fauxxh/gallery/ro-qled-qn80f-qe85qn80fauxxh-545541971?$720_576_PNG$"
   },
   "QE100QN80FUXXH": {
     "category": "TV Neo QLED",
@@ -147,7 +165,8 @@
     "category": "TV OLED",
     "code": "QE55S95FATXXH",
     "price": 7330.724499999999,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe55s95fatxxh/gallery/ro-oled-s95f-qe55s95fatxxh-545298522?$720_576_PNG$"
   },
   "QE65S95FATXXH": {
     "category": "TV OLED",
@@ -177,31 +196,36 @@
     "category": "TV OLED",
     "code": "QE55S90FAEXXH",
     "price": 5274.0028,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe55s90faexxh/gallery/ro-oled-s90f-qe55s90faexxh-545895929?$720_576_PNG$"
   },
   "QE65S90FATXXH": {
     "category": "TV OLED",
     "code": "QE65S90FATXXH",
     "price": 7215.3994,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe65s90fatxxh/gallery/ro-oled-s90f-qe65s90fatxxh-545895950?$720_576_PNG$"
   },
   "QE77S90FAEXXH": {
     "category": "TV OLED",
     "code": "QE77S90FAEXXH",
     "price": 10301.5407,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe77s90faexxh/gallery/ro-oled-s90f-qe77s90faexxh-545895975?$720_576_PNG$"
   },
   "QE83S90FAEXXH": {
     "category": "TV OLED",
     "code": "QE83S90FAEXXH",
     "price": 15445.1418,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe83s90faexxh/gallery/ro-oled-s90f-qe83s90faexxh-545895995?$720_576_PNG$"
   },
   "QE55S85FAUXXH": {
     "category": "TV OLED",
     "code": "QE55S85FAUXXH",
     "price": 4877.3285,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe55s85fauxxh/gallery/ro-oled-s85f-539869-qe55s85fauxxh-545553548?$720_576_PNG$"
   },
   "QE65S85FAEXXH": {
     "category": "TV OLED",
@@ -213,25 +237,29 @@
     "category": "TV OLED",
     "code": "QE77S85FAEXXH",
     "price": 9363.1857,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe77s85faexxh/gallery/ro-oled-s85f-qe77s85faexxh-545299117?$720_576_PNG$"
   },
   "QE83S85FAEXXH": {
     "category": "TV OLED",
     "code": "QE83S85FAEXXH",
     "price": 13762.7094,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe83s85faexxh/gallery/ro-oled-s85f-qe83s85faexxh-545299162?$720_576_PNG$"
   },
   "QE85QN70FAUXXH": {
     "category": "TV Neo QLED",
     "code": "QE85QN70FAUXXH",
     "price": 7103.4139,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe85qn70fauxxh/gallery/ro-qled-tv-qe85qn70fauxxh-front-black-546696514?$720_576_PNG$"
   },
   "QE75QN70FAUXXH": {
     "category": "TV Neo QLED",
     "code": "QE75QN70FAUXXH",
     "price": 5881.1687,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe75qn70fauxxh/gallery/ro-qled-tv-qe75qn70fauxxh-front-black-546694943?$720_576_PNG$"
   },
   "QE65QN70FAUXXH": {
     "category": "TV Neo QLED",
@@ -243,91 +271,106 @@
     "category": "TV Neo QLED",
     "code": "QE55QN70FAUXXH",
     "price": 3295.5439,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe55qn70fauxxh/gallery/ro-qled-qn70f-qe55qn70fauxxh-545542745?$720_576_PNG$"
   },
   "QE85Q8FAAUXXH": {
     "category": "TV QLED Q60",
     "code": "QE85Q8FAAUXXH",
     "price": 6281.0253,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe85q8faauxxh/gallery/ro-qled-tv-qe85q8faauxxh-front-titanium-gray-545636749?$720_576_PNG$"
   },
   "QE75Q8FAAUXXH": {
     "category": "TV QLED Q60",
     "code": "QE75Q8FAAUXXH",
     "price": 4874.9085,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe75q8faauxxh/gallery/ro-qled-tv-qe75q8faauxxh-front-titanium-gray-545636389?$720_576_PNG$"
   },
   "QE65Q8FAAUXXH": {
     "category": "TV QLED Q60",
     "code": "QE65Q8FAAUXXH",
     "price": 3587.9283,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe65q8faauxxh/gallery/ro-qled-tv-qe65q8faauxxh-front-titanium-gray-545636158?$720_576_PNG$"
   },
   "QE55Q8FAAUXXH": {
     "category": "TV QLED Q60",
     "code": "QE55Q8FAAUXXH",
     "price": 2690.3019,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe55q8faauxxh/gallery/ro-qled-tv-qe55q8faauxxh-front-titanium-gray-545635849?$720_576_PNG$"
   },
   "QE50Q8FAAUXXH": {
     "category": "TV QLED Q60",
     "code": "QE50Q8FAAUXXH",
     "price": 2422.6983,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe50q8faauxxh/gallery/ro-qled-tv-qe50q8faauxxh-front-titanium-gray-545635778?$720_576_PNG$"
   },
   "QE43Q8FAAUXXH": {
     "category": "TV QLED Q60",
     "code": "QE43Q8FAAUXXH",
     "price": 1972.5178,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe43q8faauxxh/gallery/ro-qled-q8-qe43q8faauxxh-545543997?$720_576_PNG$"
   },
   "QE85Q7F2AUXXH": {
     "category": "TV QLED",
     "code": "QE85Q7F2AUXXH",
     "price": 6056.534,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe85q7f2auxxh/gallery/ro-qled-tv-qe85q7f2auxxh-front-black-547056692?$720_576_PNG$"
   },
   "QE75Q7F2AUXXH": {
     "category": "TV QLED",
     "code": "QE75Q7F2AUXXH",
     "price": 4638.1840999999995,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe75q7f2auxxh/gallery/ro-qled-tv-qe75q7f2auxxh-front-black-547055222?$720_576_PNG$"
   },
   "QE65Q7F2AUXXH": {
     "category": "TV QLED",
     "code": "QE65Q7F2AUXXH",
     "price": 3096.7288000000003,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe65q7f2auxxh/gallery/ro-qled-q7-550521-qe65q7f2auxxh-546953844?$720_576_PNG$"
   },
   "QE55Q7F2AUXXH": {
     "category": "TV QLED",
     "code": "QE55Q7F2AUXXH",
     "price": 2480.1733,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe55q7f2auxxh/gallery/ro-qled-tv-qe55q7f2auxxh-front-black-547051546?$720_576_PNG$"
   },
   "QE50Q7F2AUXXH": {
     "category": "TV QLED",
     "code": "QE50Q7F2AUXXH",
     "price": 2171.8653,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe50q7f2auxxh/gallery/ro-qled-tv-qe50q7f2auxxh-front-black-547050630?$720_576_PNG$"
   },
   "QE43Q7F2AUXXH": {
     "category": "TV QLED",
     "code": "QE43Q7F2AUXXH",
     "price": 1786.6497,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe43q7f2auxxh/gallery/ro-qled-q7-550521-qe43q7f2auxxh-546953754?$720_576_PNG$"
   },
   "UE85U7022FKXXH": {
     "category": "TV Crystal UHD Premium",
     "code": "UE85U7022FKXXH",
     "price": 6002.5801,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ue85u7022fkxxh/gallery/ro-uhd-u7000-ue85u7022fkxxh-545544925?$720_576_PNG$"
   },
   "UE75U7022FKXXH": {
     "category": "TV Crystal UHD",
     "code": "UE75U7022FKXXH",
     "price": 3679.5978999999998,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ue75u7022fkxxh/gallery/ro-uhd-u7000-ue75u7022fkxxh-545544885?$720_576_PNG$"
   },
   "UE65U7022FKXXH": {
     "category": "TV Crystal UHD",
@@ -339,19 +382,22 @@
     "category": "TV Crystal UHD",
     "code": "UE55U7022FKXXH",
     "price": 2018.5462,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ue55u7022fkxxh/gallery/ro-uhd-u7000-ue55u7022fkxxh-545544802?$720_576_PNG$"
   },
   "UE50U7022FKXXH": {
     "category": "TV Crystal UHD",
     "code": "UE50U7022FKXXH",
     "price": 1864.3317,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ue50u7022fkxxh/gallery/ro-uhd-u7000-ue50u7022fkxxh-545544645?$720_576_PNG$"
   },
   "UE43U7022FKXXH": {
     "category": "TV Crystal UHD",
     "code": "UE43U7022FKXXH",
     "price": 1588.9841,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ue43u7022fkxxh/gallery/ro-uhd-u7000-ue43u7022fkxxh-545544605?$720_576_PNG$"
   },
   "UE32F6002FKXXH": {
     "category": "TV Full HD",
@@ -363,13 +409,15 @@
     "category": "The Lifestyle TV",
     "code": "QE85LS03FWUXXH",
     "price": 11725.0936,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe85ls03fwuxxh/gallery/ro-the-frame-qe85ls03fwuxxh-front-black-545825235?$720_576_PNG$"
   },
   "QE75LS03FWUXXH": {
     "category": "The Lifestyle TV",
     "code": "QE75LS03FWUXXH",
     "price": 8618.212899999999,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe75ls03fwuxxh/gallery/ro-the-frame-qe75ls03fwuxxh-front-black-545825181?$720_576_PNG$"
   },
   "QE65LS03FWUXXH": {
     "category": "The Lifestyle TV",
@@ -381,13 +429,15 @@
     "category": "The Lifestyle TV",
     "code": "QE55LS03FAUXXH",
     "price": 4046.3851999999997,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe55ls03fauxxh/gallery/ro-the-frame-ls03f-qe55ls03fauxxh-545303338?$720_576_PNG$"
   },
   "QE50LS03FAUXXH": {
     "category": "The Lifestyle TV",
     "code": "QE50LS03FAUXXH",
     "price": 3572.0409999999997,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/qe50ls03fauxxh/gallery/ro-the-frame-qe50ls03fauxxh-front--black-545570642?$720_576_PNG$"
   },
   "QE43LS03FAUXXH": {
     "category": "The Lifestyle TV",
@@ -399,7 +449,8 @@
     "category": "The Lifestyle TV",
     "code": "SP-LFF3CLAXXXH",
     "price": 2654.0019,
-    "group": "Televizoare"
+    "group": "Televizoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/sp-lff3claxxxh/gallery/ro-the-freestyle-2nd-gen-lff3c-sp-lff3claxxxh-537687708?$720_576_PNG$"
   },
   "SP-LPU7DSAXXXH": {
     "category": "The Lifestyle TV",
@@ -417,61 +468,71 @@
     "category": "Soundbar",
     "code": "HW-B400F/EN",
     "price": 443.0657,
-    "group": "Soundbar"
+    "group": "Soundbar",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/hw-b400f-en/gallery/ro-b-series-soundbar-hw-b400f-hw-b400f-en-545673638?$720_576_PNG$"
   },
   "HW-B450F/EN": {
     "category": "Soundbar",
     "code": "HW-B450F/EN",
     "price": 601.5998999999999,
-    "group": "Soundbar"
+    "group": "Soundbar",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/hw-b450f-en/gallery/ro-b-series-soundbar-hw-b450f-hw-b450f-en-545673947?$720_576_PNG$"
   },
   "HW-B650F/EN": {
     "category": "Soundbar",
     "code": "HW-B650F/EN",
     "price": 945.5302999999999,
-    "group": "Soundbar"
+    "group": "Soundbar",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/hw-b650f-en/gallery/ro-b-series-soundbar-hw-b650f-hw-b650f-en-545674238?$720_576_PNG$"
   },
   "HW-B750F/EN": {
     "category": "Soundbar",
     "code": "HW-B750F/EN",
     "price": 1043.3951,
-    "group": "Soundbar"
+    "group": "Soundbar",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/hw-b750f-en/gallery/ro-b-series-soundbar-hw-b750f-hw-b750f-en-545674517?$720_576_PNG$"
   },
   "HW-Q600F/EN": {
     "category": "Soundbar",
     "code": "HW-Q600F/EN",
     "price": 1162.7979,
-    "group": "Soundbar"
+    "group": "Soundbar",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/hw-q600f-en/gallery/ro-q-series-soundbar-hw-q600f-hw-q600f-en-545674770?$720_576_PNG$"
   },
   "HW-Q800F/EN": {
     "category": "Soundbar",
     "code": "HW-Q800F/EN",
     "price": 1906.2340000000002,
-    "group": "Soundbar"
+    "group": "Soundbar",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/hw-q800f-en/gallery/ro-soundbar-hw-q800f-en-front-black-546262204?$720_576_PNG$"
   },
   "HW-Q930F/EN": {
     "category": "Soundbar",
     "code": "HW-Q930F/EN",
     "price": 2487.1187000000004,
-    "group": "Soundbar"
+    "group": "Soundbar",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/hw-q930f-en/gallery/ro-soundbar-hw-q930f-en-front-black-546262091?$720_576_PNG$"
   },
   "HW-Q990F/EN": {
     "category": "Soundbar",
     "code": "HW-Q990F/EN",
     "price": 3439.0499,
-    "group": "Soundbar"
+    "group": "Soundbar",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/hw-q990f-en/gallery/ro-soundbar-hw-q990f-en-front-black-546261837?$720_576_PNG$"
   },
   "HW-QS700F/EN": {
     "category": "Soundbar",
     "code": "HW-QS700F/EN",
     "price": 1529.1133,
-    "group": "Soundbar"
+    "group": "Soundbar",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/hw-qs700f-en/gallery/ro-q-series-soundbar-hw-qs700f-hw-qs700f-en-545548978?$720_576_PNG$"
   },
   "HW-LS60D/EN": {
     "category": "Soundbar",
     "code": "HW-LS60D/EN",
     "price": 1160.8498,
-    "group": "Soundbar"
+    "group": "Soundbar",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/hw-ls60d-en/gallery/ro-music-frame-hw-ls60d-hw-ls60d-en-546034722?$720_576_PNG$"
   },
   "HW-S60D/EN": {
     "category": "Soundbar",
@@ -489,7 +550,8 @@
     "category": "Soundbar",
     "code": "HW-S700D/EN",
     "price": 1312.5475,
-    "group": "Soundbar"
+    "group": "Soundbar",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/hw-s700d-en/gallery/ro-s-series-soundbar-hw-s700d-hw-s700d-en-546039866?$720_576_PNG$"
   },
   "HW-S701D/EN": {
     "category": "Soundbar",
@@ -519,37 +581,43 @@
     "category": "Plita",
     "code": "C21RJAN/BOL",
     "price": 543.4836,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/c21rjan-bol/gallery/ro-oven-c21rjanbol-c21rjan-bol-547316756?$720_576_PNG$"
   },
   "C61R2AAST/BOL": {
     "category": "Plita",
     "code": "C61R2AAST/BOL",
     "price": 806.828,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/c61r2aast-bol/gallery/ro-induction-hob-with-4-burners-c61r2aast-bol-c61r2aast-bol-550163510?$720_576_PNG$"
   },
   "CTR164NC01/BOL": {
     "category": "Plita",
     "code": "CTR164NC01/BOL",
     "price": 953.4679,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/ro-cooktop-ctr164nc01-ctr164nc01-bol-Front-64360019?$720_576_PNG$"
   },
   "NA64H3000AK/L1": {
     "category": "Plita",
     "code": "NA64H3000AK/L1",
     "price": 626.1266,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/ro-cooktop-na3000h-na64h3000ak-l1-frontblack-159662617?$720_576_PNG$"
   },
   "NK24M1030IB/UR": {
     "category": "Hota",
     "code": "NK24M1030IB/UR",
     "price": 442.0977,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/ro-nk7000-nk24m1030ib-nk24m1030ib-ur-frontblack-119589249?$720_576_PNG$"
   },
   "NK24M1030IS/UR": {
     "category": "Hota",
     "code": "NK24M1030IS/UR",
     "price": 420.5718,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/ro-hood-nk24m1030is-nk24m1030is-ur-frontsilver-69956760?$720_576_PNG$"
   },
   "NK24N5703BS/UR": {
     "category": "Hota",
@@ -561,19 +629,22 @@
     "category": "Hota",
     "code": "NK36C5703TS/UR",
     "price": 1430.22,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nk36c5703ts-ur/gallery/ro-nk7000mm-hood-with-power-ventilation-system-514744-nk36c5703ts-ur-542468940?$720_576_PNG$"
   },
   "NV68A1140BK/OL": {
     "category": "Cuptor",
     "code": "NV68A1140BK/OL",
     "price": 1252.1927,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nv68a1140bk-ol/gallery/ro-nv3300a-nv68a1140bs-426927-nv68a1140bk-ol-532843485?$720_576_PNG$"
   },
   "NV68A1140BS/OL": {
     "category": "Cuptor",
     "code": "NV68A1140BS/OL",
     "price": 1252.1927,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nv68a1140bs-ol/gallery/ro-nv3300a-nv68a1140bs-nv68a1140bs-ol-532843326?$720_576_PNG$"
   },
   "NV68A1170BS/OL": {
     "category": "Cuptor",
@@ -585,25 +656,29 @@
     "category": "Cuptor",
     "code": "NV75T8979RK/EF",
     "price": 4044.4492,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nv75t8979rk-ef/gallery/ro-nv8300t-380963-nv75t8979rk-ef-544412302?$720_576_PNG$"
   },
   "NV7B4020ZAK/U2": {
     "category": "Cuptor",
     "code": "NV7B4020ZAK/U2",
     "price": 1658.0267,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nv7b4020zak-u2/gallery/ro-nv7000b-nb7b41301as-426916-nv7b4020zak-u2-532842876?$720_576_PNG$"
   },
   "NV7B42251AK/U2": {
     "category": "Cuptor",
     "code": "NV7B42251AK/U2",
     "price": 1798.7739,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nv7b42251ak-u2/gallery/ro-nv7000b-nv7b4430yas-500731-nv7b42251ak-u2-540507639?$720_576_PNG$"
   },
   "NV7B4240VAK/U2": {
     "category": "Cuptor",
     "code": "NV7B4240VAK/U2",
     "price": 1796.9347,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nv7b4240vak-u2/gallery/ro-nv7000b-nv7b42503ak-426930-nv7b4240vak-u2-532844086?$720_576_PNG$"
   },
   "NV7B4325ZAK/U2": {
     "category": "Cuptor",
@@ -615,43 +690,50 @@
     "category": "Cuptor",
     "code": "NV7B4345VAK/U2",
     "price": 2075.513,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nv7b4345vak-u2/gallery/ro-nv7000b-nv7b4555uas-nv7b4345vak-u2-532843067?$720_576_PNG$"
   },
   "NV7B4345VAS/U2": {
     "category": "Cuptor",
     "code": "NV7B4345VAS/U2",
     "price": 2045.626,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nv7b4345vas-u2/gallery/ro-nv7000b-nv7b4555uas-426924-nv7b4345vas-u2-544412363?$720_576_PNG$"
   },
   "NV7B44205AK/U2": {
     "category": "Cuptor",
     "code": "NV7B44205AK/U2",
     "price": 1675.7774,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nv7b44205ak-u2/gallery/ro-nv7000b-nv7b4430yas-nv7b44205ak-u2-540507104?$720_576_PNG$"
   },
   "NV7B44207AK/U2": {
     "category": "Cuptor",
     "code": "NV7B44207AK/U2",
     "price": 1704.6843,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nv7b44207ak-u2/gallery/ro-nv7000b-nv7b42503ak-nv7b44207ak-u2-532842661?$720_576_PNG$"
   },
   "NV7B4445VAK/U2": {
     "category": "Cuptor",
     "code": "NV7B4445VAK/U2",
     "price": 1860.2903,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nv7b4445vak-u2/gallery/ro-nv7000b-nv7b42503ak-500720-nv7b4445vak-u2-540506106?$720_576_PNG$"
   },
   "NV7B5645TAK/U2": {
     "category": "Cuptor",
     "code": "NV7B5645TAK/U2",
     "price": 2075.513,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nv7b5645tak-u2/gallery/ro-nv7000b-nv7b5640sbs-nv7b5645tak-u2-532842528?$720_576_PNG$"
   },
   "NV7B6665IAA/U2": {
     "category": "Cuptor",
     "code": "NV7B6665IAA/U2",
     "price": 3601.5287,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nv7b6665iaa-u2/gallery/ro-nv7000b-nv7b6675can-447503-nv7b6665iaa-u2-544412275?$720_576_PNG$"
   },
   "NV7B6799JAK/U2": {
     "category": "Cuptor",
@@ -663,19 +745,22 @@
     "category": "Plita",
     "code": "NZ32BG2005FKU2",
     "price": 776.0698,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nz32bg2005fku2/gallery/ro-nz2200bm-nz32bg2005fk-nz32bg2005fku2-543758472?$720_576_PNG$"
   },
   "NZ64B5045GK/U2": {
     "category": "Plita",
     "code": "NZ64B5045GK/U2",
     "price": 1584.1804,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nz64b5045gk-u2/gallery/ro-nz8500bm-nz64b5046hk-426910-nz64b5045gk-u2-532842614?$720_576_PNG$"
   },
   "NZ64B5046JK/U2": {
     "category": "Plita",
     "code": "NZ64B5046JK/U2",
     "price": 1678.0159,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nz64b5046jk-u2/gallery/ro-nz8500bm-nz64b5046hk-nz64b5046jk-u2-532216726?$720_576_PNG$"
   },
   "NZ64B5067YY/U2": {
     "category": "Plita",
@@ -687,31 +772,36 @@
     "category": "Plita",
     "code": "NZ64B6056GK/U2",
     "price": 1897.9939,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nz64b6056gk-u2/gallery/ro-nz8500bm-nz64b6056gk-nz64b6056gk-u2-532842794?$720_576_PNG$"
   },
   "NZ64F3NM1AB/UR": {
     "category": "Plita",
     "code": "NZ64F3NM1AB/UR",
     "price": 1000.791,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nz64f3nm1ab-ur/gallery/ro-nz3000h-426908-nz64f3nm1ab-ur-532842501?$720_576_PNG$"
   },
   "NZ64M3NM1BB/OL": {
     "category": "Plita",
     "code": "NZ64M3NM1BB/OL",
     "price": 1000.791,
-    "group": "Built-in Bucatarie"
+    "group": "Built-in Bucatarie",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/nz64m3nm1bb-ol/gallery/ro-nz3000h-426906-nz64m3nm1bb-ol-532842427?$720_576_PNG$"
   },
   "DW60M6050BB/EO": {
     "category": "Masina spalat vase",
     "code": "DW60M6050BB/EO",
     "price": 1616.4269,
-    "group": "Masini spalat vase"
+    "group": "Masini spalat vase",
+    "image_url": "https://images.samsung.com/is/image/samsung/ro-dw60m6050bb-dw60m6050bb-eo-frontwhite-139010206?$720_576_PNG$"
   },
   "DW50DG450B00LE": {
     "category": "Masina spalat vase",
     "code": "DW50DG450B00LE",
     "price": 1777.9619,
-    "group": "Masini spalat vase"
+    "group": "Masini spalat vase",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/dw50dg450b00le/gallery/ro-dw4000rm-dw50dg450b00-dw50dg450b00le-543994235?$720_576_PNG$"
   },
   "DW50DG450FSRLE": {
     "category": "Masina spalat vase",
@@ -723,31 +813,36 @@
     "category": "Masina spalat vase",
     "code": "DW60DG790I00U1",
     "price": 3540.8472,
-    "group": "Masini spalat vase"
+    "group": "Masini spalat vase",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/dw60dg790i00u1/gallery/ro-dw7700b-dw60dg790i00-dw60dg790i00u1-543980291?$720_576_PNG$"
   },
   "MG22M8254AK/E2": {
     "category": "Cuptor microunde",
     "code": "MG22M8254AK/E2",
     "price": 818.8191,
-    "group": "Cuptoare microunde"
+    "group": "Cuptoare microunde",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/mg22m8254ak-e2/gallery/ro-mq8000m-423114-mg22m8254ak-e2-532277689?$720_576_PNG$"
   },
   "MG22M8274AT/E2": {
     "category": "Cuptor microunde",
     "code": "MG22M8274AT/E2",
     "price": 818.8191,
-    "group": "Cuptoare microunde"
+    "group": "Cuptoare microunde",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/mg22m8274at-e2/gallery/ro-mq8000m-423117-mg22m8274at-e2-532277822?$720_576_PNG$"
   },
   "MG23A7013CA/OL": {
     "category": "Cuptor microunde",
     "code": "MG23A7013CA/OL",
     "price": 757.9198,
-    "group": "Cuptoare microunde"
+    "group": "Cuptoare microunde",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/mg23a7013ca-ol/gallery/ro-mq7000a-380968-mg23a7013ca-ol-408399361?$720_576_PNG$"
   },
   "MG23A7013CB/OL": {
     "category": "Cuptor microunde",
     "code": "MG23A7013CB/OL",
     "price": 757.9198,
-    "group": "Cuptoare microunde"
+    "group": "Cuptoare microunde",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/mg23a7013cb-ol/gallery/ro-mq7000a-mg23a7013cb-ol-408386471?$720_576_PNG$"
   },
   "MG23DG4524ATE2": {
     "category": "Cuptor microunde",
@@ -771,7 +866,8 @@
     "category": "Cuptor microunde",
     "code": "MG23K3515AK/OL",
     "price": 406.6205,
-    "group": "Cuptoare microunde"
+    "group": "Cuptoare microunde",
+    "image_url": "https://images.samsung.com/is/image/samsung/ro-mg23k3515akol-mg23k3515ak-ol-frontblack-107197653?$720_576_PNG$"
   },
   "MG23K3515AS/OL": {
     "category": "Cuptor microunde",
@@ -783,7 +879,8 @@
     "category": "Cuptor microunde",
     "code": "MG23K3515AW/OL",
     "price": 398.937,
-    "group": "Cuptoare microunde"
+    "group": "Cuptoare microunde",
+    "image_url": "https://images.samsung.com/is/image/samsung/ro-mg23k3515awol-mg23k3515aw-ol-frontwhite-107197683?$720_576_PNG$"
   },
   "MG23T5018CK/EF": {
     "category": "Cuptor microunde",
@@ -819,19 +916,22 @@
     "category": "Cuptor microunde",
     "code": "MS23K3513AK/OL",
     "price": 361.1608,
-    "group": "Cuptoare microunde"
+    "group": "Cuptoare microunde",
+    "image_url": "https://images.samsung.com/is/image/samsung/ro-mwo-ms23k3513akol-ms23k3513ak-ol-frontblack-104247448?$720_576_PNG$"
   },
   "MS23K3513AS/OL": {
     "category": "Cuptor microunde",
     "code": "MS23K3513AS/OL",
     "price": 360.4711,
-    "group": "Cuptoare microunde"
+    "group": "Cuptoare microunde",
+    "image_url": "https://images.samsung.com/is/image/samsung/ro-ms23k3513asol-ms23k3513as-ol-frontsilver-107197813?$720_576_PNG$"
   },
   "MS23K3513AW/OL": {
     "category": "Cuptor microunde",
     "code": "MS23K3513AW/OL",
     "price": 353.2595,
-    "group": "Cuptoare microunde"
+    "group": "Cuptoare microunde",
+    "image_url": "https://images.samsung.com/is/image/samsung/ro-mwo-ms23k3513awol-ms23k3513aw-ol-frontwhite-104247493?$720_576_PNG$"
   },
   "MS23K3515AK/OL": {
     "category": "Cuptor microunde",
@@ -861,43 +961,50 @@
     "category": "Combina frigorifica",
     "code": "BRB38G705EWWEF",
     "price": 3872.2783,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/brb38g705ewwef/gallery/ro-built-in-bottom-mount-freezer-smartthings-ai-energy-mode-and-metal-cooling-brb38g705ewwef-541133719?$720_576_PNG$"
   },
   "BRB70F26CES0EO": {
     "category": "Combina frigorifica",
     "code": "BRB70F26CES0EO",
     "price": 2849.5742,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/brb70f26ces0eo/gallery/ro-brb80f-mono-brb70f26cef0ef-brb70f26ces0eo-544940094?$720_576_PNG$"
   },
   "BRB80F26BDF0EO": {
     "category": "Combina frigorifica",
     "code": "BRB80F26BDF0EO",
     "price": 3231.2445,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/brb80f26bdf0eo/gallery/ro-brb80f-twc-brb80f26bdf0eo-544940273?$720_576_PNG$"
   },
   "BRB70F30AES0EO": {
     "category": "Combina frigorifica",
     "code": "BRB70F30AES0EO",
     "price": 3231.2445,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/brb70f30aes0eo/gallery/ro-brb80f-twc-536826-brb70f30aes0eo-544940386?$720_576_PNG$"
   },
   "RB33B610EBN/EF": {
     "category": "Combina frigorifica",
     "code": "RB33B610EBN/EF",
     "price": 1982.0284,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb33b610ebn-ef/gallery/ro-rb7300t-defeature-435281-rb33b610ebn-ef-533720975?$720_576_PNG$"
   },
   "RB33B610ESA/EF": {
     "category": "Combina frigorifica",
     "code": "RB33B610ESA/EF",
     "price": 1982.0284,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb33b610esa-ef/gallery/ro-rb7300t-defeature-rb33b610esa-ef-533671807?$720_576_PNG$"
   },
   "RB33B610EWW/EF": {
     "category": "Combina frigorifica",
     "code": "RB33B610EWW/EF",
     "price": 1914.4499,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb33b610eww-ef/gallery/ro-rb7300t-defeature-rb33b610eww-ef-533671824?$720_576_PNG$"
   },
   "RB33J3515WW/EF": {
     "category": "Combina frigorifica",
@@ -909,13 +1016,15 @@
     "category": "Combina frigorifica",
     "code": "RB34C600CSA/EF",
     "price": 2365.8162,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb34c600csa-ef/gallery/ro-rb7300t-wifi-rb34c600csa-ef-535291264?$720_576_PNG$"
   },
   "RB34C600ESA/EF": {
     "category": "Combina frigorifica",
     "code": "RB34C600ESA/EF",
     "price": 2034.5666,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb34c600esa-ef/gallery/ro-rb7300t-wifi-485957-rb34c600esa-ef-539129139?$720_576_PNG$"
   },
   "RB34C602CB1/EF": {
     "category": "Combina frigorifica",
@@ -927,13 +1036,15 @@
     "category": "Combina frigorifica",
     "code": "RB34C632ESA/EF",
     "price": 2212.3156,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb34c632esa-ef/gallery/ro-rb7300-wifi-all-around-cooling-486029-rb34c632esa-ef-539237567_10130196079636?$720_576_PNG$"
   },
   "RB34C652EB1/EF": {
     "category": "Combina frigorifica",
     "code": "RB34C652EB1/EF",
     "price": 2289.562,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb34c652eb1-ef/gallery/ro-rb7300t-485963-rb34c652eb1-ef-539129324?$720_576_PNG$"
   },
   "RB34C652ESA/EF": {
     "category": "Combina frigorifica",
@@ -945,73 +1056,85 @@
     "category": "Combina frigorifica",
     "code": "RB34C670ESA/EF",
     "price": 2109.3083,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb34c670esa-ef/gallery/ro-rb7300-wifi-all-around-cooling-485966-rb34c670esa-ef-539241786?$720_576_PNG$"
   },
   "RB34C672ESA/EF": {
     "category": "Combina frigorifica",
     "code": "RB34C672ESA/EF",
     "price": 2146.9877,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb34c672esa-ef/gallery/ro-rb7300t-wifi-485967-rb34c672esa-ef-539129653?$720_576_PNG$"
   },
   "RB34C675EBN/EF": {
     "category": "Combina frigorifica",
     "code": "RB34C675EBN/EF",
     "price": 2277.2079,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb34c675ebn-ef/gallery/ro-rb7300-wifi-all-around-cooling-496209-rb34c675ebn-ef-540094607?$720_576_PNG$"
   },
   "RB34C7B5E22/EF": {
     "category": "Combina frigorifica",
     "code": "RB34C7B5E22/EF",
     "price": 2362.4161,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb34c7b5e22-ef/gallery/ro-bespoke-rb7300-wifi-all-around-cooling-485995-rb34c7b5e22-ef-551626677?$720_576_PNG$"
   },
   "RB38C600CB1/EF": {
     "category": "Combina frigorifica",
     "code": "RB38C600CB1/EF",
     "price": 2706.2134,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38c600cb1-ef/gallery/ro-rb7300-wifi-all-around-cooling-461355-rb38c600cb1-ef-538028746?$720_576_PNG$"
   },
   "RB38C600ESA/EF": {
     "category": "Combina frigorifica",
     "code": "RB38C600ESA/EF",
     "price": 2288.3157,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38c600esa-ef/gallery/ro-rb7300-wifi-all-around-cooling-461355-rb38c600esa-ef-539130890?$720_576_PNG$"
   },
   "RB38C602CSA/EF": {
     "category": "Combina frigorifica",
     "code": "RB38C602CSA/EF",
     "price": 2750.451,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38c602csa-ef/gallery/ro-rb7300t-wifi-445697-rb38c602csa-ef-534757570?$720_576_PNG$"
   },
   "RB38C607AB1/EF": {
     "category": "Combina frigorifica",
     "code": "RB38C607AB1/EF",
     "price": 3936.3841,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38c607ab1-ef/gallery/ro-rb7300-wifi-twin-cooling-rb38c607ab1-ef-537604901?$720_576_PNG$"
   },
   "RB38C607AS9/EF": {
     "category": "Combina frigorifica",
     "code": "RB38C607AS9/EF",
     "price": 3904.3312,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38c607as9-ef/gallery/ro-rb7300-wifi-twin-cooling-466609-rb38c607as9-ef-537204399?$720_576_PNG$"
   },
   "RB38C632ESA/EF": {
     "category": "Combina frigorifica",
     "code": "RB38C632ESA/EF",
     "price": 2385.031,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38c632esa-ef/gallery/ro-rb7300t-492913-rb38c632esa-ef-539592629?$720_576_PNG$"
   },
   "RB38C650EB1/EF": {
     "category": "Combina frigorifica",
     "code": "RB38C650EB1/EF",
     "price": 2418.9473,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38c650eb1-ef/gallery/ro-rb7300-wifi-all-around-cooling-486035-rb38c650eb1-ef-539245759?$720_576_PNG$"
   },
   "RB38C671DSA/EF": {
     "category": "Combina frigorifica",
     "code": "RB38C671DSA/EF",
     "price": 2590.1865,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38c671dsa-ef/gallery/ro-rb7300t-456676-rb38c671dsa-ef-536103911?$720_576_PNG$"
   },
   "RB38C672ESA/EF": {
     "category": "Combina frigorifica",
@@ -1023,43 +1146,50 @@
     "category": "Combina frigorifica",
     "code": "RB38C676CS9/EF",
     "price": 3135.0737,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38c676cs9-ef/gallery/ro-rb7300-wifi-all-around-cooling-rb38c676cs9-ef-536761493?$720_576_PNG$"
   },
   "RB38C6B3DB1/EF": {
     "category": "Combina frigorifica",
     "code": "RB38C6B3DB1/EF",
     "price": 2865.8487,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38c6b3db1-ef/gallery/ro-bespoke-rb7300-wifi-all-around-cooling-rb38c6b3db1-ef-536754210?$720_576_PNG$"
   },
   "RB38C7B5C12/EF": {
     "category": "Combina frigorifica",
     "code": "RB38C7B5C12/EF",
     "price": 3381.8774,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38c7b5c12-ef/gallery/ro-rb7300t-bespoke-a-456678-rb38c7b5c12-ef-536110178?$720_576_PNG$"
   },
   "RB38C7B6AB1/EF": {
     "category": "Combina frigorifica",
     "code": "RB38C7B6AB1/EF",
     "price": 4513.3363,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38c7b6ab1-ef/gallery/ro-bespoke-rb7300-wifi-twin-cooling-rb38c7b6ab1-ef-536415279?$720_576_PNG$"
   },
   "RB38C7B6B22/EF": {
     "category": "Combina frigorifica",
     "code": "RB38C7B6B22/EF",
     "price": 3712.0138,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38c7b6b22-ef/gallery/ro-bespoke-rb7300-wifi-twin-cooling-466576-rb38c7b6b22-ef-537200155?$720_576_PNG$"
   },
   "RB38T607BB1/EF": {
     "category": "Combina frigorifica",
     "code": "RB38T607BB1/EF",
     "price": 3359.4319,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38t607bb1-ef/gallery/ro-bottom-mount-freezer-twin-cooling-plus-466618-rb38t607bb1-ef-537210022?$720_576_PNG$"
   },
   "RB38T607BS9/EF": {
     "category": "Combina frigorifica",
     "code": "RB38T607BS9/EF",
     "price": 3327.4032,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38t607bs9-ef/gallery/ro-bottom-mount-freezer-twin-cooling-plus-rb38t607bs9-ef-537206432?$720_576_PNG$"
   },
   "RB50DG601EB1EO": {
     "category": "Combina frigorifica",
@@ -1071,145 +1201,169 @@
     "category": "Combina frigorifica",
     "code": "RB50DG601ES9EO",
     "price": 2910.7155,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb50dg601es9eo/gallery/ro-bottom-mount-freezer-smartthings-ai-energy-mode-and-all-around-cooling-rb50dg601es9eo-540027508?$720_576_PNG$"
   },
   "RB53DG703EB1EO": {
     "category": "Combina frigorifica",
     "code": "RB53DG703EB1EO",
     "price": 3070.9679,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb53dg703eb1eo/gallery/ro-bottom-mount-freezer-smartthings-ai-energy-mode-and-metal-cooling-496215-rb53dg703eb1eo-540020644?$720_576_PNG$"
   },
   "RB53DG703ES9EO": {
     "category": "Combina frigorifica",
     "code": "RB53DG703ES9EO",
     "price": 3038.9271,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb53dg703es9eo/gallery/ro-bottom-mount-freezer-smartthings-ai-energy-mode-and-metal-cooling-496210-rb53dg703es9eo-540017556?$720_576_PNG$"
   },
   "RB53DG706BS9EO": {
     "category": "Combina frigorifica",
     "code": "RB53DG706BS9EO",
     "price": 4131.1457,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb53dg706bs9eo/gallery/ro-bottom-mount-freezer-smartthings-ai-energy-mode-and-metal-cooling-rb53dg706bs9eo-540028966?$720_576_PNG$"
   },
   "RB53DG706CS9EO": {
     "category": "Combina frigorifica",
     "code": "RB53DG706CS9EO",
     "price": 3810.6288,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb53dg706cs9eo/gallery/ro-bottom-mount-freezer-smartthings-ai-energy-mode-and-metal-cooling-496206-rb53dg706cs9eo-540014765?$720_576_PNG$"
   },
   "RB53DG706AB1EO": {
     "category": "Combina frigorifica",
     "code": "RB53DG706AB1EO",
     "price": 5220.9322,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb53dg706ab1eo/gallery/ro-bottom-mount-freezer-smartthings-ai-energy-mode-and-metal-cooling-529615-rb53dg706ab1eo-550944565?$720_576_PNG$"
   },
   "RF48A400EB4/EO": {
     "category": "Combina frigorifica",
     "code": "RF48A400EB4/EO",
     "price": 3381.95,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rf48a400eb4-eo/gallery/ro-twin-cooling-plus-rf48a400eb4-eo-538100787?$720_576_PNG$"
   },
   "RF48A401EB4/EO": {
     "category": "Combina frigorifica",
     "code": "RF48A401EB4/EO",
     "price": 3711.1426,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rf48a401eb4-eo/gallery/ro-non-plumbing-water-dispenser-rf48a401eb4-eo-538100700?$720_576_PNG$"
   },
   "RF65DG9H0EB1EO": {
     "category": "Combina frigorifica",
     "code": "RF65DG9H0EB1EO",
     "price": 9538.9745,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rf65dg9h0eb1eo/gallery/ro-t-style-french-door-215inch-family-hub-rf65dg9h0eb1eo-550952436?$720_576_PNG$"
   },
   "RF65DB970E22EO": {
     "category": "Combina frigorifica",
     "code": "RF65DB970E22EO",
     "price": 8464.2888,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rf65db970e22eo/gallery/ro-t-style-french-door-see-thru-door-rf65db970e22eo-544372390?$720_576_PNG$"
   },
   "RM90F67CECEO": {
     "category": "Combina frigorifica",
     "code": "RM90F67CECEO",
     "price": 9032.0329,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rm90f67ceceo/gallery/ro-4-door-french-door-refrigerators-with-ai-home-and-ai-hybrid-cooling-rm90f67ceceo-550963773?$720_576_PNG$"
   },
   "RR39C76C322/EF": {
     "category": "Combina frigorifica",
     "code": "RR39C76C322/EF",
     "price": 3295.3382,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rr39c76c322-ef/gallery/ro-fridge-one-door-bespoke-rr39c76c322-ef-550952344?$720_576_PNG$"
   },
   "RS57DG400EB4EO": {
     "category": "Combina frigorifica",
     "code": "RS57DG400EB4EO",
     "price": 3137.4695,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rs57dg400eb4eo/gallery/ro-rs4000dc-side-by-side-with-large-capacity-rs57dg400eb4eo-550950814?$720_576_PNG$"
   },
   "RS57DG400EM9EO": {
     "category": "Combina frigorifica",
     "code": "RS57DG400EM9EO",
     "price": 3137.4695,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rs57dg400em9eo/gallery/ro-rs4000dc-side-by-side-with-large-capacity-rs57dg400em9eo-550950996?$720_576_PNG$"
   },
   "RT35CG5644S9EO": {
     "category": "Combina frigorifica",
     "code": "RT35CG5644S9EO",
     "price": 2262.7242,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rt35cg5644s9eo/gallery/ro-top-mount-freezer-spacemax-478336-rt35cg5644s9eo-550952205?$720_576_PNG$"
   },
   "RT38CG6624S9EO": {
     "category": "Combina frigorifica",
     "code": "RT38CG6624S9EO",
     "price": 2394.3964,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rt38cg6624s9eo/gallery/ro-top-mount-freezer-optimal-fresh-and-space-max-479542-rt38cg6624s9eo-550951885?$720_576_PNG$"
   },
   "RT42CG6724S9EO": {
     "category": "Combina frigorifica",
     "code": "RT42CG6724S9EO",
     "price": 2494.0278,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rt42cg6724s9eo/gallery/ro-top-mount-freezer-optimal-fresh-and-space-max-rt42cg6724s9eo-550951675?$720_576_PNG$"
   },
   "RT47CB662622EO": {
     "category": "Combina frigorifica",
     "code": "RT47CB662622EO",
     "price": 2878.6626,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rt47cb662622eo/gallery/ro-top-mount-freezer-bespoke-design-461395-rt47cb662622eo-550951402?$720_576_PNG$"
   },
   "RT47CG6726B1EO": {
     "category": "Combina frigorifica",
     "code": "RT47CG6726B1EO",
     "price": 2654.2923,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rt47cg6726b1eo/gallery/ro-top-mount-freezer-optimal-fresh-and-space-max-461396-rt47cg6726b1eo-550951361?$720_576_PNG$"
   },
   "RT58K710RSL/EO": {
     "category": "Combina frigorifica",
     "code": "RT58K710RSL/EO",
     "price": 3295.3382,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rt58k710rsl-eo/gallery/ro-rt7000k-top-freezer-with__twin-cooling-plus™-585l-rt58k710rsleo-rt58k710rsl-eo-550951241?$720_576_PNG$"
   },
   "RZ32C76CE22/EF": {
     "category": "Combina frigorifica",
     "code": "RZ32C76CE22/EF",
     "price": 3295.3382,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rz32c76ce22-ef/gallery/ro-one-door-freezer-bespoke-rz32c76ce22-ef-550951090?$720_576_PNG$"
   },
   "RB38C600CS9/EF": {
     "category": "Combina frigorifica",
     "code": "RB38C600CS9/EF",
     "price": 2394.3964,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38c600cs9-ef/gallery/ro-rb7300-wifi-all-around-cooling-519555-rb38c600cs9-ef-550950665?$720_576_PNG$"
   },
   "RB38C600DSA/EF": {
     "category": "Combina frigorifica",
     "code": "RB38C600DSA/EF",
     "price": 2328.5603,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rb38c600dsa-ef/gallery/ro-rb7300-wifi-all-around-cooling-519554-rb38c600dsa-ef-550950433?$720_576_PNG$"
   },
   "RT53DG7A14S9EO": {
     "category": "Combina frigorifica",
     "code": "RT53DG7A14S9EO",
     "price": 3038.9271,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rt53dg7a14s9eo/gallery/ro-top-freezer-smartthings-ai-energy-mode-rt53dg7a14s9eo-550949642?$720_576_PNG$"
   },
   "RB38C7AGWS9/EF": {
     "category": "Combina frigorifica",
@@ -1227,13 +1381,15 @@
     "category": "Combina frigorifica",
     "code": "RS90F65EDTEO",
     "price": 6823.5409,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rs90f65edteo/gallery/ro-rs80f-9-inch-ai-home-rs90f65edteo-550948005?$720_576_PNG$"
   },
   "RS80F67KCTEO": {
     "category": "Combina frigorifica",
     "code": "RS80F67KCTEO",
     "price": 6246.6008,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rs80f67kcteo/gallery/ro-rs90f-aod-rs80f67kcteo-550947340?$720_576_PNG$"
   },
   "RS80F66KBFEO": {
     "category": "Combina frigorifica",
@@ -1245,37 +1401,43 @@
     "category": "Combina frigorifica",
     "code": "RS70F64KDTEO",
     "price": 5285.0259,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rs70f64kdteo/gallery/ro-rs90f-basic-rs70f64kdteo-550948364?$720_576_PNG$"
   },
   "RS70F64KDFEO": {
     "category": "Combina frigorifica",
     "code": "RS70F64KDFEO",
     "price": 5285.0259,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rs70f64kdfeo/gallery/ro-rs90f-basic-544489-rs70f64kdfeo-550948497?$720_576_PNG$"
   },
   "RS80F64JEBEO": {
     "category": "Combina frigorifica",
     "code": "RS80F64JEBEO",
     "price": 5669.6607,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rs80f64jebeo/gallery/ro-rs90f-aod-541515-rs80f64jebeo-550947856?$720_576_PNG$"
   },
   "RS70F64KETEO": {
     "category": "Combina frigorifica",
     "code": "RS70F64KETEO",
     "price": 4765.2462,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rs70f64keteo/gallery/ro-rs90f-basic-544497-rs70f64keteo-550949070?$720_576_PNG$"
   },
   "RS70F65KEFEO": {
     "category": "Combina frigorifica",
     "code": "RS70F65KEFEO",
     "price": 4896.9184,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rs70f65kefeo/gallery/ro-rs90f-basic-544502-rs70f65kefeo-550949101?$720_576_PNG$"
   },
   "RS70F65QEFEO": {
     "category": "Combina frigorifica",
     "code": "RS70F65QEFEO",
     "price": 4106.8731,
-    "group": "Frigidere"
+    "group": "Frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/rs70f65qefeo/gallery/ro-rs90f-basic-546053-rs70f65qefeo-550949119?$720_576_PNG$"
   },
   "RS70F65QETEO": {
     "category": "Combina frigorifica",
@@ -1287,7 +1449,8 @@
     "category": "Filtru apa",
     "code": "HAF-CIN/EXP",
     "price": 105.7782,
-    "group": "Accesorii frigidere"
+    "group": "Accesorii frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/haf-cin-exp/gallery/ro-internal-water-filter-haf-cinexp-haf-cin-exp-359946262?$720_576_PNG$"
   },
   "HAFEX/EXP": {
     "category": "Filtru apa",
@@ -1299,25 +1462,29 @@
     "category": "Filtru apa",
     "code": "HAFIN2/EXP",
     "price": 105.7782,
-    "group": "Accesorii frigidere"
+    "group": "Accesorii frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/hafin2-exp/gallery/ro-internal-water-filter-hafin2exp-hafin2-exp-359961649?$720_576_PNG$"
   },
   "HAF-QIN/EXP": {
     "category": "Filtru apa",
     "code": "HAF-QIN/EXP",
     "price": 105.7782,
-    "group": "Accesorii frigidere"
+    "group": "Accesorii frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/haf-qin-exp/gallery/ro-haf-qinexp-haf-qin-exp-532052167?$720_576_PNG$"
   },
   "RA-B23EBB41GM": {
     "category": "Panou Bespoke",
     "code": "RA-B23EBB41GM",
     "price": 191.664,
-    "group": "Accesorii frigidere"
+    "group": "Accesorii frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ra-b23ebb41gm/gallery/ro-bespoke-panel-ra-b23ebb41gm-533564992?$720_576_PNG$"
   },
   "RA-B23EUT12GM": {
     "category": "Panou Bespoke",
     "code": "RA-B23EUT12GM",
     "price": 255.7698,
-    "group": "Accesorii frigidere"
+    "group": "Accesorii frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ra-b23eut12gm/gallery/ro-bespoke-panel-434441-434441-ra-b23eut12gm-534749331?$720_576_PNG$"
   },
   "RA-B23EUTCLGG": {
     "category": "Panou Bespoke",
@@ -1329,19 +1496,22 @@
     "category": "Panou Bespoke",
     "code": "RA-B23EUTCSGG",
     "price": 159.6232,
-    "group": "Accesorii frigidere"
+    "group": "Accesorii frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ra-b23eutcsgg/gallery/ro-bespoke-panels--rb7300t-390679-ra-b23eutcsgg-454269990?$720_576_PNG$"
   },
   "RA-B23EUU18GM": {
     "category": "Panou Bespoke",
     "code": "RA-B23EUU18GM",
     "price": 255.7698,
-    "group": "Accesorii frigidere"
+    "group": "Accesorii frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ra-b23euu18gm/gallery/ro-bespoke-panel-434444-ra-b23euu18gm-533566311?$720_576_PNG$"
   },
   "RA-B23EUU3KGM": {
     "category": "Panou Bespoke",
     "code": "RA-B23EUU3KGM",
     "price": 255.7698,
-    "group": "Accesorii frigidere"
+    "group": "Accesorii frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ra-b23euu3kgm/gallery/ro-bespoke-panel-434444-ra-b23euu3kgm-533566316?$720_576_PNG$"
   },
   "RA-B23EUUCEGG": {
     "category": "Panou Bespoke",
@@ -1353,37 +1523,43 @@
     "category": "Panou Bespoke",
     "code": "RA-B23EUUCLGG",
     "price": 153.2102,
-    "group": "Accesorii frigidere"
+    "group": "Accesorii frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ra-b23euuclgg/gallery/ro-bespoke-panels--rb7300t-390683-ra-b23euuclgg-454270725?$720_576_PNG$"
   },
   "RA-C00K3BAA": {
     "category": "Set accesorii Bespoke",
     "code": "RA-C00K3BAA",
     "price": 119.8747,
-    "group": "Accesorii frigidere"
+    "group": "Accesorii frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ra-c00k3baa/gallery/ro-bespoke-pairing-kit-ra-c00k3baa-504066255?$720_576_PNG$"
   },
   "RA-C00K4BAA": {
     "category": "Set accesorii Bespoke",
     "code": "RA-C00K4BAA",
     "price": 119.8747,
-    "group": "Accesorii frigidere"
+    "group": "Accesorii frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ra-c00k4baa/gallery/ro-bespoke-pairing-kit-417095-ra-c00k4baa-531460396?$720_576_PNG$"
   },
   "RA-R23DAA12GG": {
     "category": "Panou Bespoke",
     "code": "RA-R23DAA12GG",
     "price": 608.3638,
-    "group": "Accesorii frigidere"
+    "group": "Accesorii frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ra-r23daa12gg/gallery/ro-bespoke-panelsrr7000-404536-404536-ra-r23daa12gg-532713003?$720_576_PNG$"
   },
   "RA-R23DAACEGG": {
     "category": "Panou Bespoke",
     "code": "RA-R23DAACEGG",
     "price": 432.7081,
-    "group": "Accesorii frigidere"
+    "group": "Accesorii frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ra-r23daacegg/gallery/ro-bespoke-panelsrr7000-ra-r23daacegg-454269546?$720_576_PNG$"
   },
   "RA-R23DAACSGG": {
     "category": "Panou Bespoke",
     "code": "RA-R23DAACSGG",
     "price": 432.7081,
-    "group": "Accesorii frigidere"
+    "group": "Accesorii frigidere",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ra-r23daacsgg/gallery/ro-bespoke-panelsrr7000-390676-ra-r23daacsgg-512488415?$720_576_PNG$"
   },
   "VS15A6031R4/GE": {
     "category": "Aspirator vertical",
@@ -1395,13 +1571,15 @@
     "category": "Aspirator vertical",
     "code": "VS20B75ACR5/GE",
     "price": 1434.3876,
-    "group": "Aspiratoare"
+    "group": "Aspiratoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/vs20b75acr5-ge/gallery/ro-jet75e-vs9000rl-vs20b75acr5-ge-538871797?$720_576_PNG$"
   },
   "VS20B75AGR1/GE": {
     "category": "Aspirator vertical",
     "code": "VS20B75AGR1/GE",
     "price": 1353.7301,
-    "group": "Aspiratoare"
+    "group": "Aspiratoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/vs20b75agr1-ge/gallery/ro-jet75e-vs9000rl-493664-vs20b75agr1-ge-539650586?$720_576_PNG$"
   },
   "VS20B95823W/GE": {
     "category": "Aspirator vertical",
@@ -1425,7 +1603,8 @@
     "category": "Aspirator vertical",
     "code": "VS20C852FTB/GE",
     "price": 2028.5278,
-    "group": "Aspiratoare"
+    "group": "Aspiratoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/vs20c852ftb-ge/gallery/ro-jet85-vs9500al-vs20c852ftb-ge-538870610?$720_576_PNG$"
   },
   "VS20C8534TB/GE": {
     "category": "Aspirator vertical",
@@ -1449,13 +1628,15 @@
     "category": "Kit suprapunere",
     "code": "SKK-DD",
     "price": 190.575,
-    "group": "Accesorii masini spalat"
+    "group": "Accesorii masini spalat",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/skk-dd/gallery/ro-skk-dd-accessories-skk-dd-395462294?$720_576_PNG$"
   },
   "SKK-DDX": {
     "category": "Kit suprapunere",
     "code": "SKK-DDX",
     "price": 251.559,
-    "group": "Accesorii masini spalat"
+    "group": "Accesorii masini spalat",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/skk-ddx/gallery/ro-skk-dd-accessories-377349-skk-ddx-395462311?$720_576_PNG$"
   },
   "SKK-DF": {
     "category": "Kit suprapunere",
@@ -1467,7 +1648,8 @@
     "category": "Kit suprapunere",
     "code": "SKK-SSV",
     "price": 242.5687,
-    "group": "Accesorii masini spalat"
+    "group": "Accesorii masini spalat",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/skk-ssv/gallery/ro-skk-ssw-accessories-435329-skk-ssv-535327693?$720_576_PNG$"
   },
   "SKK-SSW": {
     "category": "Kit suprapunere",
@@ -1479,7 +1661,8 @@
     "category": "Kit suprapunere",
     "code": "SKK-UDW",
     "price": 190.575,
-    "group": "Accesorii masini spalat"
+    "group": "Accesorii masini spalat",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/skk-udw/gallery/ro-skk-udw-accessories-skk-udw-395461894?$720_576_PNG$"
   },
   "SKK-UDX": {
     "category": "Kit suprapunere",
@@ -1491,37 +1674,43 @@
     "category": "Kit suprapunere",
     "code": "SKK-UUB",
     "price": 251.559,
-    "group": "Accesorii masini spalat"
+    "group": "Accesorii masini spalat",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/skk-uub/gallery/ro-skk-uub-accessories-skk-uub-543524777?$720_576_PNG$"
   },
   "WW11DB7B34GBU4": {
     "category": "Masina spalat rufe",
     "code": "WW11DB7B34GBU4",
     "price": 2666.3923,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww11db7b34gbu4/gallery/ro-ww7000d-ww11db7b34gbu4-540953581?$720_576_PNG$"
   },
   "WW11DB7B34GWU4": {
     "category": "Masina spalat rufe",
     "code": "WW11DB7B34GWU4",
     "price": 2538.1928,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww11db7b34gwu4/gallery/ro-ww7000d-ww11db7b34gwu4-540954078?$720_576_PNG$"
   },
   "WW11DB7B94GBU4": {
     "category": "Masina spalat rufe",
     "code": "WW11DB7B94GBU4",
     "price": 2986.9213,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww11db7b94gbu4/gallery/ro-ww7400d-ww11db7b94gbu4-540965070?$720_576_PNG$"
   },
   "WW11DB8B95GBU4": {
     "category": "Masina spalat rufe",
     "code": "WW11DB8B95GBU4",
     "price": 3435.6498,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww11db8b95gbu4/gallery/ro-ww8400d-ww11db8b95gbu4-540943967?$720_576_PNG$"
   },
   "WW11DB8B95GHU4": {
     "category": "Masina spalat rufe",
     "code": "WW11DB8B95GHU4",
     "price": 3307.4382,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww11db8b95ghu4/gallery/ro-ww8400d-ww11db8b95ghu4-540944330?$720_576_PNG$"
   },
   "WW11DG5B25ABLE": {
     "category": "Masina spalat rufe",
@@ -1533,31 +1722,36 @@
     "category": "Masina spalat rufe",
     "code": "WW11DG5B25AELE",
     "price": 2077.3038,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww11dg5b25aele/gallery/ro-ww5000d-ww11dg5b25aele-539943651?$720_576_PNG$"
   },
   "WW11DG6B25LEU4": {
     "category": "Masina spalat rufe",
     "code": "WW11DG6B25LEU4",
     "price": 2274.8242,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww11dg6b25leu4/gallery/ro-ww6000d-ww11dg6b25leu4-539932321?$720_576_PNG$"
   },
   "WW11DG6B85LBU4": {
     "category": "Masina spalat rufe",
     "code": "WW11DG6B85LBU4",
     "price": 2538.1565,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww11dg6b85lbu4/gallery/ro-ww6400d-ww11dg6b85lbu4-540953433?$720_576_PNG$"
   },
   "WW80CGC04DABLE": {
     "category": "Masina spalat rufe",
     "code": "WW80CGC04DABLE",
     "price": 1726.1497,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww80cgc04dable/gallery/ro-ww5000c-ww80cgc04dable-538303360?$720_576_PNG$"
   },
   "WW80CGC04DAELE": {
     "category": "Masina spalat rufe",
     "code": "WW80CGC04DAELE",
     "price": 1663.6895,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww80cgc04daele/gallery/ro-ww5000c-ww80cgc04daele-538303544?$720_576_PNG$"
   },
   "WW80T504DAEAS7": {
     "category": "Masina spalat rufe",
@@ -1581,31 +1775,36 @@
     "category": "Masina spalat rufe",
     "code": "WW90DB7U34GBU4",
     "price": 2474.087,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww90db7u34gbu4/gallery/ro-ww7000d-500814-ww90db7u34gbu4-540967015?$720_576_PNG$"
   },
   "WW90DB7U34GWU4": {
     "category": "Masina spalat rufe",
     "code": "WW90DB7U34GWU4",
     "price": 2345.8754,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww90db7u34gwu4/gallery/ro-ww7000d-500814-ww90db7u34gwu4-540967056?$720_576_PNG$"
   },
   "WW90DB7U94GBU4": {
     "category": "Masina spalat rufe",
     "code": "WW90DB7U94GBU4",
     "price": 2602.2865,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww90db7u94gbu4/gallery/ro-ww7400d-500806-ww90db7u94gbu4-540967716?$720_576_PNG$"
   },
   "WW90DB7U94GEU4": {
     "category": "Masina spalat rufe",
     "code": "WW90DB7U94GEU4",
     "price": 2474.087,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww90db7u94geu4/gallery/ro-ww7400d-500806-ww90db7u94geu4-540968158?$720_576_PNG$"
   },
   "WW90DG6U25LBU4": {
     "category": "Masina spalat rufe",
     "code": "WW90DG6U25LBU4",
     "price": 2208.9881,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww90dg6u25lbu4/gallery/ro-ww6000d-500816-ww90dg6u25lbu4-540520624?$720_576_PNG$"
   },
   "WW90DG6U25LKU4": {
     "category": "Masina spalat rufe",
@@ -1617,55 +1816,64 @@
     "category": "Masina spalat rufe",
     "code": "WD11DB8B85GBU4",
     "price": 3243.3445,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/wd11db8b85gbu4/gallery/ro-wd8400d-wd11db8b85gbu4-542450871?$720_576_PNG$"
   },
   "WD11DB7B85GWU4": {
     "category": "Masina spalat rufe",
     "code": "WD11DB7B85GWU4",
     "price": 2922.8155,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/wd11db7b85gwu4/gallery/ro-wd7400d-wd11db7b85gwu4-542440074?$720_576_PNG$"
   },
   "WD11DG5B15BELE": {
     "category": "Masina spalat rufe",
     "code": "WD11DG5B15BELE",
     "price": 2604.0047,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/wd11dg5b15bele/gallery/ro-wd5000d-wd11dg5b15bele-542117111?$720_576_PNG$"
   },
   "WD90DB7B85GBU4": {
     "category": "Masina spalat rufe",
     "code": "WD90DB7B85GBU4",
     "price": 2730.4981,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/wd90db7b85gbu4/gallery/ro-wd7400d-511202-wd90db7b85gbu4-542509904?$720_576_PNG$"
   },
   "WD90DB7B85GWU4": {
     "category": "Masina spalat rufe",
     "code": "WD90DB7B85GWU4",
     "price": 2602.2865,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/wd90db7b85gwu4/gallery/ro-wd7400d-511202-wd90db7b85gwu4-542509926?$720_576_PNG$"
   },
   "WD90DG6B85BBU4": {
     "category": "Masina spalat rufe",
     "code": "WD90DG6B85BBU4",
     "price": 2538.1565,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/wd90dg6b85bbu4/gallery/ro-wd6000d-wd90dg6b85bbu4-542515633?$720_576_PNG$"
   },
   "WD90DG6B85BKU4": {
     "category": "Masina spalat rufe",
     "code": "WD90DG6B85BKU4",
     "price": 2406.4964,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/wd90dg6b85bku4/gallery/ro-wd6000d-wd90dg6b85bku4-542515656?$720_576_PNG$"
   },
   "WD90DG5B15BBLE": {
     "category": "Masina spalat rufe",
     "code": "WD90DG5B15BBLE",
     "price": 2274.8242,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/wd90dg5b15bble/gallery/ro-wd5000d-wd90dg5b15bble-542117133?$720_576_PNG$"
   },
   "WD90DG5B15BELE": {
     "category": "Masina spalat rufe",
     "code": "WD90DG5B15BELE",
     "price": 2208.9881,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/wd90dg5b15bele/gallery/ro-wd5000d-511205-wd90dg5b15bele-542454014?$720_576_PNG$"
   },
   "WD90DG5B15BHLE": {
     "category": "Masina spalat rufe",
@@ -1677,13 +1885,15 @@
     "category": "Masina spalat rufe",
     "code": "WW60A3120BE/LE",
     "price": 1250.8617,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww60a3120be-le/gallery/ro-ww3000am-ww60a3120be-le-542235072?$720_576_PNG$"
   },
   "WW60A3120WE/LE": {
     "category": "Masina spalat rufe",
     "code": "WW60A3120WE/LE",
     "price": 1250.8617,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww60a3120we-le/gallery/ro-ww3000am-ww60a3120we-le-542235122?$720_576_PNG$"
   },
   "VR7MD97714G/GE": {
     "category": "Aspirator robot",
@@ -1695,79 +1905,92 @@
     "category": "Kit accesorii robot",
     "code": "VCA-RAK97",
     "price": 117.9426,
-    "group": "Accesorii aspiratoare"
+    "group": "Accesorii aspiratoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/vca-rak97/gallery/ro-jet-bot-combo-ai-accessory-new-high-efficiency-brush-with-hair-grinder-vca-rak97-542619101?$720_576_PNG$"
   },
   "VCA-RPW97": {
     "category": "Kit accesorii robot",
     "code": "VCA-RPW97",
     "price": 58.6729,
-    "group": "Accesorii aspiratoare"
+    "group": "Accesorii aspiratoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/vca-rpw97/gallery/ro-vca-rpw97-accessory-vca-rpw97-543283493?$720_576_PNG$"
   },
   "VS90F40DEK/GE": {
     "category": "Aspirator vertical",
     "code": "VS90F40DEK/GE",
     "price": 3521.4035,
-    "group": "Aspiratoare"
+    "group": "Aspiratoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/vs90f40dek-ge/gallery/ro-bespokejetaiultra-400w-vc9700cl-vs90f40dek-ge-545395797?$720_576_PNG$"
   },
   "DV90DG52A0ABLE": {
     "category": "Uscator",
     "code": "DV90DG52A0ABLE",
     "price": 2509.9184,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/dv90dg52a0able/gallery/ro-dv5000d-dv11dgc4a0ae-dv90dg52a0able-545020521?$720_576_PNG$"
   },
   "DV90DG52A0AELE": {
     "category": "Uscator",
     "code": "DV90DG52A0AELE",
     "price": 2371.3259,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/dv90dg52a0aele/gallery/ro-dv5000d-dv11dgc4a0ae-534745-dv90dg52a0aele-545022424?$720_576_PNG$"
   },
   "DV90DG52A0AHLE": {
     "category": "Uscator",
     "code": "DV90DG52A0AHLE",
     "price": 2371.3259,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/dv90dg52a0ahle/gallery/ro-dv5000d-dv11dgc4a0ae-534747-dv90dg52a0ahle-545025295?$720_576_PNG$"
   },
   "WF90F09C4SU4": {
     "category": "Masina spalat rufe",
     "code": "WF90F09C4SU4",
     "price": 3813.4995,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/wf90f09c4su4/gallery/ro-wf90f24-wf90f09c4su4-545812062?$720_576_PNG$"
   },
   "WD90DG6G94BBU4": {
     "category": "Masina spalat rufe cu uscator",
     "code": "WD90DG6G94BBU4",
     "price": 3003.7444,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/wd90dg6g94bbu4/gallery/ro-wd6100d-wd90dg6g94bbu4-547224441?$720_576_PNG$"
   },
   "WD90DG6G94BKU4": {
     "category": "Masina spalat rufe cu uscator",
     "code": "WD90DG6G94BKU4",
     "price": 2868.7979,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/wd90dg6g94bku4/gallery/ro-wd6100d-wd90dg6g94bku4-547225316?$720_576_PNG$"
   },
   "WD90DG5G34BBLE": {
     "category": "Masina spalat rufe cu uscator",
     "code": "WD90DG5G34BBLE",
     "price": 2666.3347,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/wd90dg5g34bble/gallery/ro-wd5100d-wd90dg5g34bble-547222984?$720_576_PNG$"
   },
   "WD90DG5G34BELE": {
     "category": "Masina spalat rufe cu uscator",
     "code": "WD90DG5G34BELE",
     "price": 2527.7421,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/wd90dg5g34bele/gallery/ro-wd5100d-544518-wd90dg5g34bele-547214522?$720_576_PNG$"
   },
   "WW90DG6G94LKU4": {
     "category": "Masina spalat rufe",
     "code": "WW90DG6G94LKU4",
     "price": 2250.5245,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww90dg6g94lku4/gallery/ro-ww6100d-ww90dg6g94lku4-546676503?$720_576_PNG$"
   },
   "WW90DG5G34ABLE": {
     "category": "Masina spalat rufe",
     "code": "WW90DG5G34ABLE",
     "price": 2111.9211,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww90dg5g34able/gallery/ro-ww5100d-ww90dg5g34able-547176096?$720_576_PNG$"
   },
   "WW90DG5G34AELE": {
     "category": "Masina spalat rufe",
@@ -1785,19 +2008,22 @@
     "category": "Uscator",
     "code": "DV90DB8845GHU4",
     "price": 3464.0006,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/dv90db8845ghu4/gallery/ro-dv8000d-dv90db8845gh-dv90db8845ghu4-547196852?$720_576_PNG$"
   },
   "DV90DB8845GBU4": {
     "category": "Uscator",
     "code": "DV90DB8845GBU4",
     "price": 3598.958,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/dv90db8845gbu4/gallery/ro-dv8000d-dv90db8845gh-548321-dv90db8845gbu4-547595650?$720_576_PNG$"
   },
   "DV90F09F4SU4": {
     "category": "Uscator",
     "code": "DV90F09F4SU4",
     "price": 3801.3995,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/dv90f09f4su4/gallery/ro-dv90f24-dv90f09f4su4-547121280?$720_576_PNG$"
   },
   "DV90DB7845GBU4": {
     "category": "Uscator",
@@ -1821,7 +2047,8 @@
     "category": "Uscator",
     "code": "DV90DG6845LKU4",
     "price": 2579.2472,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/dv90dg6845lku4/gallery/ro-dv6000d-dv90dg6845lh-548360-dv90dg6845lku4-547169650?$720_576_PNG$"
   },
   "DV90DG6845LHU4": {
     "category": "Uscator",
@@ -1833,13 +2060,15 @@
     "category": "Aspirator vertical",
     "code": "VS80F28DES/GE",
     "price": 2831.0884,
-    "group": "Aspiratoare"
+    "group": "Aspiratoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/vs80f28des-ge/gallery/ro-bespoke-jet-ai-lite-280w-vs9500al-vs80f28des-ge-549246791?$720_576_PNG$"
   },
   "VS80F28DGS/GE": {
     "category": "Aspirator vertical",
     "code": "VS80F28DGS/GE",
     "price": 3242.2977,
-    "group": "Aspiratoare"
+    "group": "Aspiratoare",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/vs80f28dgs-ge/gallery/ro-bespokejetailite-280w-vs9500al-540725-vs80f28dgs-ge-549244319?$720_576_PNG$"
   },
   "VS80F28DLP/GE": {
     "category": "Aspirator vertical",
@@ -1851,54 +2080,63 @@
     "category": "Kit suprapunere",
     "code": "SKK-ZSD",
     "price": 291.0747,
-    "group": "Accesorii masini spalat"
+    "group": "Accesorii masini spalat",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/skk-zsd/gallery/ro-skk-zsd-skk-zsd-547372185?$720_576_PNG$"
   },
   "WW70FG3M05AWLF": {
     "category": "Masina spalat rufe",
     "code": "WW70FG3M05AWLF",
     "price": 1488.2004,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww70fg3m05awlf/gallery/ro-ww3000fm-ww70fg3m05awlf-546502912?$720_576_PNG$"
   },
   "WW80FG3M05AWLF": {
     "category": "Masina spalat rufe",
     "code": "WW80FG3M05AWLF",
     "price": 1557.5075,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww80fg3m05awlf/gallery/ro-ww3000fm-548380-ww80fg3m05awlf-546505688?$720_576_PNG$"
   },
   "WW90FG3M05AWLF": {
     "category": "Masina spalat rufe",
     "code": "WW90FG3M05AWLF",
     "price": 1626.8038,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww90fg3m05awlf/gallery/ro-ww3000fm-548389-ww90fg3m05awlf-546509697?$720_576_PNG$"
   },
   "DV16DG8600BVU4": {
     "category": "Uscator",
     "code": "DV16DG8600BVU4",
     "price": 4813.5743,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/dv16dg8600bvu4/gallery/ro-dv8000d-dv16dg8600bvu1-dv16dg8600bvu4-549974390?$720_576_PNG$"
   },
   "WF20DG8650BVU4": {
     "category": "Masina spalat rufe",
     "code": "WF20DG8650BVU4",
     "price": 4083.4033,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/wf20dg8650bvu4/gallery/ro-wf8000d-wf20dg8650bvu4-547596546?$720_576_PNG$"
   },
   "WW10FG5U34AELE": {
     "category": "Masina spalat rufe",
     "code": "WW10FG5U34AELE",
     "price": 2042.6248,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww10fg5u34aele/gallery/ro-ww5000f-ww10fg5u34ae-ww10fg5u34aele-549299986?$720_576_PNG$"
   },
   "WW10FG6U34LKU4": {
     "category": "Masina spalat rufe",
     "code": "WW10FG6U34LKU4",
     "price": 2111.9211,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww10fg6u34lku4/gallery/ro-ww6000f-ww10fg6u34lk-ww10fg6u34lku4-549300165?$720_576_PNG$"
   },
   "WW10FG6U94LBU4": {
     "category": "Masina spalat rufe",
     "code": "WW10FG6U94LBU4",
     "price": 2319.8316,
-    "group": "Masini spalat rufe"
+    "group": "Masini spalat rufe",
+    "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ro/ww10fg6u94lbu4/gallery/ro-ww6400f-ww10fg6u94lbu4-549300292?$720_576_PNG$"
   }
 }
