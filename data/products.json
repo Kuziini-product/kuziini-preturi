@@ -514,5 +514,1391 @@
     "code": "MX-T70/EN",
     "price": 1344.1406,
     "group": "Audio"
+  },
+  "C21RJAN/BOL": {
+    "category": "Plita",
+    "code": "C21RJAN/BOL",
+    "price": 543.4836,
+    "group": "BI"
+  },
+  "C61R2AAST/BOL": {
+    "category": "Plita",
+    "code": "C61R2AAST/BOL",
+    "price": 806.828,
+    "group": "BI"
+  },
+  "CTR164NC01/BOL": {
+    "category": "Plita",
+    "code": "CTR164NC01/BOL",
+    "price": 953.4679,
+    "group": "BI"
+  },
+  "NA64H3000AK/L1": {
+    "category": "Plita",
+    "code": "NA64H3000AK/L1",
+    "price": 626.1266,
+    "group": "BI"
+  },
+  "NK24M1030IB/UR": {
+    "category": "Hota",
+    "code": "NK24M1030IB/UR",
+    "price": 442.0977,
+    "group": "BI"
+  },
+  "NK24M1030IS/UR": {
+    "category": "Hota",
+    "code": "NK24M1030IS/UR",
+    "price": 420.5718,
+    "group": "BI"
+  },
+  "NK24N5703BS/UR": {
+    "category": "Hota",
+    "code": "NK24N5703BS/UR",
+    "price": 1144.8415,
+    "group": "BI"
+  },
+  "NK36C5703TS/UR": {
+    "category": "Hota",
+    "code": "NK36C5703TS/UR",
+    "price": 1430.22,
+    "group": "BI"
+  },
+  "NV68A1140BK/OL": {
+    "category": "Cuptor",
+    "code": "NV68A1140BK/OL",
+    "price": 1252.1927,
+    "group": "BI"
+  },
+  "NV68A1140BS/OL": {
+    "category": "Cuptor",
+    "code": "NV68A1140BS/OL",
+    "price": 1252.1927,
+    "group": "BI"
+  },
+  "NV68A1170BS/OL": {
+    "category": "Cuptor",
+    "code": "NV68A1170BS/OL",
+    "price": 1501.1986,
+    "group": "BI"
+  },
+  "NV75T8979RK/EF": {
+    "category": "Cuptor",
+    "code": "NV75T8979RK/EF",
+    "price": 4044.4492,
+    "group": "BI"
+  },
+  "NV7B4020ZAK/U2": {
+    "category": "Cuptor",
+    "code": "NV7B4020ZAK/U2",
+    "price": 1658.0267,
+    "group": "BI"
+  },
+  "NV7B42251AK/U2": {
+    "category": "Cuptor",
+    "code": "NV7B42251AK/U2",
+    "price": 1798.7739,
+    "group": "BI"
+  },
+  "NV7B4240VAK/U2": {
+    "category": "Cuptor",
+    "code": "NV7B4240VAK/U2",
+    "price": 1796.9347,
+    "group": "BI"
+  },
+  "NV7B4325ZAK/U2": {
+    "category": "Cuptor",
+    "code": "NV7B4325ZAK/U2",
+    "price": 2075.513,
+    "group": "BI"
+  },
+  "NV7B4345VAK/U2": {
+    "category": "Cuptor",
+    "code": "NV7B4345VAK/U2",
+    "price": 2075.513,
+    "group": "BI"
+  },
+  "NV7B4345VAS/U2": {
+    "category": "Cuptor",
+    "code": "NV7B4345VAS/U2",
+    "price": 2045.626,
+    "group": "BI"
+  },
+  "NV7B44205AK/U2": {
+    "category": "Cuptor",
+    "code": "NV7B44205AK/U2",
+    "price": 1675.7774,
+    "group": "BI"
+  },
+  "NV7B44207AK/U2": {
+    "category": "Cuptor",
+    "code": "NV7B44207AK/U2",
+    "price": 1704.6843,
+    "group": "BI"
+  },
+  "NV7B4445VAK/U2": {
+    "category": "Cuptor",
+    "code": "NV7B4445VAK/U2",
+    "price": 1860.2903,
+    "group": "BI"
+  },
+  "NV7B5645TAK/U2": {
+    "category": "Cuptor",
+    "code": "NV7B5645TAK/U2",
+    "price": 2075.513,
+    "group": "BI"
+  },
+  "NV7B6665IAA/U2": {
+    "category": "Cuptor",
+    "code": "NV7B6665IAA/U2",
+    "price": 3601.5287,
+    "group": "BI"
+  },
+  "NV7B6799JAK/U2": {
+    "category": "Cuptor",
+    "code": "NV7B6799JAK/U2",
+    "price": 5784.5018,
+    "group": "BI"
+  },
+  "NZ32BG2005FKU2": {
+    "category": "Plita",
+    "code": "NZ32BG2005FKU2",
+    "price": 776.0698,
+    "group": "BI"
+  },
+  "NZ64B5045GK/U2": {
+    "category": "Plita",
+    "code": "NZ64B5045GK/U2",
+    "price": 1584.1804,
+    "group": "BI"
+  },
+  "NZ64B5046JK/U2": {
+    "category": "Plita",
+    "code": "NZ64B5046JK/U2",
+    "price": 1678.0159,
+    "group": "BI"
+  },
+  "NZ64B5067YY/U2": {
+    "category": "Plita",
+    "code": "NZ64B5067YY/U2",
+    "price": 2286.5128,
+    "group": "BI"
+  },
+  "NZ64B6056GK/U2": {
+    "category": "Plita",
+    "code": "NZ64B6056GK/U2",
+    "price": 1897.9939,
+    "group": "BI"
+  },
+  "NZ64F3NM1AB/UR": {
+    "category": "Plita",
+    "code": "NZ64F3NM1AB/UR",
+    "price": 1000.791,
+    "group": "BI"
+  },
+  "NZ64M3NM1BB/OL": {
+    "category": "Plita",
+    "code": "NZ64M3NM1BB/OL",
+    "price": 1000.791,
+    "group": "BI"
+  },
+  "DW60M6050BB/EO": {
+    "category": "Masina spalat vase",
+    "code": "DW60M6050BB/EO",
+    "price": 1616.4269,
+    "group": "DW"
+  },
+  "DW50DG450B00LE": {
+    "category": "Masina spalat vase",
+    "code": "DW50DG450B00LE",
+    "price": 1777.9619,
+    "group": "DW"
+  },
+  "DW50DG450FSRLE": {
+    "category": "Masina spalat vase",
+    "code": "DW50DG450FSRLE",
+    "price": 1810.0148,
+    "group": "DW"
+  },
+  "DW60DG790I00U1": {
+    "category": "Masina spalat vase",
+    "code": "DW60DG790I00U1",
+    "price": 3540.8472,
+    "group": "DW"
+  },
+  "MG22M8254AK/E2": {
+    "category": "Cuptor microunde",
+    "code": "MG22M8254AK/E2",
+    "price": 818.8191,
+    "group": "MWO"
+  },
+  "MG22M8274AT/E2": {
+    "category": "Cuptor microunde",
+    "code": "MG22M8274AT/E2",
+    "price": 818.8191,
+    "group": "MWO"
+  },
+  "MG23A7013CA/OL": {
+    "category": "Cuptor microunde",
+    "code": "MG23A7013CA/OL",
+    "price": 757.9198,
+    "group": "MWO"
+  },
+  "MG23A7013CB/OL": {
+    "category": "Cuptor microunde",
+    "code": "MG23A7013CB/OL",
+    "price": 757.9198,
+    "group": "MWO"
+  },
+  "MG23DG4524ATE2": {
+    "category": "Cuptor microunde",
+    "code": "MG23DG4524ATE2",
+    "price": 472.0089,
+    "group": "MWO"
+  },
+  "MG23F301TAK/OL": {
+    "category": "Cuptor microunde",
+    "code": "MG23F301TAK/OL",
+    "price": 420.7291,
+    "group": "MWO"
+  },
+  "MG23F301TAS/OL": {
+    "category": "Cuptor microunde",
+    "code": "MG23F301TAS/OL",
+    "price": 443.1625,
+    "group": "MWO"
+  },
+  "MG23K3515AK/OL": {
+    "category": "Cuptor microunde",
+    "code": "MG23K3515AK/OL",
+    "price": 406.6205,
+    "group": "MWO"
+  },
+  "MG23K3515AS/OL": {
+    "category": "Cuptor microunde",
+    "code": "MG23K3515AS/OL",
+    "price": 406.6205,
+    "group": "MWO"
+  },
+  "MG23K3515AW/OL": {
+    "category": "Cuptor microunde",
+    "code": "MG23K3515AW/OL",
+    "price": 398.937,
+    "group": "MWO"
+  },
+  "MG23T5018CK/EF": {
+    "category": "Cuptor microunde",
+    "code": "MG23T5018CK/EF",
+    "price": 581.6349,
+    "group": "MWO"
+  },
+  "MS20A3010AH/OL": {
+    "category": "Cuptor microunde",
+    "code": "MS20A3010AH/OL",
+    "price": 295.3126,
+    "group": "MWO"
+  },
+  "MS20A3010AL/OL": {
+    "category": "Cuptor microunde",
+    "code": "MS20A3010AL/OL",
+    "price": 295.3126,
+    "group": "MWO"
+  },
+  "MS23F301TAK/OL": {
+    "category": "Cuptor microunde",
+    "code": "MS23F301TAK/OL",
+    "price": 361.1124,
+    "group": "MWO"
+  },
+  "MS23F301TAS/OL": {
+    "category": "Cuptor microunde",
+    "code": "MS23F301TAS/OL",
+    "price": 384.1871,
+    "group": "MWO"
+  },
+  "MS23K3513AK/OL": {
+    "category": "Cuptor microunde",
+    "code": "MS23K3513AK/OL",
+    "price": 361.1608,
+    "group": "MWO"
+  },
+  "MS23K3513AS/OL": {
+    "category": "Cuptor microunde",
+    "code": "MS23K3513AS/OL",
+    "price": 360.4711,
+    "group": "MWO"
+  },
+  "MS23K3513AW/OL": {
+    "category": "Cuptor microunde",
+    "code": "MS23K3513AW/OL",
+    "price": 353.2595,
+    "group": "MWO"
+  },
+  "MS23K3515AK/OL": {
+    "category": "Cuptor microunde",
+    "code": "MS23K3515AK/OL",
+    "price": 367.5254,
+    "group": "MWO"
+  },
+  "MS23K3515AW/OL": {
+    "category": "Cuptor microunde",
+    "code": "MS23K3515AW/OL",
+    "price": 360.4711,
+    "group": "MWO"
+  },
+  "MS23T5018AN/EE": {
+    "category": "Cuptor microunde",
+    "code": "MS23T5018AN/EE",
+    "price": 488.6827,
+    "group": "MWO"
+  },
+  "MS32DG4504ATE2": {
+    "category": "Cuptor microunde",
+    "code": "MS32DG4504ATE2",
+    "price": 476.498,
+    "group": "MWO"
+  },
+  "BRB38G705EWWEF": {
+    "category": "Combina frigorifica",
+    "code": "BRB38G705EWWEF",
+    "price": 3872.2783,
+    "group": "REF"
+  },
+  "BRB70F26CES0EO": {
+    "category": "Combina frigorifica",
+    "code": "BRB70F26CES0EO",
+    "price": 2849.5742,
+    "group": "REF"
+  },
+  "BRB80F26BDF0EO": {
+    "category": "Combina frigorifica",
+    "code": "BRB80F26BDF0EO",
+    "price": 3231.2445,
+    "group": "REF"
+  },
+  "BRB70F30AES0EO": {
+    "category": "Combina frigorifica",
+    "code": "BRB70F30AES0EO",
+    "price": 3231.2445,
+    "group": "REF"
+  },
+  "RB33B610EBN/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB33B610EBN/EF",
+    "price": 1982.0284,
+    "group": "REF"
+  },
+  "RB33B610ESA/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB33B610ESA/EF",
+    "price": 1982.0284,
+    "group": "REF"
+  },
+  "RB33B610EWW/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB33B610EWW/EF",
+    "price": 1914.4499,
+    "group": "REF"
+  },
+  "RB33J3515WW/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB33J3515WW/EF",
+    "price": 2049.5948,
+    "group": "REF"
+  },
+  "RB34C600CSA/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB34C600CSA/EF",
+    "price": 2365.8162,
+    "group": "REF"
+  },
+  "RB34C600ESA/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB34C600ESA/EF",
+    "price": 2034.5666,
+    "group": "REF"
+  },
+  "RB34C602CB1/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB34C602CB1/EF",
+    "price": 2397.8691,
+    "group": "REF"
+  },
+  "RB34C632ESA/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB34C632ESA/EF",
+    "price": 2212.3156,
+    "group": "REF"
+  },
+  "RB34C652EB1/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB34C652EB1/EF",
+    "price": 2289.562,
+    "group": "REF"
+  },
+  "RB34C652ESA/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB34C652ESA/EF",
+    "price": 2258.7917,
+    "group": "REF"
+  },
+  "RB34C670ESA/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB34C670ESA/EF",
+    "price": 2109.3083,
+    "group": "REF"
+  },
+  "RB34C672ESA/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB34C672ESA/EF",
+    "price": 2146.9877,
+    "group": "REF"
+  },
+  "RB34C675EBN/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB34C675EBN/EF",
+    "price": 2277.2079,
+    "group": "REF"
+  },
+  "RB34C7B5E22/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB34C7B5E22/EF",
+    "price": 2362.4161,
+    "group": "REF"
+  },
+  "RB38C600CB1/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C600CB1/EF",
+    "price": 2706.2134,
+    "group": "REF"
+  },
+  "RB38C600ESA/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C600ESA/EF",
+    "price": 2288.3157,
+    "group": "REF"
+  },
+  "RB38C602CSA/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C602CSA/EF",
+    "price": 2750.451,
+    "group": "REF"
+  },
+  "RB38C607AB1/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C607AB1/EF",
+    "price": 3936.3841,
+    "group": "REF"
+  },
+  "RB38C607AS9/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C607AS9/EF",
+    "price": 3904.3312,
+    "group": "REF"
+  },
+  "RB38C632ESA/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C632ESA/EF",
+    "price": 2385.031,
+    "group": "REF"
+  },
+  "RB38C650EB1/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C650EB1/EF",
+    "price": 2418.9473,
+    "group": "REF"
+  },
+  "RB38C671DSA/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C671DSA/EF",
+    "price": 2590.1865,
+    "group": "REF"
+  },
+  "RB38C672ESA/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C672ESA/EF",
+    "price": 2408.263,
+    "group": "REF"
+  },
+  "RB38C676CS9/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C676CS9/EF",
+    "price": 3135.0737,
+    "group": "REF"
+  },
+  "RB38C6B3DB1/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C6B3DB1/EF",
+    "price": 2865.8487,
+    "group": "REF"
+  },
+  "RB38C7B5C12/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C7B5C12/EF",
+    "price": 3381.8774,
+    "group": "REF"
+  },
+  "RB38C7B6AB1/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C7B6AB1/EF",
+    "price": 4513.3363,
+    "group": "REF"
+  },
+  "RB38C7B6B22/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C7B6B22/EF",
+    "price": 3712.0138,
+    "group": "REF"
+  },
+  "RB38T607BB1/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38T607BB1/EF",
+    "price": 3359.4319,
+    "group": "REF"
+  },
+  "RB38T607BS9/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38T607BS9/EF",
+    "price": 3327.4032,
+    "group": "REF"
+  },
+  "RB50DG601EB1EO": {
+    "category": "Combina frigorifica",
+    "code": "RB50DG601EB1EO",
+    "price": 2942.7684,
+    "group": "REF"
+  },
+  "RB50DG601ES9EO": {
+    "category": "Combina frigorifica",
+    "code": "RB50DG601ES9EO",
+    "price": 2910.7155,
+    "group": "REF"
+  },
+  "RB53DG703EB1EO": {
+    "category": "Combina frigorifica",
+    "code": "RB53DG703EB1EO",
+    "price": 3070.9679,
+    "group": "REF"
+  },
+  "RB53DG703ES9EO": {
+    "category": "Combina frigorifica",
+    "code": "RB53DG703ES9EO",
+    "price": 3038.9271,
+    "group": "REF"
+  },
+  "RB53DG706BS9EO": {
+    "category": "Combina frigorifica",
+    "code": "RB53DG706BS9EO",
+    "price": 4131.1457,
+    "group": "REF"
+  },
+  "RB53DG706CS9EO": {
+    "category": "Combina frigorifica",
+    "code": "RB53DG706CS9EO",
+    "price": 3810.6288,
+    "group": "REF"
+  },
+  "RB53DG706AB1EO": {
+    "category": "Combina frigorifica",
+    "code": "RB53DG706AB1EO",
+    "price": 5220.9322,
+    "group": "REF"
+  },
+  "RF48A400EB4/EO": {
+    "category": "Combina frigorifica",
+    "code": "RF48A400EB4/EO",
+    "price": 3381.95,
+    "group": "REF"
+  },
+  "RF48A401EB4/EO": {
+    "category": "Combina frigorifica",
+    "code": "RF48A401EB4/EO",
+    "price": 3711.1426,
+    "group": "REF"
+  },
+  "RF65DG9H0EB1EO": {
+    "category": "Combina frigorifica",
+    "code": "RF65DG9H0EB1EO",
+    "price": 9538.9745,
+    "group": "REF"
+  },
+  "RF65DB970E22EO": {
+    "category": "Combina frigorifica",
+    "code": "RF65DB970E22EO",
+    "price": 8464.2888,
+    "group": "REF"
+  },
+  "RM90F67CECEO": {
+    "category": "Combina frigorifica",
+    "code": "RM90F67CECEO",
+    "price": 9032.0329,
+    "group": "REF"
+  },
+  "RR39C76C322/EF": {
+    "category": "Combina frigorifica",
+    "code": "RR39C76C322/EF",
+    "price": 3295.3382,
+    "group": "REF"
+  },
+  "RS57DG400EB4EO": {
+    "category": "Combina frigorifica",
+    "code": "RS57DG400EB4EO",
+    "price": 3137.4695,
+    "group": "REF"
+  },
+  "RS57DG400EM9EO": {
+    "category": "Combina frigorifica",
+    "code": "RS57DG400EM9EO",
+    "price": 3137.4695,
+    "group": "REF"
+  },
+  "RT35CG5644S9EO": {
+    "category": "Combina frigorifica",
+    "code": "RT35CG5644S9EO",
+    "price": 2262.7242,
+    "group": "REF"
+  },
+  "RT38CG6624S9EO": {
+    "category": "Combina frigorifica",
+    "code": "RT38CG6624S9EO",
+    "price": 2394.3964,
+    "group": "REF"
+  },
+  "RT42CG6724S9EO": {
+    "category": "Combina frigorifica",
+    "code": "RT42CG6724S9EO",
+    "price": 2494.0278,
+    "group": "REF"
+  },
+  "RT47CB662622EO": {
+    "category": "Combina frigorifica",
+    "code": "RT47CB662622EO",
+    "price": 2878.6626,
+    "group": "REF"
+  },
+  "RT47CG6726B1EO": {
+    "category": "Combina frigorifica",
+    "code": "RT47CG6726B1EO",
+    "price": 2654.2923,
+    "group": "REF"
+  },
+  "RT58K710RSL/EO": {
+    "category": "Combina frigorifica",
+    "code": "RT58K710RSL/EO",
+    "price": 3295.3382,
+    "group": "REF"
+  },
+  "RZ32C76CE22/EF": {
+    "category": "Combina frigorifica",
+    "code": "RZ32C76CE22/EF",
+    "price": 3295.3382,
+    "group": "REF"
+  },
+  "RB38C600CS9/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C600CS9/EF",
+    "price": 2394.3964,
+    "group": "REF"
+  },
+  "RB38C600DSA/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C600DSA/EF",
+    "price": 2328.5603,
+    "group": "REF"
+  },
+  "RT53DG7A14S9EO": {
+    "category": "Combina frigorifica",
+    "code": "RT53DG7A14S9EO",
+    "price": 3038.9271,
+    "group": "REF"
+  },
+  "RB38C7AGWS9/EF": {
+    "category": "Combina frigorifica",
+    "code": "RB38C7AGWS9/EF",
+    "price": 5920.3001,
+    "group": "REF"
+  },
+  "RS90F66BEFEO": {
+    "category": "Combina frigorifica",
+    "code": "RS90F66BEFEO",
+    "price": 8682.5728,
+    "group": "REF"
+  },
+  "RS90F65EDTEO": {
+    "category": "Combina frigorifica",
+    "code": "RS90F65EDTEO",
+    "price": 6823.5409,
+    "group": "REF"
+  },
+  "RS80F67KCTEO": {
+    "category": "Combina frigorifica",
+    "code": "RS80F67KCTEO",
+    "price": 6246.6008,
+    "group": "REF"
+  },
+  "RS80F66KBFEO": {
+    "category": "Combina frigorifica",
+    "code": "RS80F66KBFEO",
+    "price": 7003.7099,
+    "group": "REF"
+  },
+  "RS70F64KDTEO": {
+    "category": "Combina frigorifica",
+    "code": "RS70F64KDTEO",
+    "price": 5285.0259,
+    "group": "REF"
+  },
+  "RS70F64KDFEO": {
+    "category": "Combina frigorifica",
+    "code": "RS70F64KDFEO",
+    "price": 5285.0259,
+    "group": "REF"
+  },
+  "RS80F64JEBEO": {
+    "category": "Combina frigorifica",
+    "code": "RS80F64JEBEO",
+    "price": 5669.6607,
+    "group": "REF"
+  },
+  "RS70F64KETEO": {
+    "category": "Combina frigorifica",
+    "code": "RS70F64KETEO",
+    "price": 4765.2462,
+    "group": "REF"
+  },
+  "RS70F65KEFEO": {
+    "category": "Combina frigorifica",
+    "code": "RS70F65KEFEO",
+    "price": 4896.9184,
+    "group": "REF"
+  },
+  "RS70F65QEFEO": {
+    "category": "Combina frigorifica",
+    "code": "RS70F65QEFEO",
+    "price": 4106.8731,
+    "group": "REF"
+  },
+  "RS70F65QETEO": {
+    "category": "Combina frigorifica",
+    "code": "RS70F65QETEO",
+    "price": 4106.8731,
+    "group": "REF"
+  },
+  "HAF-CIN/EXP": {
+    "category": "Filtru apa",
+    "code": "HAF-CIN/EXP",
+    "price": 105.7782,
+    "group": "REF_ACC"
+  },
+  "HAFEX/EXP": {
+    "category": "Filtru apa",
+    "code": "HAFEX/EXP",
+    "price": 89.7457,
+    "group": "REF_ACC"
+  },
+  "HAFIN2/EXP": {
+    "category": "Filtru apa",
+    "code": "HAFIN2/EXP",
+    "price": 105.7782,
+    "group": "REF_ACC"
+  },
+  "HAF-QIN/EXP": {
+    "category": "Filtru apa",
+    "code": "HAF-QIN/EXP",
+    "price": 105.7782,
+    "group": "REF_ACC"
+  },
+  "RA-B23EBB41GM": {
+    "category": "Panou Bespoke",
+    "code": "RA-B23EBB41GM",
+    "price": 191.664,
+    "group": "REF_ACC"
+  },
+  "RA-B23EUT12GM": {
+    "category": "Panou Bespoke",
+    "code": "RA-B23EUT12GM",
+    "price": 255.7698,
+    "group": "REF_ACC"
+  },
+  "RA-B23EUTCLGG": {
+    "category": "Panou Bespoke",
+    "code": "RA-B23EUTCLGG",
+    "price": 159.6232,
+    "group": "REF_ACC"
+  },
+  "RA-B23EUTCSGG": {
+    "category": "Panou Bespoke",
+    "code": "RA-B23EUTCSGG",
+    "price": 159.6232,
+    "group": "REF_ACC"
+  },
+  "RA-B23EUU18GM": {
+    "category": "Panou Bespoke",
+    "code": "RA-B23EUU18GM",
+    "price": 255.7698,
+    "group": "REF_ACC"
+  },
+  "RA-B23EUU3KGM": {
+    "category": "Panou Bespoke",
+    "code": "RA-B23EUU3KGM",
+    "price": 255.7698,
+    "group": "REF_ACC"
+  },
+  "RA-B23EUUCEGG": {
+    "category": "Panou Bespoke",
+    "code": "RA-B23EUUCEGG",
+    "price": 153.2102,
+    "group": "REF_ACC"
+  },
+  "RA-B23EUUCLGG": {
+    "category": "Panou Bespoke",
+    "code": "RA-B23EUUCLGG",
+    "price": 153.2102,
+    "group": "REF_ACC"
+  },
+  "RA-C00K3BAA": {
+    "category": "Set accesorii Bespoke",
+    "code": "RA-C00K3BAA",
+    "price": 119.8747,
+    "group": "REF_ACC"
+  },
+  "RA-C00K4BAA": {
+    "category": "Set accesorii Bespoke",
+    "code": "RA-C00K4BAA",
+    "price": 119.8747,
+    "group": "REF_ACC"
+  },
+  "RA-R23DAA12GG": {
+    "category": "Panou Bespoke",
+    "code": "RA-R23DAA12GG",
+    "price": 608.3638,
+    "group": "REF_ACC"
+  },
+  "RA-R23DAACEGG": {
+    "category": "Panou Bespoke",
+    "code": "RA-R23DAACEGG",
+    "price": 432.7081,
+    "group": "REF_ACC"
+  },
+  "RA-R23DAACSGG": {
+    "category": "Panou Bespoke",
+    "code": "RA-R23DAACSGG",
+    "price": 432.7081,
+    "group": "REF_ACC"
+  },
+  "VS15A6031R4/GE": {
+    "category": "Aspirator vertical",
+    "code": "VS15A6031R4/GE",
+    "price": 956.7468,
+    "group": "VC"
+  },
+  "VS20B75ACR5/GE": {
+    "category": "Aspirator vertical",
+    "code": "VS20B75ACR5/GE",
+    "price": 1434.3876,
+    "group": "VC"
+  },
+  "VS20B75AGR1/GE": {
+    "category": "Aspirator vertical",
+    "code": "VS20B75AGR1/GE",
+    "price": 1353.7301,
+    "group": "VC"
+  },
+  "VS20B95823W/GE": {
+    "category": "Aspirator vertical",
+    "code": "VS20B95823W/GE",
+    "price": 2203.19,
+    "group": "VC"
+  },
+  "VS20B95943N/GE": {
+    "category": "Aspirator vertical",
+    "code": "VS20B95943N/GE",
+    "price": 2828.6035,
+    "group": "VC"
+  },
+  "VS20B95973B/GE": {
+    "category": "Aspirator vertical",
+    "code": "VS20B95973B/GE",
+    "price": 3209.3966,
+    "group": "VC"
+  },
+  "VS20C852FTB/GE": {
+    "category": "Aspirator vertical",
+    "code": "VS20C852FTB/GE",
+    "price": 2028.5278,
+    "group": "VC"
+  },
+  "VS20C8534TB/GE": {
+    "category": "Aspirator vertical",
+    "code": "VS20C8534TB/GE",
+    "price": 2089.2515,
+    "group": "VC"
+  },
+  "VS20C9544TB/GE": {
+    "category": "Aspirator vertical",
+    "code": "VS20C9544TB/GE",
+    "price": 2039.9867,
+    "group": "VC"
+  },
+  "DV90BB7445GWS7": {
+    "category": "Uscator",
+    "code": "DV90BB7445GWS7",
+    "price": 2899.8013,
+    "group": "WM"
+  },
+  "SKK-DD": {
+    "category": "Kit suprapunere",
+    "code": "SKK-DD",
+    "price": 190.575,
+    "group": "WM_ACC"
+  },
+  "SKK-DDX": {
+    "category": "Kit suprapunere",
+    "code": "SKK-DDX",
+    "price": 251.559,
+    "group": "WM_ACC"
+  },
+  "SKK-DF": {
+    "category": "Kit suprapunere",
+    "code": "SKK-DF",
+    "price": 19.0575,
+    "group": "WM_ACC"
+  },
+  "SKK-SSV": {
+    "category": "Kit suprapunere",
+    "code": "SKK-SSV",
+    "price": 242.5687,
+    "group": "WM_ACC"
+  },
+  "SKK-SSW": {
+    "category": "Kit suprapunere",
+    "code": "SKK-SSW",
+    "price": 180.1811,
+    "group": "WM_ACC"
+  },
+  "SKK-UDW": {
+    "category": "Kit suprapunere",
+    "code": "SKK-UDW",
+    "price": 190.575,
+    "group": "WM_ACC"
+  },
+  "SKK-UDX": {
+    "category": "Kit suprapunere",
+    "code": "SKK-UDX",
+    "price": 251.559,
+    "group": "WM_ACC"
+  },
+  "SKK-UUB": {
+    "category": "Kit suprapunere",
+    "code": "SKK-UUB",
+    "price": 251.559,
+    "group": "WM_ACC"
+  },
+  "WW11DB7B34GBU4": {
+    "category": "Masina spalat rufe",
+    "code": "WW11DB7B34GBU4",
+    "price": 2666.3923,
+    "group": "WM"
+  },
+  "WW11DB7B34GWU4": {
+    "category": "Masina spalat rufe",
+    "code": "WW11DB7B34GWU4",
+    "price": 2538.1928,
+    "group": "WM"
+  },
+  "WW11DB7B94GBU4": {
+    "category": "Masina spalat rufe",
+    "code": "WW11DB7B94GBU4",
+    "price": 2986.9213,
+    "group": "WM"
+  },
+  "WW11DB8B95GBU4": {
+    "category": "Masina spalat rufe",
+    "code": "WW11DB8B95GBU4",
+    "price": 3435.6498,
+    "group": "WM"
+  },
+  "WW11DB8B95GHU4": {
+    "category": "Masina spalat rufe",
+    "code": "WW11DB8B95GHU4",
+    "price": 3307.4382,
+    "group": "WM"
+  },
+  "WW11DG5B25ABLE": {
+    "category": "Masina spalat rufe",
+    "code": "WW11DG5B25ABLE",
+    "price": 2143.1399,
+    "group": "WM"
+  },
+  "WW11DG5B25AELE": {
+    "category": "Masina spalat rufe",
+    "code": "WW11DG5B25AELE",
+    "price": 2077.3038,
+    "group": "WM"
+  },
+  "WW11DG6B25LEU4": {
+    "category": "Masina spalat rufe",
+    "code": "WW11DG6B25LEU4",
+    "price": 2274.8242,
+    "group": "WM"
+  },
+  "WW11DG6B85LBU4": {
+    "category": "Masina spalat rufe",
+    "code": "WW11DG6B85LBU4",
+    "price": 2538.1565,
+    "group": "WM"
+  },
+  "WW80CGC04DABLE": {
+    "category": "Masina spalat rufe",
+    "code": "WW80CGC04DABLE",
+    "price": 1726.1497,
+    "group": "WM"
+  },
+  "WW80CGC04DAELE": {
+    "category": "Masina spalat rufe",
+    "code": "WW80CGC04DAELE",
+    "price": 1663.6895,
+    "group": "WM"
+  },
+  "WW80T504DAEAS7": {
+    "category": "Masina spalat rufe",
+    "code": "WW80T504DAEAS7",
+    "price": 1748.1233,
+    "group": "WM"
+  },
+  "WW90CGC04DABLE": {
+    "category": "Masina spalat rufe",
+    "code": "WW90CGC04DABLE",
+    "price": 1812.6889,
+    "group": "WM"
+  },
+  "WW90CGC04DAHLE": {
+    "category": "Masina spalat rufe",
+    "code": "WW90CGC04DAHLE",
+    "price": 1748.208,
+    "group": "WM"
+  },
+  "WW90DB7U34GBU4": {
+    "category": "Masina spalat rufe",
+    "code": "WW90DB7U34GBU4",
+    "price": 2474.087,
+    "group": "WM"
+  },
+  "WW90DB7U34GWU4": {
+    "category": "Masina spalat rufe",
+    "code": "WW90DB7U34GWU4",
+    "price": 2345.8754,
+    "group": "WM"
+  },
+  "WW90DB7U94GBU4": {
+    "category": "Masina spalat rufe",
+    "code": "WW90DB7U94GBU4",
+    "price": 2602.2865,
+    "group": "WM"
+  },
+  "WW90DB7U94GEU4": {
+    "category": "Masina spalat rufe",
+    "code": "WW90DB7U94GEU4",
+    "price": 2474.087,
+    "group": "WM"
+  },
+  "WW90DG6U25LBU4": {
+    "category": "Masina spalat rufe",
+    "code": "WW90DG6U25LBU4",
+    "price": 2208.9881,
+    "group": "WM"
+  },
+  "WW90DG6U25LKU4": {
+    "category": "Masina spalat rufe",
+    "code": "WW90DG6U25LKU4",
+    "price": 2143.1399,
+    "group": "WM"
+  },
+  "WD11DB8B85GBU4": {
+    "category": "Masina spalat rufe",
+    "code": "WD11DB8B85GBU4",
+    "price": 3243.3445,
+    "group": "WM"
+  },
+  "WD11DB7B85GWU4": {
+    "category": "Masina spalat rufe",
+    "code": "WD11DB7B85GWU4",
+    "price": 2922.8155,
+    "group": "WM"
+  },
+  "WD11DG5B15BELE": {
+    "category": "Masina spalat rufe",
+    "code": "WD11DG5B15BELE",
+    "price": 2604.0047,
+    "group": "WM"
+  },
+  "WD90DB7B85GBU4": {
+    "category": "Masina spalat rufe",
+    "code": "WD90DB7B85GBU4",
+    "price": 2730.4981,
+    "group": "WM"
+  },
+  "WD90DB7B85GWU4": {
+    "category": "Masina spalat rufe",
+    "code": "WD90DB7B85GWU4",
+    "price": 2602.2865,
+    "group": "WM"
+  },
+  "WD90DG6B85BBU4": {
+    "category": "Masina spalat rufe",
+    "code": "WD90DG6B85BBU4",
+    "price": 2538.1565,
+    "group": "WM"
+  },
+  "WD90DG6B85BKU4": {
+    "category": "Masina spalat rufe",
+    "code": "WD90DG6B85BKU4",
+    "price": 2406.4964,
+    "group": "WM"
+  },
+  "WD90DG5B15BBLE": {
+    "category": "Masina spalat rufe",
+    "code": "WD90DG5B15BBLE",
+    "price": 2274.8242,
+    "group": "WM"
+  },
+  "WD90DG5B15BELE": {
+    "category": "Masina spalat rufe",
+    "code": "WD90DG5B15BELE",
+    "price": 2208.9881,
+    "group": "WM"
+  },
+  "WD90DG5B15BHLE": {
+    "category": "Masina spalat rufe",
+    "code": "WD90DG5B15BHLE",
+    "price": 2208.9881,
+    "group": "WM"
+  },
+  "WW60A3120BE/LE": {
+    "category": "Masina spalat rufe",
+    "code": "WW60A3120BE/LE",
+    "price": 1250.8617,
+    "group": "WM"
+  },
+  "WW60A3120WE/LE": {
+    "category": "Masina spalat rufe",
+    "code": "WW60A3120WE/LE",
+    "price": 1250.8617,
+    "group": "WM"
+  },
+  "VR7MD97714G/GE": {
+    "category": "Aspirator robot",
+    "code": "VR7MD97714G/GE",
+    "price": 4253.3936,
+    "group": "VC"
+  },
+  "VCA-RAK97": {
+    "category": "Kit accesorii robot",
+    "code": "VCA-RAK97",
+    "price": 117.9426,
+    "group": "VC_ACC"
+  },
+  "VCA-RPW97": {
+    "category": "Kit accesorii robot",
+    "code": "VCA-RPW97",
+    "price": 58.6729,
+    "group": "VC_ACC"
+  },
+  "VS90F40DEK/GE": {
+    "category": "Aspirator vertical",
+    "code": "VS90F40DEK/GE",
+    "price": 3521.4035,
+    "group": "VC"
+  },
+  "DV90DG52A0ABLE": {
+    "category": "Uscator",
+    "code": "DV90DG52A0ABLE",
+    "price": 2509.9184,
+    "group": "WM"
+  },
+  "DV90DG52A0AELE": {
+    "category": "Uscator",
+    "code": "DV90DG52A0AELE",
+    "price": 2371.3259,
+    "group": "WM"
+  },
+  "DV90DG52A0AHLE": {
+    "category": "Uscator",
+    "code": "DV90DG52A0AHLE",
+    "price": 2371.3259,
+    "group": "WM"
+  },
+  "WF90F09C4SU4": {
+    "category": "Masina spalat rufe",
+    "code": "WF90F09C4SU4",
+    "price": 3813.4995,
+    "group": "WM"
+  },
+  "WD90DG6G94BBU4": {
+    "category": "Masina spalat rufe cu uscator",
+    "code": "WD90DG6G94BBU4",
+    "price": 3003.7444,
+    "group": "WM"
+  },
+  "WD90DG6G94BKU4": {
+    "category": "Masina spalat rufe cu uscator",
+    "code": "WD90DG6G94BKU4",
+    "price": 2868.7979,
+    "group": "WM"
+  },
+  "WD90DG5G34BBLE": {
+    "category": "Masina spalat rufe cu uscator",
+    "code": "WD90DG5G34BBLE",
+    "price": 2666.3347,
+    "group": "WM"
+  },
+  "WD90DG5G34BELE": {
+    "category": "Masina spalat rufe cu uscator",
+    "code": "WD90DG5G34BELE",
+    "price": 2527.7421,
+    "group": "WM"
+  },
+  "WW90DG6G94LKU4": {
+    "category": "Masina spalat rufe",
+    "code": "WW90DG6G94LKU4",
+    "price": 2250.5245,
+    "group": "WM"
+  },
+  "WW90DG5G34ABLE": {
+    "category": "Masina spalat rufe",
+    "code": "WW90DG5G34ABLE",
+    "price": 2111.9211,
+    "group": "WM"
+  },
+  "WW90DG5G34AELE": {
+    "category": "Masina spalat rufe",
+    "code": "WW90DG5G34AELE",
+    "price": 1973.3177,
+    "group": "WM"
+  },
+  "WD18DB8995BZT2": {
+    "category": "Masina spalat rufe cu uscator",
+    "code": "WD18DB8995BZT2",
+    "price": 8199.6085,
+    "group": "WM"
+  },
+  "DV90DB8845GHU4": {
+    "category": "Uscator",
+    "code": "DV90DB8845GHU4",
+    "price": 3464.0006,
+    "group": "WM"
+  },
+  "DV90DB8845GBU4": {
+    "category": "Uscator",
+    "code": "DV90DB8845GBU4",
+    "price": 3598.958,
+    "group": "WM"
+  },
+  "DV90F09F4SU4": {
+    "category": "Uscator",
+    "code": "DV90F09F4SU4",
+    "price": 3801.3995,
+    "group": "WM"
+  },
+  "DV90DB7845GBU4": {
+    "category": "Uscator",
+    "code": "DV90DB7845GBU4",
+    "price": 2781.6779,
+    "group": "WM"
+  },
+  "DV90DB7845GEU4": {
+    "category": "Uscator",
+    "code": "DV90DB7845GEU4",
+    "price": 2714.1938,
+    "group": "WM"
+  },
+  "DV90DG6845LBU4": {
+    "category": "Uscator",
+    "code": "DV90DG6845LBU4",
+    "price": 2646.7205,
+    "group": "WM"
+  },
+  "DV90DG6845LKU4": {
+    "category": "Uscator",
+    "code": "DV90DG6845LKU4",
+    "price": 2579.2472,
+    "group": "WM"
+  },
+  "DV90DG6845LHU4": {
+    "category": "Uscator",
+    "code": "DV90DG6845LHU4",
+    "price": 2511.7631,
+    "group": "WM"
+  },
+  "VS80F28DES/GE": {
+    "category": "Aspirator vertical",
+    "code": "VS80F28DES/GE",
+    "price": 2831.0884,
+    "group": "VC"
+  },
+  "VS80F28DGS/GE": {
+    "category": "Aspirator vertical",
+    "code": "VS80F28DGS/GE",
+    "price": 3242.2977,
+    "group": "VC"
+  },
+  "VS80F28DLP/GE": {
+    "category": "Aspirator vertical",
+    "code": "VS80F28DLP/GE",
+    "price": 2265.7259,
+    "group": "VC"
+  },
+  "SKK-ZSD": {
+    "category": "Kit suprapunere",
+    "code": "SKK-ZSD",
+    "price": 291.0747,
+    "group": "WM_ACC"
+  },
+  "WW70FG3M05AWLF": {
+    "category": "Masina spalat rufe",
+    "code": "WW70FG3M05AWLF",
+    "price": 1488.2004,
+    "group": "WM"
+  },
+  "WW80FG3M05AWLF": {
+    "category": "Masina spalat rufe",
+    "code": "WW80FG3M05AWLF",
+    "price": 1557.5075,
+    "group": "WM"
+  },
+  "WW90FG3M05AWLF": {
+    "category": "Masina spalat rufe",
+    "code": "WW90FG3M05AWLF",
+    "price": 1626.8038,
+    "group": "WM"
+  },
+  "DV16DG8600BVU4": {
+    "category": "Uscator",
+    "code": "DV16DG8600BVU4",
+    "price": 4813.5743,
+    "group": "WM"
+  },
+  "WF20DG8650BVU4": {
+    "category": "Masina spalat rufe",
+    "code": "WF20DG8650BVU4",
+    "price": 4083.4033,
+    "group": "WM"
+  },
+  "WW10FG5U34AELE": {
+    "category": "Masina spalat rufe",
+    "code": "WW10FG5U34AELE",
+    "price": 2042.6248,
+    "group": "WM"
+  },
+  "WW10FG6U34LKU4": {
+    "category": "Masina spalat rufe",
+    "code": "WW10FG6U34LKU4",
+    "price": 2111.9211,
+    "group": "WM"
+  },
+  "WW10FG6U94LBU4": {
+    "category": "Masina spalat rufe",
+    "code": "WW10FG6U94LBU4",
+    "price": 2319.8316,
+    "group": "WM"
   }
 }

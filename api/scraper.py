@@ -183,18 +183,21 @@ def get_search_variants(code):
     Genereaza variante ale codului pentru cautare pe diferite site-uri.
     Ex: QE55QN90FATXXH -> [QE55QN90FATXXH, QE55QN90F, QE55QN90]
     Ex: HW-B400F/EN -> [HW-B400F/EN, HW-B400F, HW-B400]
+    Ex: NV68A1140BK/OL -> [NV68A1140BK/OL, NV68A1140BK, NV68A1140]
+    Ex: WW11DB7B34GBU4 -> [WW11DB7B34GBU4, WW11DB7B34GB, WW11DB7B34G]
     """
     variants = [code]
     code_up = code.upper()
 
-    # Elimina sufixul /EN, /ZA, /XD etc. (soundbars, audio)
+    # Elimina sufixul /XX (audio, BI, REF, WM)
+    # Ex: /EN, /OL, /EO, /EF, /GE, /UR, /L1, /BOL, /E2, /GG
     if '/' in code_up:
         base_no_slash = code_up.split('/')[0]
         if base_no_slash not in variants:
             variants.append(base_no_slash)
         code_up = base_no_slash  # continua cu baza fara sufix
 
-    # Elimina sufixul de regiune (TXXH, AUXXH, etc.)
+    # Elimina sufixul de regiune TV (TXXH, AUXXH, etc.)
     base = code_up
     for pat in [r'(FKXXH)$',
                 r'(TXXH|BTXXH|ATXXH|CTXXH|DTXXH|ETXXH|FTXXH)$',
@@ -210,7 +213,7 @@ def get_search_variants(code):
     if base != code_up and base not in variants:
         variants.append(base)
 
-    # Elimina si litera de varianta (A, B, C la final)
+    # Elimina si litera de varianta (A, B, C la final) - doar pentru coduri lungi
     if len(base) > 4 and base[-1] in 'ABCDEFGH':
         base2 = base[:-1]
         if base2 not in variants:
@@ -741,12 +744,12 @@ def _finedata_extract_price(url, product_code, js_render=False, timeout=None):
             'max_retries': 2,
             'only_main_content': True,
             'extract_prompt': (
-                f'I am looking for a Samsung TV or soundbar with model code "{product_code}" on this page. '
+                f'I am looking for a Samsung product with model code "{product_code}" on this page. '
                 f'IMPORTANT RULES: '
                 f'1. If the page says "nu a avut niciun rezultat" or "niciun rezultat" or "no results", return null values. '
                 f'2. ONLY return a price if you find a Samsung product that matches the code "{product_code}". '
-                f'3. Do NOT return prices from promotional products, unrelated brands (Electrolux, Whirlpool, Hisense, etc.), or random offers shown below search results. '
-                f'4. The product MUST be a Samsung TV or Samsung soundbar. '
+                f'3. Do NOT return prices from promotional products, unrelated brands (Electrolux, Whirlpool, Hisense, Bosch, etc.), or random offers shown below search results. '
+                f'4. The product MUST be a Samsung brand product (TV, soundbar, fridge, washing machine, oven, cooktop, hood, vacuum, dishwasher, microwave, dryer, etc.). '
                 f'Return ONLY a JSON object: {{"price": <number or null>, "url": "<product URL or null>", "name": "<Samsung product name or null>"}}. '
                 f'Price should be a number without currency (e.g. 4899.99). '
                 f'If the Samsung product is not found, return {{"price": null, "url": null, "name": null}}.'
@@ -2186,7 +2189,7 @@ def scrape_altex(code):
                 'extract_prompt': (
                     f'Find the Samsung product with code "{code}" on this page. '
                     f'RULES: 1) If page says "nu a avut niciun rezultat" or shows no Samsung products, return null. '
-                    f'2) ONLY match Samsung TVs or soundbars, ignore other brands. '
+                    f'2) ONLY match Samsung products, ignore other brands. '
                     f'3) Return JSON: {{"price": <number or null>, "url": "<product URL or null>", "name": "<name or null>"}}. '
                     f'Price as number without currency (e.g. 3999.99).'
                 ),
