@@ -54,7 +54,7 @@ class handler(BaseHTTPRequestHandler):
                             'kuziini_price': round(kp, 2) if kp else None,
                             'price': cached['prices'][vendor],
                             'url': cached.get('urls', {}).get(vendor, ''),
-                            'image_url': cached.get('image_url'),
+                            'image_url': cached.get('image_url') or products.get(code, {}).get('image_url'),
                             'cached': True,
                         })
                         return
@@ -66,6 +66,11 @@ class handler(BaseHTTPRequestHandler):
             if cache_configured():
                 cached = get_cached_price(code)
                 if cached:
+                    # Fallback imagine din products.json daca cache-ul nu are
+                    if not cached.get('image_url'):
+                        prods = load_products()
+                        if code in prods and prods[code].get('image_url'):
+                            cached['image_url'] = prods[code]['image_url']
                     self._json(cached)
                     return
 
@@ -75,15 +80,17 @@ class handler(BaseHTTPRequestHandler):
             _elapsed = _t.time() - _ts
             kuziini_price = None
             category = ''
+            image_url = None
             if code in products:
                 kuziini_price = products[code]['price']
                 category = products[code]['category']
+                image_url = products[code].get('image_url')
 
             self._json({
                 'code': code,
                 'category': category,
                 'kuziini_price': round(kuziini_price, 2) if kuziini_price else None,
-                'image_url': None,
+                'image_url': image_url,
                 'prices': {'samsung': None, 'emag': None, 'flanco': None, 'altex': None},
                 'urls': {},
                 'not_cached': True,
@@ -135,6 +142,7 @@ class handler(BaseHTTPRequestHandler):
                     'category': info.get('category', ''),
                     'price': round(info.get('price', 0), 2),
                     'inches': inches,
+                    'image_url': info.get('image_url'),
                 })
             product_list.sort(key=lambda x: (x.get('group', ''), x['category'], x.get('inches') or 0, x['code']))
             self._json({'products': product_list, 'count': len(product_list)})
